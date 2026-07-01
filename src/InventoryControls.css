@@ -1,0 +1,135 @@
+.inventory-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  padding-bottom: 8px;
+  scrollbar-color: #765733 #191714;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inventory-scroll::-webkit-scrollbar {
+  width: 7px;
+}
+
+.inventory-scroll::-webkit-scrollbar-track {
+  border-radius: 4px;
+  background: #191714;
+}
+
+.inventory-scroll::-webkit-scrollbar-thumb {
+  border: 1px solid #2b241c;
+  border-radius: 4px;
+  background: linear-gradient(#8c683e, #574027);
+}
+
+.inventory-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(#a77a45, #6a4b2a);
+}
+
+.pickaxe-item {
+  cursor: default;
+}
+
+.pickaxe-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.pickaxe-actions button {
+  min-height: 25px;
+  padding: 2px 5px;
+  color: #cdbda3;
+  font-size: 8px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid #554b3d;
+  border-radius: 2px;
+  background: #29241e;
+}
+
+.pickaxe-actions button:hover:not(:disabled) {
+  color: #ffe2a9;
+  border-color: #93693a;
+}
+
+.pickaxe-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.repair-recipe {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: #9e8c72;
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inventory-selection-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+}
+
+.inventory-selection-row .mineral-label {
+  margin-top: 0;
+}
+
+.inventory-select-button {
+  padding: 3px 5px;
+  color: #b59d77;
+  font-size: 7px;
+  cursor: pointer;
+  border: 0;
+  border-bottom: 1px solid #665036;
+  background: transparent;
+}
+
+.mineral-item {
+  position: relative;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mineral-item:hover {
+  border-color: #80613b;
+  background: #28231d;
+}
+
+.mineral-item.is-selected {
+  border-color: #dda650;
+  background: linear-gradient(135deg, rgba(209, 139, 55, 0.24), #1d1b18);
+  box-shadow: inset 0 0 0 1px rgba(255, 208, 119, 0.24), 0 0 9px rgba(213, 132, 45, 0.16);
+}
+
+.mineral-item.is-selected::after {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  content: '✓';
+  color: #ffd278;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+@media (max-height: 710px) and (min-width: 768px) {
+  .pickaxe-actions button {
+    min-height: 21px;
+  }
+
+  .repair-recipe {
+    margin-top: 2px;
+  }
+}
