@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import '../FloorProgress.css'
 import { findPickaxe, type ChestId, type MineResult, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
 import { Durability } from './Durability'
 import { InventoryPanel } from './InventoryPanel'
@@ -22,20 +23,49 @@ interface GameScreenProps {
   onLogout: () => void
 }
 
-function MineArea({ equipped, mining, lastMine, onMine }: {
+const getMineName = (floor: number) => {
+  if (floor >= 100) return '지하 최심부'
+  if (floor >= 80) return '심연의 광맥'
+  if (floor >= 60) return '고대 광산'
+  if (floor >= 40) return '붉은 광맥'
+  if (floor >= 20) return '깊은 갱도'
+  return '빛바랜 채굴장'
+}
+
+const getRequiredExperience = (floor: number) => 100n * (2n ** BigInt(Math.max(0, floor - 1)))
+
+const parseExperience = (experience: string) => /^\d+$/.test(experience) ? BigInt(experience) : 0n
+
+const formatExperience = (experience: bigint) => {
+  const value = experience.toString()
+  if (value.length <= 9) return experience.toLocaleString('ko-KR')
+  return `${value[0]}.${value.slice(1, 3)}e${value.length - 1}`
+}
+
+function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
   equipped?: PickaxeInventoryItem
   mining: boolean
   lastMine: MineResult | null
+  floor: number
+  experience: string
   onMine: () => void
 }) {
   const definition = equipped ? findPickaxe(equipped.id) : null
   const canMine = Boolean(equipped && equipped.durability > 0)
+  const isMaxFloor = floor >= 100
+  const currentExperience = parseExperience(experience)
+  const requiredExperience = isMaxFloor ? 0n : getRequiredExperience(floor)
+  const progress = isMaxFloor ? 100 : Number((currentExperience * 10_000n) / requiredExperience) / 100
+  const experienceLabel = isMaxFloor ? 'MAX' : `${formatExperience(currentExperience)} / ${formatExperience(requiredExperience)} EXP`
 
   return (
     <section className="mine-area" aria-labelledby="mine-title">
       <div className="mine-title-row">
-        <div><span className="section-kicker">지하 1층 · 초보 광맥</span><h2 id="mine-title">빛바랜 채굴장</h2></div>
-        <span className="mine-status"><i /> 채굴 가능</span>
+        <div><span className="section-kicker">지하 {floor}층 · {floor >= 20 ? '상급 광맥' : '초보 광맥'}</span><h2 id="mine-title">{getMineName(floor)}</h2></div>
+        <div className="mine-floor-meter" aria-label={isMaxFloor ? '최대 층 도달' : `경험치 ${currentExperience} / ${requiredExperience}`}>
+          <div className="mine-floor-meter__label"><span>{isMaxFloor ? '최대 깊이' : '다음 층까지'}</span><strong>{experienceLabel}</strong></div>
+          <div className="mine-floor-meter__track"><span style={{ width: `${progress}%` }} /></div>
+        </div>
       </div>
       <div className={`mine-stage ${mining ? 'is-mining' : ''}`}>
         <div className="cave-light" />
@@ -51,11 +81,12 @@ function MineArea({ equipped, mining, lastMine, onMine }: {
           <div className="mine-result" key={`${lastMine.ore_id}-${lastMine.remaining_durability}`}>
             <OreSprite oreId={lastMine.ore_id ?? ''} size="medium" />
             <strong>{lastMine.ore_name}</strong>
-            <small>+{lastMine.points}P 가치</small>
+            <small>+{lastMine.points}P 가치 · +{lastMine.xp_gained} EXP</small>
+            {lastMine.floor_up && <em>지하 {lastMine.mine_floor}층 도달!</em>}
           </div>
         )}
         <div className="mine-controls">
-          <p>{definition ? `${definition.name} 장착 중` : '인벤토리에서 곡괭이를 장착하세요'}</p>
+          <p>{definition ? `${definition.name} 장착 중 · 채굴당 ${definition.rank + 1} EXP` : '인벤토리에서 곡괭이를 장착하세요'}</p>
           {equipped && <Durability item={equipped} />}
           <button className="mine-button" type="button" onClick={onMine} disabled={!canMine || mining}>
             <span aria-hidden="true">⛏</span>{mining ? '채굴 중...' : '광맥 채굴'}
@@ -71,7 +102,7 @@ function ProfilePanel({ profile, equipped, onLogout }: { profile: UserProfile; e
   return (
     <div className="profile-panel">
       <div className="miner-avatar"><span>⛏</span></div>
-      <span className="section-kicker">등록 광부</span>
+      <span className="section-kicker">등록 광부 · 지하 {profile.mineFloor}층</span>
       <h2>{profile.nickname}</h2>
       <div className="balance-card"><span>보유 포인트</span><strong>{profile.balance.toLocaleString('ko-KR')}<small>P</small></strong></div>
       <div className="equipped-card">
@@ -90,6 +121,7 @@ export function GameScreen({ profile, mining, actionBusy, lastMine, onMine, onEq
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
   const inventoryProps = { inventory: profile.inventory, actionBusy, onEquip, onSell, onRepair }
+  const mineAreaProps = { equipped, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
 
   return (
     <main className="game-screen">
@@ -105,7 +137,7 @@ export function GameScreen({ profile, mining, actionBusy, lastMine, onMine, onEq
       {desktopView === 'mine' ? (
         <div className="desktop-layout">
           <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></aside>
-          <MineArea equipped={equipped} mining={mining} lastMine={lastMine} onMine={onMine} />
+          <MineArea {...mineAreaProps} />
           <aside className="stone-panel"><InventoryPanel {...inventoryProps} compact /></aside>
         </div>
       ) : (
@@ -117,7 +149,7 @@ export function GameScreen({ profile, mining, actionBusy, lastMine, onMine, onEq
 
       <div className="mobile-layout">
         <div className="mobile-content">
-          {mobileTab === 'mine' && <MineArea equipped={equipped} mining={mining} lastMine={lastMine} onMine={onMine} />}
+          {mobileTab === 'mine' && <MineArea {...mineAreaProps} />}
           {mobileTab === 'shop' && <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} />}
           {mobileTab === 'inventory' && <section className="stone-panel mobile-panel"><InventoryPanel {...inventoryProps} /></section>}
           {mobileTab === 'profile' && <section className="wood-panel mobile-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></section>}

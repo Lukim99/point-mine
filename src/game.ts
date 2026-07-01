@@ -84,7 +84,7 @@ export const CHESTS: readonly ChestDefinition[] = [
     description: '청동 이상, 마스터까지 등장하는 고급 상자입니다.',
     price: 500,
     spriteIndex: 1,
-    expectedValue: 407.93,
+    expectedValue: 311.19,
     drops: [
       { pickaxeId: 'bronze', chance: 52.83 },
       { pickaxeId: 'steel', chance: 24 },
@@ -97,8 +97,8 @@ export const CHESTS: readonly ChestDefinition[] = [
       { pickaxeId: 'sapphire', chance: 0.1 },
       { pickaxeId: 'orichalcum', chance: 0.08 },
       { pickaxeId: 'adamantium', chance: 0.05 },
-      { pickaxeId: 'astral', chance: 0.02 },
-      { pickaxeId: 'master', chance: 0.05 },
+      { pickaxeId: 'astral', chance: 0.05 },
+      { pickaxeId: 'master', chance: 0.02 },
     ],
   },
 ] as const
@@ -123,6 +123,8 @@ export interface UserProfile {
   nickname: string
   balance: number
   inventory: InventoryItem[]
+  mineFloor: number
+  mineExperience: string
 }
 
 export interface MineResult {
@@ -132,6 +134,11 @@ export interface MineResult {
   points?: number
   remaining_durability?: number
   inventory?: InventoryItem[]
+  xp_gained?: number
+  mine_floor?: number
+  mine_experience?: string
+  required_experience?: string
+  floor_up?: boolean
 }
 
 export interface OpenChestResult {

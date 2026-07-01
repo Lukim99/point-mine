@@ -1,6 +1,6 @@
 # 포인트 광산
 
-카카오 계정으로 로그인해 곡괭이를 장착하고 광물을 채굴·선택 판매하며, 광물로 곡괭이를 수리하고 상점에서 곡괭이 상자를 구매하는 Vite + React 웹앱입니다.
+카카오 계정으로 로그인해 곡괭이를 장착하고 광물을 채굴·선택 판매하며, 광물 또는 포인트로 곡괭이를 수리하고 상점에서 곡괭이 상자를 구매하는 Vite + React 웹앱입니다.
 
 ## 로컬 실행
 
@@ -28,8 +28,11 @@ Supabase SQL Editor에서 다음 파일을 순서대로 실행합니다.
 3. `supabase/pointmine_inventory_actions_update.sql`
 4. `supabase/pointmine_balance_update.sql`
 5. `supabase/pointmine_repair_balance_update.sql`
+6. `supabase/pointmine_experience_update.sql`
+7. `supabase/pointmine_special_rules_update.sql`
+8. `supabase/pointmine_progression_update.sql`
 
-이미 앞선 SQL을 적용한 프로젝트라면 새로 추가된 4번과 5번 SQL만 순서대로 실행하면 됩니다.
+이미 1~7번 SQL을 적용한 프로젝트라면 새로 추가된 8번 SQL만 실행하면 됩니다.
 
 이후 Authentication > Providers에서 Kakao를 활성화하고 Kakao Developers에 Supabase 콜백 URL `https://<project-ref>.supabase.co/auth/v1/callback`을 등록합니다. Supabase URL Configuration의 Redirect URLs에는 로컬 주소와 Vercel 배포 주소를 등록합니다.
 
@@ -44,6 +47,7 @@ Supabase SQL Editor에서 다음 파일을 순서대로 실행합니다.
 - [곡괭이 상자 표시 확률표](docs/chest-probabilities.md)
 - [곡괭이별 채굴 기대 수익](docs/mining-expected-values.md)
 - [곡괭이 수리 비용표](docs/repair-recipes.md)
+- [채굴 경험치 및 층수 규칙](docs/experience-system.md)
 
 ## Vercel 배포
 

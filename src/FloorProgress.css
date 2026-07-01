@@ -1,0 +1,53 @@
+.mine-floor-meter {
+  width: clamp(112px, 15vw, 170px);
+}
+
+.mine-floor-meter__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  color: #8f8576;
+  font-size: 8px;
+}
+
+.mine-floor-meter__label strong {
+  color: #e7b75f;
+  font-size: 9px;
+}
+
+.mine-floor-meter__track {
+  height: 5px;
+  overflow: hidden;
+  border: 1px solid #221b14;
+  border-radius: 5px;
+  background: #0e0c0a;
+  box-shadow: inset 0 1px 3px #000;
+}
+
+.mine-floor-meter__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8d5727, #e7ad4a);
+  box-shadow: 0 0 7px #d47b2c;
+  transition: width 260ms ease;
+}
+
+.mine-result em {
+  margin-top: 4px;
+  color: #ffd26f;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+@media (max-width: 767px) {
+  .mine-floor-meter {
+    width: min(38vw, 145px);
+  }
+
+  .mine-floor-meter__label {
+    margin-bottom: 3px;
+  }
+}

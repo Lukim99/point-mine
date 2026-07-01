@@ -8,9 +8,12 @@ export interface RepairCost {
 export interface RepairRecipe {
   pickaxeId: PickaxeId
   costs: readonly RepairCost[]
+  pointCost?: number
+  restoreAmount?: number
 }
 
 export const REPAIR_RECIPES: readonly RepairRecipe[] = [
+  { pickaxeId: 'wood', costs: [], pointCost: 8, restoreAmount: 5 },
   { pickaxeId: 'stone', costs: [{ oreId: 'stone', quantity: 2 }] },
   { pickaxeId: 'rusty_iron', costs: [{ oreId: 'coal', quantity: 1 }] },
   { pickaxeId: 'bronze', costs: [{ oreId: 'copper', quantity: 1 }] },
