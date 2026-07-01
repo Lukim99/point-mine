@@ -466,9 +466,9 @@
   .mobile-layout { display: flex; flex-direction: column; height: calc(100% - 58px - env(safe-area-inset-top)); }
   .mobile-content { flex: 1; min-height: 0; padding: 10px 10px 7px; }
   .mobile-content > * { height: 100%; }
-  .mobile-nav { display: grid; grid-template-columns: repeat(3, 1fr); flex: 0 0 calc(64px + env(safe-area-inset-bottom)); padding: 4px 8px env(safe-area-inset-bottom); border-top: 1px solid #52432e; background: rgba(16, 13, 10, 0.97); box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4); }
-  .mobile-nav button { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; color: #81786b; font-size: 9px; font-weight: 700; cursor: pointer; border: 0; background: transparent; }
-  .mobile-nav button span { font-size: 19px; }
+  .mobile-nav { display: grid; grid-template-columns: repeat(5, 1fr); flex: 0 0 calc(64px + env(safe-area-inset-bottom)); padding: 4px 4px env(safe-area-inset-bottom); border-top: 1px solid #52432e; background: rgba(16, 13, 10, 0.97); box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4); }
+  .mobile-nav button { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; min-width: 0; padding: 0 2px; color: #81786b; font-size: 8px; font-weight: 700; cursor: pointer; border: 0; background: transparent; }
+  .mobile-nav button span { font-size: 17px; }
   .mobile-nav button.is-active { color: #f0bd67; }
   .mobile-nav button.is-active::before { position: absolute; top: -5px; left: 26%; width: 48%; height: 2px; content: ''; background: #e8aa4d; box-shadow: 0 0 8px #e18c32; }
   .mine-area { padding: 11px; }
@@ -509,6 +509,170 @@
   .mobile-nav { flex-basis: calc(57px + env(safe-area-inset-bottom)); }
 }
 
+/* 마법 부여 시전 연출 오버레이 */
+.enchant-overlay { position: fixed; inset: 0; z-index: 210; display: grid; overflow: hidden; place-items: center; background: radial-gradient(circle at 50% 42%, rgba(26, 30, 60, 0.9), rgba(4, 5, 12, 0.97) 70%); animation: enchant-overlay-in 260ms ease both; }
+.enchant-rays { position: absolute; top: 50%; left: 50%; width: 140vmax; height: 140vmax; opacity: 0; background: repeating-conic-gradient(from 0deg, rgba(120, 190, 255, 0.16) 0 5deg, transparent 5deg 14deg); transform: translate(-50%, -50%); animation: enchant-rays-in 6s 0.5s linear forwards; }
+.enchant-runes { position: absolute; top: 50%; left: 50%; width: min(560px, 92vw); height: min(560px, 92vw); border: 2px solid rgba(150, 200, 255, 0.28); border-radius: 50%; box-shadow: 0 0 40px rgba(110, 170, 255, 0.35) inset, 0 0 30px rgba(110, 170, 255, 0.25); opacity: 0; background: conic-gradient(from 0deg, transparent, rgba(150, 210, 255, 0.12), transparent 40%); transform: translate(-50%, -50%); animation: enchant-runes-in 900ms 0.2s ease both, enchant-spin 9s 0.2s linear infinite; }
+.enchant-flash { position: absolute; inset: -20%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #eaf4ff 0, #a9cbff 22%, rgba(120, 150, 255, 0.7) 40%, transparent 66%); animation: enchant-flash 1.1s 0.75s ease-out both; }
+.enchant-stage { position: relative; z-index: 3; display: flex; align-items: center; flex-direction: column; width: min(460px, 92vw); max-height: 100%; padding: 20px; text-align: center; }
+.enchant-kicker { color: #9fc6ff; font-size: 11px; font-weight: 800; letter-spacing: 0.35em; text-transform: uppercase; animation: enchant-fade-up 500ms ease both; }
+.enchant-pickaxe { position: relative; display: grid; place-items: center; width: clamp(150px, 34vw, 210px); height: clamp(150px, 34vw, 210px); margin: 6px 0 2px; }
+.enchant-pickaxe .pickaxe-sprite--large { z-index: 2; filter: drop-shadow(0 0 14px rgba(150, 210, 255, 0.8)) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.6)); animation: enchant-pickaxe-cast 1.1s ease both; }
+.enchant-ring { position: absolute; border-radius: 50%; }
+.enchant-ring--outer { width: 100%; height: 100%; border: 2px dashed rgba(150, 205, 255, 0.55); animation: enchant-spin 5.5s linear infinite; }
+.enchant-ring--inner { width: 72%; height: 72%; border: 2px solid rgba(190, 165, 255, 0.5); box-shadow: 0 0 18px rgba(150, 130, 255, 0.5); animation: enchant-spin 3.6s linear infinite reverse; }
+.enchant-sparkles { position: absolute; inset: -8%; pointer-events: none; background-image:
+  radial-gradient(circle 2px at 20% 18%, #fff 0, transparent 60%),
+  radial-gradient(circle 1.6px at 82% 26%, #bfe0ff 0, transparent 60%),
+  radial-gradient(circle 2.2px at 74% 82%, #e6d8ff 0, transparent 60%),
+  radial-gradient(circle 1.6px at 22% 78%, #fff2bf 0, transparent 60%),
+  radial-gradient(circle 1.8px at 50% 6%, #fff 0, transparent 60%);
+  background-repeat: no-repeat; animation: enchant-sparkle-rot 2.4s ease-in-out infinite; }
+.enchant-title { margin-top: 4px; color: #eaf2ff; font-family: Georgia, serif; font-size: clamp(19px, 2.4vw, 25px); text-shadow: 0 0 14px rgba(140, 190, 255, 0.7); animation: enchant-fade-up 600ms 0.15s ease both; }
+.enchant-cards { display: flex; flex-direction: column; gap: 9px; width: 100%; margin: 16px 0 8px; padding: 0; list-style: none; }
+.enchant-card { position: relative; overflow: hidden; padding: 10px 13px 11px 16px; text-align: left; border: 1px solid rgba(120, 150, 210, 0.35); border-radius: 6px; background: linear-gradient(120deg, rgba(28, 34, 56, 0.92), rgba(18, 21, 36, 0.92)); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5); opacity: 0; animation: enchant-card-in 620ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+.enchant-card::before { position: absolute; top: 0; bottom: 0; left: 0; width: 4px; content: ''; }
+.enchant-card--positive::before { background: linear-gradient(#8ff0b6, #35b578); box-shadow: 0 0 12px rgba(90, 220, 150, 0.6); }
+.enchant-card--negative::before { background: linear-gradient(#ffb09c, #d85a42); box-shadow: 0 0 12px rgba(230, 110, 80, 0.55); }
+.enchant-card-head { display: flex; align-items: center; gap: 8px; }
+.enchant-card-head strong { flex: 1; font-size: 13px; }
+.enchant-card--positive .enchant-card-head strong { color: #c9f5da; }
+.enchant-card--negative .enchant-card-head strong { color: #f6c8bc; }
+.enchant-card-dot { width: 8px; height: 8px; border-radius: 50%; }
+.enchant-card--positive .enchant-card-dot { background: #7fe0a6; box-shadow: 0 0 8px #4bbd7f; }
+.enchant-card--negative .enchant-card-dot { background: #e88a72; box-shadow: 0 0 8px #d0512a; }
+.enchant-card-sign { padding: 2px 8px; font-size: 8px; font-weight: 800; letter-spacing: 0.08em; border-radius: 999px; }
+.enchant-card--positive .enchant-card-sign { color: #bff0d0; background: rgba(40, 90, 60, 0.6); }
+.enchant-card--negative .enchant-card-sign { color: #f2bcae; background: rgba(90, 40, 32, 0.6); }
+.enchant-card small { display: block; margin-top: 5px; color: #b9c2d8; font-size: 10px; line-height: 1.5; }
+.enchant-overlay .enchant-confirm { position: static; margin-top: 6px; }
+
+@keyframes enchant-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes enchant-rays-in { 0% { opacity: 0; } 30% { opacity: 0.7; } 100% { opacity: 0.28; transform: translate(-50%, -50%) rotate(70deg); } }
+@keyframes enchant-runes-in { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes enchant-flash { 0% { opacity: 0; transform: scale(0.2); } 35% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes enchant-fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes enchant-pickaxe-cast { 0% { opacity: 0; transform: scale(0.4) rotate(-24deg); } 55% { opacity: 1; transform: scale(1.18) rotate(6deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+@keyframes enchant-sparkle-rot { 0%, 100% { opacity: 0.25; transform: rotate(0deg); } 45% { opacity: 1; transform: rotate(12deg); } }
+@keyframes enchant-card-in { 0% { opacity: 0; transform: translateX(-38px) skewX(-8deg); filter: blur(4px); } 60% { opacity: 1; transform: translateX(6px) skewX(0deg); filter: blur(0); } 100% { opacity: 1; transform: translateX(0); } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+/* 마나 잔액 카드 */
+.mana-card strong { color: #9fd8ff; }
+.mana-card small { color: #9fd8ff; }
+
+/* 몬스터 스프라이트 (monsters.png 3x3) */
+.monster-sprite { display: inline-block; flex: 0 0 auto; background-repeat: no-repeat; background-size: 300% 300%; image-rendering: auto; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.7)); }
+.monster-sprite--small { width: 44px; height: 44px; }
+.monster-sprite--medium { width: clamp(66px, 7vw, 90px); height: clamp(66px, 7vw, 90px); }
+.monster-sprite--large { width: clamp(120px, 15vw, 190px); height: clamp(120px, 15vw, 190px); }
+
+/* 몬스터 아이템 스프라이트 (monster-items.png 2x2) */
+.monster-item-sprite { display: inline-block; flex: 0 0 auto; width: 34px; height: 34px; background-repeat: no-repeat; background-size: 200% 200%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.65)); }
+.monster-item-sprite--medium { width: 56px; height: 56px; }
+
+/* 사냥터 화면. 채굴장(.mine-area) 톤을 따릅니다. */
+.hunt-area { display: flex; min-width: 0; min-height: 0; flex-direction: column; overflow: hidden; padding: clamp(14px, 1.5vw, 21px); border: 1px solid rgba(96, 112, 128, 0.55); border-radius: 5px; background: rgba(11, 13, 15, 0.74); box-shadow: 0 15px 38px rgba(0, 0, 0, 0.38); }
+.hunt-title-row { display: flex; align-items: center; justify-content: space-between; flex: 0 0 auto; gap: 10px; padding: 0 4px 11px; }
+.hunt-title-row h2 { margin-top: 2px; color: #e6f1f8; font-family: Georgia, serif; font-size: clamp(18px, 1.7vw, 23px); }
+.hunt-candidates { display: flex; align-items: center; gap: 4px; }
+.hunt-candidate { display: inline-flex; padding: 3px; border: 1px solid rgba(120, 136, 152, 0.35); border-radius: 4px; background: rgba(10, 14, 18, 0.6); }
+.hunt-candidate .monster-sprite--small { width: 30px; height: 30px; }
+.hunt-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; border: 2px solid #35404c; border-radius: 4px; background: radial-gradient(ellipse at 50% 30%, rgba(84, 140, 190, 0.18), transparent 34%), linear-gradient(180deg, rgba(8, 9, 11, 0.12), rgba(6, 7, 9, 0.72)); box-shadow: inset 0 0 55px #020304, 0 3px 8px #000; }
+.hunt-monster { position: absolute; z-index: 3; top: 26%; left: 50%; display: flex; align-items: center; flex-direction: column; gap: 8px; transform: translate(-50%, -50%); }
+.active-monster { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.75)); }
+.hunt-stage.is-attacking .active-monster { animation: monster-hit 320ms ease; }
+.monster-hp { width: min(220px, 60vw); height: 8px; overflow: hidden; border: 1px solid #12161a; border-radius: 4px; background: #0b0d10; box-shadow: inset 0 1px 2px #000; }
+.monster-hp span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #c6412f, #e8a24a); box-shadow: 0 0 6px #d0512a; transition: width 220ms ease; }
+.monster-hp-label { color: #ffd9b0; font-size: 11px; }
+.hunt-empty { position: absolute; top: 30%; left: 50%; width: 80%; color: #8a97a4; font-size: 12px; text-align: center; transform: translateX(-50%); }
+.hunt-result { position: absolute; z-index: 5; top: 8%; left: 50%; display: flex; align-items: center; flex-direction: column; gap: 6px; transform: translateX(-50%); }
+.hunt-damage { color: #ff7b52; font-family: Georgia, serif; font-size: 30px; font-weight: 900; text-shadow: 0 0 10px #b23a1f; animation: result-pop 900ms ease both; }
+.hunt-reward { display: flex; align-items: center; flex-direction: column; gap: 6px; min-width: 150px; padding: 9px 14px; border: 1px solid #4d6072; border-radius: 4px; background: rgba(14, 18, 22, 0.95); box-shadow: 0 10px 25px #000; }
+.hunt-reward em { color: #ffcf88; font-size: 12px; font-style: normal; font-weight: 700; }
+.hunt-reward-list { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
+.hunt-reward-item { display: flex; align-items: center; flex-direction: column; gap: 2px; }
+.hunt-reward-item small { color: #cfc5b4; font-size: 8px; }
+.mana-chip { color: #9fd8ff; font-size: 24px; text-shadow: 0 0 8px #4aa6e0; }
+.hunt-controls { position: absolute; right: 0; bottom: 0; left: 0; z-index: 4; display: flex; align-items: center; flex-direction: column; padding: 20px 20px clamp(17px, 2.5vh, 26px); background: linear-gradient(transparent, rgba(6, 8, 10, 0.93) 24%); }
+.hunt-controls > p { margin-bottom: 9px; color: #a8b6c2; font-size: 10px; }
+.hunt-controls > small { margin-top: 7px; color: #6f7c88; font-size: 8px; }
+.hunt-controls > small.hunt-warn { color: #e2844f; }
+.attack-button { display: flex; align-items: center; justify-content: center; gap: 9px; width: min(260px, 78%); min-height: clamp(43px, 6vh, 54px); color: #1a1010; font-size: clamp(12px, 1.2vw, 15px); font-weight: 900; letter-spacing: 0.02em; cursor: pointer; border: 1px solid #f29273; border-radius: 4px; background: linear-gradient(#ef8a68, #bd3f2d); box-shadow: inset 0 1px #ffc3ad, 0 5px 0 #711b17, 0 9px 16px #060404; }
+.attack-button span { font-size: 20px; }
+.attack-button:hover:not(:disabled) { filter: brightness(1.09); }
+.attack-button:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 1px #ffc3ad, 0 2px 0 #711b17; }
+.attack-button:disabled { cursor: not-allowed; filter: grayscale(0.7); opacity: 0.48; }
+
+/* 마나 판매 버튼 */
+.mana-sell-button { margin-top: 8px; }
+.mana-sell-button strong { color: #9fd8ff; }
+
+/* 마법 부여된 곡괭이 스프라이트 발광 (인벤토리·채굴장·상세 등 모든 표시 위치) */
+.pickaxe-sprite--enchanted { animation: enchant-glow 2.4s ease-in-out infinite; }
+.pickaxe-sprite--enchanted::after { position: absolute; inset: 0; content: ''; pointer-events: none; border-radius: 50%; background: radial-gradient(circle at 50% 45%, rgba(150, 210, 255, 0.28), transparent 62%); animation: enchant-halo 2.4s ease-in-out infinite; }
+.pickaxe-sprite { position: relative; }
+
+/* 인벤토리 곡괭이 카드 버튼 */
+.pickaxe-item--button { appearance: none; font: inherit; cursor: pointer; }
+.inventory-hint { color: #8a7f6d; font-size: 8px; font-weight: 500; }
+.pickaxe-item.is-enchanted { border-color: rgba(120, 178, 224, 0.55); box-shadow: inset 0 0 0 1px rgba(120, 178, 224, 0.18), 0 0 12px rgba(90, 160, 220, 0.18); }
+.pickaxe-item.is-enchanted.is-equipped { box-shadow: inset 3px 0 #d69a4a, 0 0 12px rgba(90, 160, 220, 0.22); }
+
+/* 곡괭이 상세 모달 */
+.pickaxe-detail { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; text-align: left; }
+.pickaxe-detail-head { display: flex; align-items: center; gap: 14px; }
+.pickaxe-detail-meta { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 5px; }
+.pickaxe-detail-status { align-self: flex-start; padding: 2px 9px; color: #d7c6a5; font-size: 9px; font-weight: 800; border: 1px solid #5a4c39; border-radius: 999px; background: rgba(40, 33, 24, 0.7); }
+.pickaxe-detail-status.is-equipped { color: #ffdf9e; border-color: #a6783e; background: rgba(120, 80, 36, 0.35); }
+.pickaxe-detail-meta small { color: #a99c86; font-size: 10px; }
+.pickaxe-detail-meta .durability { width: 100%; }
+.pickaxe-detail-stat { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border: 1px solid #3d3a33; border-radius: 4px; background: rgba(24, 23, 20, 0.8); }
+.pickaxe-detail-stat span { color: #a99c86; font-size: 11px; }
+.pickaxe-detail-stat strong { color: #ffcf88; font-family: Georgia, serif; font-size: 16px; }
+.pickaxe-detail-section { display: flex; flex-direction: column; gap: 7px; }
+.enchant-detail-list { display: flex; flex-direction: column; gap: 7px; margin: 0; padding: 0; list-style: none; }
+.enchant-detail { position: relative; padding: 8px 11px 8px 14px; border: 1px solid #3d3a33; border-radius: 4px; background: rgba(24, 23, 20, 0.8); }
+.enchant-detail::before { position: absolute; top: 0; bottom: 0; left: 0; width: 3px; content: ''; border-radius: 4px 0 0 4px; }
+.enchant-detail--positive::before { background: linear-gradient(#7fe0a6, #3f9c6a); }
+.enchant-detail--negative::before { background: linear-gradient(#f0a08e, #c05a44); }
+.enchant-detail-title { display: flex; align-items: center; gap: 7px; }
+.enchant-detail-title strong { font-size: 11px; }
+.enchant-detail--positive .enchant-detail-title strong { color: #bff0d0; }
+.enchant-detail--negative .enchant-detail-title strong { color: #f2bcae; }
+.enchant-dot { width: 7px; height: 7px; border-radius: 50%; }
+.enchant-detail--positive .enchant-dot { background: #6fd79a; box-shadow: 0 0 6px #4bbd7f; }
+.enchant-detail--negative .enchant-dot { background: #e88a72; box-shadow: 0 0 6px #d0512a; }
+.enchant-detail small { display: block; margin-top: 4px; color: #a99c86; font-size: 9px; line-height: 1.5; }
+.detail-recipe { overflow: visible; color: #a99c86; font-size: 10px; text-align: center; white-space: normal; }
+.pickaxe-detail-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pickaxe-detail-actions .ore-button { justify-content: center; min-height: 42px; font-size: 11px; }
+.ore-button--enchant { flex-direction: column; gap: 1px; line-height: 1.2; color: #9fd8ff; border-color: rgba(96, 150, 200, 0.6); }
+.ore-button--enchant small { color: #7fb4dd; font-size: 9px; }
+.ore-button--enchant small.is-short { color: #e2844f; }
+.ore-button--enchant:disabled { opacity: 0.45; }
+
+@keyframes enchant-glow {
+  0%, 100% { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 4px rgba(120, 190, 255, 0.5)); }
+  50% { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 10px rgba(150, 210, 255, 0.9)); }
+}
+@keyframes enchant-halo {
+  0%, 100% { opacity: 0.45; transform: scale(0.96); }
+  50% { opacity: 0.85; transform: scale(1.06); }
+}
+
+@keyframes monster-hit {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-6px, 2px) rotate(-3deg); }
+  55% { transform: translate(5px, -1px) rotate(2deg); filter: brightness(1.8) drop-shadow(0 6px 8px rgba(255, 120, 90, 0.5)); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (max-width: 720px) {
+  .hunt-area { padding: 11px; }
+  .monster-sprite--large { width: clamp(130px, 42vw, 180px); height: clamp(130px, 42vw, 180px); }
+  .attack-button { width: min(280px, 85%); min-height: 50px; font-size: 14px; }
 }

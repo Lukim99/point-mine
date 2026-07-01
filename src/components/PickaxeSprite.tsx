@@ -5,9 +5,10 @@ interface PickaxeSpriteProps {
   pickaxeId: string
   size?: 'small' | 'medium' | 'large'
   className?: string
+  enchanted?: boolean
 }
 
-export function PickaxeSprite({ pickaxeId, size = 'medium', className = '' }: PickaxeSpriteProps) {
+export function PickaxeSprite({ pickaxeId, size = 'medium', className = '', enchanted = false }: PickaxeSpriteProps) {
   const pickaxe = findPickaxe(pickaxeId)
   const spriteIndex = pickaxe?.spriteIndex ?? 0
   const column = spriteIndex % 4
@@ -15,7 +16,7 @@ export function PickaxeSprite({ pickaxeId, size = 'medium', className = '' }: Pi
 
   return (
     <span
-      className={`pickaxe-sprite pickaxe-sprite--${size} ${className}`}
+      className={`pickaxe-sprite pickaxe-sprite--${size} ${enchanted ? 'pickaxe-sprite--enchanted' : ''} ${className}`}
       style={{
         backgroundImage: `url(${pickaxesUrl})`,
         backgroundPosition: `${column * (100 / 3)}% ${row * (100 / 3)}%`,
