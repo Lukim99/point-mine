@@ -591,6 +591,8 @@
 .hunt-empty { position: absolute; top: 30%; left: 50%; width: 80%; color: #8a97a4; font-size: 12px; text-align: center; transform: translateX(-50%); }
 .hunt-result { position: absolute; z-index: 5; top: 8%; left: 50%; display: flex; align-items: center; flex-direction: column; gap: 6px; transform: translateX(-50%); }
 .hunt-damage { color: #ff7b52; font-family: Georgia, serif; font-size: 30px; font-weight: 900; text-shadow: 0 0 10px #b23a1f; animation: result-pop 900ms ease both; }
+.hunt-xp { color: #9fd8ff; font-size: 10px; font-weight: 700; text-shadow: 0 0 6px rgba(80, 150, 220, 0.6); }
+.hunt-floor-up { color: #ffd06a; font-size: 11px; font-style: normal; font-weight: 800; text-shadow: 0 0 8px rgba(226, 150, 60, 0.6); }
 .hunt-reward { display: flex; align-items: center; flex-direction: column; gap: 6px; min-width: 150px; padding: 9px 14px; border: 1px solid #4d6072; border-radius: 4px; background: rgba(14, 18, 22, 0.95); box-shadow: 0 10px 25px #000; }
 .hunt-reward em { color: #ffcf88; font-size: 12px; font-style: normal; font-weight: 700; }
 .hunt-reward-list { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }

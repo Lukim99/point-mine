@@ -204,6 +204,10 @@ export interface AttackResult {
   rewards?: HuntReward[]
   inventory?: InventoryItem[]
   mana?: number
+  xp_gained?: number
+  mine_floor?: number
+  mine_experience?: string
+  floor_up?: boolean
 }
 
 export interface EnchantResult {

@@ -432,6 +432,14 @@ declare
   v_group_bonus integer;
   v_damage integer;
   v_dur_cost integer;
+  v_wisdom smallint;
+  v_experience numeric(40, 0);
+  v_new_floor smallint;
+  v_new_experience numeric(40, 0);
+  v_required_experience numeric(40, 0);
+  v_total_experience numeric(40, 0);
+  v_xp_gain integer;
+  v_floor_up boolean;
   v_monster_id text;
   v_monster_hp integer;
   v_monster_max integer;
@@ -451,8 +459,8 @@ begin
     raise exception '인증이 필요합니다.' using errcode = '42501';
   end if;
 
-  select inventory, mine_floor, mana, hunt_monster, hunt_monster_hp
-  into v_inventory, v_floor, v_mana, v_monster_id, v_monster_hp
+  select inventory, mine_floor, mine_experience, mana, hunt_monster, hunt_monster_hp
+  into v_inventory, v_floor, v_experience, v_mana, v_monster_id, v_monster_hp
   from public.users
   where auth_user_id = v_uid
   for update;
@@ -527,6 +535,7 @@ begin
   v_weaken := coalesce((v_enchants->>'weaken')::smallint, 0);
   v_fragile := coalesce((v_enchants->>'fragile')::smallint, 0);
   v_plunder := coalesce((v_enchants->>'plunder')::smallint, 0);
+  v_wisdom := coalesce((v_enchants->>'wisdom')::smallint, 0);
 
   select name into v_monster_name from public.pointmine_monsters where id = v_monster_id;
 
@@ -545,6 +554,28 @@ begin
   v_remaining := greatest(0, v_durability - v_dur_cost);
   v_monster_hp := v_monster_hp - v_damage;
   v_defeated := v_monster_hp <= 0;
+
+  -- 경험치: 공격당 (곡괭이 등급+1+지혜), 처치 시 몬스터 최대 체력만큼 추가 획득
+  v_xp_gain := case when v_floor < 100 then v_pickaxe_rank + 1 + v_wisdom else 0 end;
+  if v_defeated and v_floor < 100 then
+    v_xp_gain := v_xp_gain + v_monster_max;
+  end if;
+
+  v_new_floor := v_floor;
+  v_new_experience := v_experience;
+
+  if v_floor < 100 then
+    v_required_experience := 100 * power(2::numeric, v_floor - 1);
+    v_total_experience := v_experience + v_xp_gain;
+    if v_total_experience >= v_required_experience then
+      v_new_floor := least(100, v_floor + 1);
+      v_new_experience := case when v_new_floor >= 100 then 0 else v_total_experience - v_required_experience end;
+    else
+      v_new_experience := v_total_experience;
+    end if;
+  end if;
+
+  v_floor_up := v_new_floor > v_floor;
 
   -- 곡괭이 내구도 갱신
   select coalesce(jsonb_agg(
@@ -633,6 +664,8 @@ begin
   update public.users
   set inventory = v_new_inventory,
       mana = coalesce(mana, 0) + v_mana_gain,
+      mine_floor = v_new_floor,
+      mine_experience = v_new_experience,
       hunt_monster = case when v_defeated then null else v_monster_id end,
       hunt_monster_hp = case when v_defeated then null else v_monster_hp end
   where auth_user_id = v_uid
@@ -649,7 +682,12 @@ begin
     'remaining_durability', v_remaining,
     'rewards', v_rewards,
     'inventory', v_new_inventory,
-    'mana', v_mana
+    'mana', v_mana,
+    'xp_gained', v_xp_gain,
+    'mine_floor', v_new_floor,
+    'mine_experience', v_new_experience::text,
+    'required_experience', case when v_new_floor >= 100 then '0' else (100 * power(2::numeric, v_new_floor - 1))::text end,
+    'floor_up', v_floor_up
   );
 end;
 $$;

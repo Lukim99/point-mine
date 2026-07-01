@@ -58,6 +58,8 @@ export function HuntPanel({ equipped, floor, huntMonster, huntMonsterHp, attacki
         {lastAttack?.status === 'success' && (
           <div className="hunt-result" key={`${lastAttack.monster_id}-${lastAttack.monster_hp}-${lastAttack.defeated}`}>
             <span className="hunt-damage">-{lastAttack.damage}</span>
+            {(lastAttack.xp_gained ?? 0) > 0 && <small className="hunt-xp">+{lastAttack.xp_gained} EXP</small>}
+            {lastAttack.floor_up && <em className="hunt-floor-up">지하 {lastAttack.mine_floor}층 도달!</em>}
             {lastAttack.defeated && (
               <div className="hunt-reward">
                 <em>{findMonster(lastAttack.monster_id ?? '')?.name} 처치!</em>
