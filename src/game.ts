@@ -251,6 +251,25 @@ export interface OpenChestResult {
   is_duplicate?: boolean
 }
 
+export interface BulkChestReward {
+  pickaxe_id: PickaxeId
+  pickaxe_name: string
+  durability: number
+  is_duplicate: boolean
+}
+
+export interface BulkOpenChestResult {
+  status: 'success' | 'insufficient_balance' | 'invalid_chest' | 'invalid_count' | 'company_not_found'
+  chest_id?: ChestId
+  count?: number
+  results?: BulkChestReward[]
+  balance?: number
+  inventory?: InventoryItem[]
+}
+
+// 한 번에 구매·개봉하는 상자 개수
+export const BULK_CHEST_COUNT = 5
+
 export const findPickaxe = (id: string) => PICKAXES.find((pickaxe) => pickaxe.id === id)
 export const findOre = (id: string) => ORES.find((ore) => ore.id === id)
 export const findChest = (id: string) => CHESTS.find((chest) => chest.id === id)

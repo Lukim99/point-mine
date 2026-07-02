@@ -26,6 +26,7 @@ interface GameScreenProps {
   onSellMonsterItems: (itemIds: MonsterItemId[]) => void
   onEnchant: (id: string) => void
   onOpenChest: (chestId: ChestId) => void
+  onOpenChestBulk: (chestId: ChestId) => void
   onLogout: () => void
 }
 
@@ -131,7 +132,7 @@ function ProfilePanel({ profile, equipped, onLogout }: { profile: UserProfile; e
   )
 }
 
-export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onLogout }: GameScreenProps) {
+export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onLogout }: GameScreenProps) {
   const [desktopView, setDesktopView] = useState<GameView>('mine')
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
@@ -154,7 +155,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
       {desktopView === 'shop' ? (
         <div className="desktop-layout shop-layout">
           <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></aside>
-          <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} />
+          <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />
         </div>
       ) : (
         <div className="desktop-layout">
@@ -168,7 +169,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
         <div className="mobile-content">
           {mobileTab === 'mine' && <MineArea {...mineAreaProps} />}
           {mobileTab === 'hunt' && <HuntPanel {...huntAreaProps} />}
-          {mobileTab === 'shop' && <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} />}
+          {mobileTab === 'shop' && <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />}
           {mobileTab === 'inventory' && <section className="stone-panel mobile-panel"><InventoryPanel {...inventoryProps} /></section>}
           {mobileTab === 'profile' && <section className="wood-panel mobile-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></section>}
         </div>

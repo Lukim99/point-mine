@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CHESTS, findPickaxe, type ChestDefinition, type ChestId } from '../game'
+import { BULK_CHEST_COUNT, CHESTS, findPickaxe, type ChestDefinition, type ChestId } from '../game'
 import { ChestSprite } from './ChestSprite'
 import { Modal } from './Modal'
 
@@ -7,6 +7,7 @@ interface ShopPanelProps {
   balance: number
   busy: boolean
   onOpenChest: (chestId: ChestId) => void
+  onOpenChestBulk: (chestId: ChestId) => void
 }
 
 const formatChance = (chance: number) => {
@@ -14,7 +15,7 @@ const formatChance = (chance: number) => {
   return `${chance.toFixed(fractionDigits)}%`
 }
 
-export function ShopPanel({ balance, busy, onOpenChest }: ShopPanelProps) {
+export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopPanelProps) {
   const [rateChest, setRateChest] = useState<ChestDefinition | null>(null)
 
   return (
@@ -31,6 +32,8 @@ export function ShopPanel({ balance, busy, onOpenChest }: ShopPanelProps) {
       <div className="chest-shop-grid">
         {CHESTS.map((chest) => {
           const canBuy = balance >= chest.price
+          const bulkPrice = chest.price * BULK_CHEST_COUNT
+          const canBuyBulk = balance >= bulkPrice
           return (
             <article className={`chest-card chest-card--${chest.id}`} key={chest.id}>
               <div className="chest-display">
@@ -43,15 +46,26 @@ export function ShopPanel({ balance, busy, onOpenChest }: ShopPanelProps) {
                 <p>{chest.description}</p>
                 <button className="rate-button" type="button" onClick={() => setRateChest(chest)}>획득 확률 보기</button>
               </div>
-              <button
-                className="buy-chest-button"
-                type="button"
-                onClick={() => onOpenChest(chest.id)}
-                disabled={busy || !canBuy}
-              >
-                <span>{busy ? '개봉 준비 중...' : canBuy ? '상자 구매 및 개봉' : '포인트 부족'}</span>
-                <strong>{chest.price.toLocaleString('ko-KR')} P</strong>
-              </button>
+              <div className="buy-chest-actions">
+                <button
+                  className="buy-chest-button"
+                  type="button"
+                  onClick={() => onOpenChest(chest.id)}
+                  disabled={busy || !canBuy}
+                >
+                  <span>{busy ? '개봉 준비 중...' : canBuy ? '상자 구매 및 개봉' : '포인트 부족'}</span>
+                  <strong>{chest.price.toLocaleString('ko-KR')} P</strong>
+                </button>
+                <button
+                  className="buy-chest-button buy-chest-button--bulk"
+                  type="button"
+                  onClick={() => onOpenChestBulk(chest.id)}
+                  disabled={busy || !canBuyBulk}
+                >
+                  <span>{busy ? '개봉 준비 중...' : canBuyBulk ? `${BULK_CHEST_COUNT}개 구매 및 개봉` : '포인트 부족'}</span>
+                  <strong>{bulkPrice.toLocaleString('ko-KR')} P</strong>
+                </button>
+              </div>
             </article>
           )
         })}
