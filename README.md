@@ -35,8 +35,10 @@ Supabase SQL Editor에서 다음 파일을 순서대로 실행합니다.
 10. `supabase/pointmine_repair_economy_update.sql`
 11. `supabase/pointmine_disable_wood_repair.sql`
 12. `supabase/pointmine_hunting_update.sql`
+13. `supabase/pointmine_chest_profit_update.sql`
+14. `supabase/pointmine_kakao_notify_update.sql`
 
-이미 이전 SQL을 적용한 프로젝트라면 새로 추가된 마지막 SQL만 실행하면 됩니다. `pointmine_hunting_update.sql`은 사냥 시스템(몬스터 전투·마나·몬스터 아이템·곡괭이 마법 부여)을 추가합니다.
+이미 이전 SQL을 적용한 프로젝트라면 새로 추가된 마지막 SQL만 실행하면 됩니다. `pointmine_hunting_update.sql`은 사냥 시스템(몬스터 전투·마나·몬스터 아이템·곡괭이 마법 부여)을, `pointmine_chest_profit_update.sql`은 상자 순이익 원장과 황금 이상 곡괭이 지급 제한(순이익이 곡괭이 기댓값 이상일 때만 지급)을, `pointmine_kakao_notify_update.sql`은 상자 구매·광물 판매 시 카카오톡 알림 전송(pg_net)을 추가합니다.
 
 이후 Authentication > Providers에서 Kakao를 활성화하고 Kakao Developers에 Supabase 콜백 URL `https://<project-ref>.supabase.co/auth/v1/callback`을 등록합니다. Supabase URL Configuration의 Redirect URLs에는 로컬 주소와 Vercel 배포 주소를 등록합니다.
 

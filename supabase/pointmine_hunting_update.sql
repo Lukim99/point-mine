@@ -863,7 +863,7 @@ declare
   v_uid uuid := auth.uid();
   v_inventory jsonb;
   v_new_inventory jsonb;
-  v_today text := to_char(current_date, 'YYYY-MM-DD');
+  v_today text := to_char((now() at time zone 'Asia/Seoul'), 'YYYY-MM-DD');
 begin
   if v_uid is null then
     raise exception '인증이 필요합니다.' using errcode = '42501';

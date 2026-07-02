@@ -13,7 +13,9 @@ export function InventoryPanel({ inventory, mana, actionBusy, onEquip, onSell, o
   const [selectedOreIds, setSelectedOreIds] = useState<OreId[]>([])
   const [selectedItemIds, setSelectedItemIds] = useState<MonsterItemId[]>([])
   const [detailPickaxeId, setDetailPickaxeId] = useState<string | null>(null)
-  const pickaxes = inventory.filter((item): item is PickaxeInventoryItem => item.type === 'pickaxe')
+  const pickaxes = inventory
+    .filter((item): item is PickaxeInventoryItem => item.type === 'pickaxe')
+    .sort((a, b) => (findPickaxe(a.id)?.rank ?? 0) - (findPickaxe(b.id)?.rank ?? 0))
   const minerals = inventory.filter((item): item is MineralInventoryItem => item.type === 'mineral')
   const monsterItems = inventory.filter((item): item is MonsterItemInventoryItem => item.type === 'monster_item')
   const selectedMinerals = minerals.filter((item) => selectedOreIds.includes(item.id))
