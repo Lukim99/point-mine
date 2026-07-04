@@ -3,11 +3,12 @@ import type { User } from '@supabase/supabase-js'
 import './App.css'
 import './Shop.css'
 import { ChestOpeningEffect } from './components/ChestOpeningEffect'
+import { CouponModal } from './components/CouponModal'
 import { GameScreen } from './components/GameScreen'
 import { LoginScreen } from './components/LoginScreen'
 import { Modal } from './components/Modal'
 import { NicknameModal } from './components/NicknameModal'
-import { BULK_CHEST_COUNT, findOre, type AttackResult, type BulkOpenChestResult, type ChestId, type EnchantId, type EnchantResult, type InventoryItem, type MineResult, type MonsterId, type MonsterItemId, type OpenChestResult, type OreId, type SellMonsterItemsResult, type UserProfile } from './game'
+import { BULK_CHEST_COUNT, findMonsterItem, findOre, findPickaxe, type AttackResult, type BulkOpenChestResult, type ChestId, type EnchantId, type EnchantResult, type InventoryItem, type MineResult, type MonsterId, type MonsterItemId, type OpenChestResult, type OreId, type SellMonsterItemsResult, type UserProfile } from './game'
 import { EnchantEffect } from './components/EnchantEffect'
 import { BulkChestOpeningEffect } from './components/BulkChestOpeningEffect'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
@@ -16,6 +17,17 @@ type Screen = 'loading' | 'login' | 'nickname' | 'game'
 interface LinkResult { status: 'success' | 'already_linked' | 'not_found' | 'already_taken' }
 interface SellResult { status: 'success' | 'empty' | 'empty_selection' | 'minimum_sale' | 'company_not_found' | 'company_insufficient' | 'fee_account_not_found'; sold_points?: number; received_points?: number; iktebot_fee?: number; lotto_fee?: number; balance?: number; inventory?: InventoryItem[] }
 interface RepairResult { status: 'success' | 'repair_failed' | 'not_repairable' | 'no_damage' | 'invalid_amount' | 'insufficient_materials' | 'insufficient_balance' | 'pickaxe_not_found'; inventory?: InventoryItem[]; repaired_amount?: number; balance?: number; repair_cost_points?: number; ore_id?: OreId; required?: number; available?: number; required_points?: number }
+interface CouponResult { status: 'success' | 'invalid' | 'already_redeemed' | 'exhausted' | 'nickname_mismatch'; reward_type?: 'mana' | 'mineral' | 'monster_item' | 'pickaxe' | 'chest'; reward_id?: string; reward_amount?: number; chest_id?: ChestId; count?: number; results?: BulkOpenChestResult['results']; mana?: number; inventory?: InventoryItem[] }
+
+const getCouponRewardLabel = (result: CouponResult) => {
+  const amount = Number(result.reward_amount ?? 0)
+  if (result.reward_type === 'mana') return `마나 ${amount.toLocaleString('ko-KR')}✦`
+  if (result.reward_type === 'mineral') return `${findOre(result.reward_id ?? '')?.name ?? '광물'} ×${amount}`
+  if (result.reward_type === 'monster_item') return `${findMonsterItem(result.reward_id ?? '')?.name ?? '몬스터 아이템'} ×${amount}`
+  if (result.reward_type === 'pickaxe') return `${findPickaxe(result.reward_id ?? '')?.name ?? '곡괭이'} ×${amount}`
+  if (result.reward_type === 'chest') return `${result.reward_id === 'premium' ? '고급' : '일반'} 상자 ${amount}회 뽑기권`
+  return '쿠폰 보상'
+}
 
 function App() {
   const [screen, setScreen] = useState<Screen>('loading'), [currentUser, setCurrentUser] = useState<User | null>(null), [profile, setProfile] = useState<UserProfile | null>(null)
@@ -23,6 +35,7 @@ function App() {
   const [lastMine, setLastMine] = useState<MineResult | null>(null), [lastAttack, setLastAttack] = useState<AttackResult | null>(null), [openingReward, setOpeningReward] = useState<OpenChestResult | null>(null)
   const [enchantReveal, setEnchantReveal] = useState<{ pickaxeId: string; enchants: Partial<Record<EnchantId, number>> } | null>(null)
   const [bulkOpening, setBulkOpening] = useState<BulkOpenChestResult | null>(null)
+  const [couponOpen, setCouponOpen] = useState(false), [couponError, setCouponError] = useState('')
   const [nicknameError, setNicknameError] = useState(''), [notice, setNotice] = useState<{ title: string; message: string } | null>(null)
   const loadProfile = useCallback(async (user: User) => { if (!supabase) return; const { data, error } = await supabase.from('users').select('nickname, balance, mana, inventory, mine_floor, mine_experience, hunt_monster, hunt_monster_hp').eq('auth_user_id', user.id).maybeSingle(); if (error) { setNotice({ title: '광산 연결 오류', message: '광부 정보를 불러오지 못했습니다.' }); setScreen('login'); return } if (!data) { setProfile(null); setScreen('nickname'); return } let inventory = Array.isArray(data.inventory) ? data.inventory as unknown as InventoryItem[] : []; const upkeep = await supabase.rpc('apply_daily_upkeep'); if (!upkeep.error) { const result = upkeep.data as unknown as { status?: string; inventory?: InventoryItem[] }; if (result?.status === 'success' && result.inventory) inventory = result.inventory } setProfile({ nickname: String(data.nickname), balance: Number(data.balance ?? 0), mana: Number(data.mana ?? 0), inventory, mineFloor: Number(data.mine_floor ?? 1), mineExperience: String(data.mine_experience ?? '0'), huntMonster: (data.hunt_monster ?? null) as MonsterId | null, huntMonsterHp: data.hunt_monster_hp === null || data.hunt_monster_hp === undefined ? null : Number(data.hunt_monster_hp) }); setScreen('game') }, [])
   useEffect(() => { if (!supabase) { setScreen('login'); return } let active = true; supabase.auth.getSession().then(({ data }) => { if (!active) return; const user = data.session?.user ?? null; setCurrentUser(user); if (user) void loadProfile(user); else setScreen('login') }); const { data: listener } = supabase.auth.onAuthStateChange((event, session) => { if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return; const user = session?.user ?? null; setCurrentUser(user); if (user) void loadProfile(user); else { setProfile(null); setScreen('login') } }); return () => { active = false; listener.subscription.unsubscribe() } }, [loadProfile])
@@ -40,6 +53,40 @@ function App() {
   const handleRepair = async (id: string, amount: number) => { if (!supabase || actionBusy || !profile || amount <= 0) return; setActionBusy(true); const { data, error } = await supabase.rpc('repair_pickaxe', { p_pickaxe_id: id, p_amount: amount }); if (error) setNotice({ title: '수리 실패', message: '곡괭이를 수리하지 못했습니다.' }); else { const result = data as unknown as RepairResult; if (result.status === 'success' && result.inventory) { setProfile({ ...profile, inventory: result.inventory, balance: Number(result.balance ?? profile.balance) }); setNotice({ title: '수리 완료', message: `내구도를 ${result.repaired_amount}만큼 복구했습니다.` }) } else if (result.status === 'repair_failed') { if (result.inventory) setProfile({ ...profile, inventory: result.inventory }); setNotice({ title: '수리 실패', message: '파괴자 마법 부여로 재료만 소모되고 수리에 실패했습니다.' }) } else if (result.status === 'insufficient_materials') { const ore = findOre(result.ore_id ?? '')?.name ?? '광물'; setNotice({ title: '재료 부족', message: `${ore}이 부족합니다.` }) } else if (result.status === 'insufficient_balance') setNotice({ title: '포인트 부족', message: `${result.required_points ?? 8}P가 필요합니다.` }) } setActionBusy(false) }
   const handleOpenChest = async (id: ChestId) => { if (!supabase || actionBusy || !profile) return; setActionBusy(true); const { data, error } = await supabase.rpc('open_pickaxe_chest', { p_chest_id: id }); if (error) setNotice({ title: '구매 실패', message: '상자를 구매하지 못했습니다.' }); else { const result = data as unknown as OpenChestResult; if (result.status === 'success' && result.inventory && result.balance !== undefined) { setProfile({ ...profile, inventory: result.inventory, balance: result.balance }); setOpeningReward(result) } else if (result.status === 'insufficient_balance') setNotice({ title: '포인트 부족', message: '상자를 구매할 포인트가 부족합니다.' }); else setNotice({ title: '구매 실패', message: '상자를 구매하지 못했습니다.' }) } setActionBusy(false) }
   const handleOpenChestBulk = async (id: ChestId) => { if (!supabase || actionBusy || !profile) return; setActionBusy(true); const { data, error } = await supabase.rpc('open_pickaxe_chest_bulk', { p_chest_id: id, p_count: BULK_CHEST_COUNT }); if (error) setNotice({ title: '구매 실패', message: '일괄 개봉 SQL 적용 여부를 확인해 주세요.' }); else { const result = data as unknown as BulkOpenChestResult; if (result.status === 'success' && result.inventory && result.balance !== undefined) { setProfile({ ...profile, inventory: result.inventory, balance: result.balance }); setBulkOpening(result) } else if (result.status === 'insufficient_balance') setNotice({ title: '포인트 부족', message: `상자 ${BULK_CHEST_COUNT}개를 구매할 포인트가 부족합니다.` }); else setNotice({ title: '구매 실패', message: '상자를 구매하지 못했습니다.' }) } setActionBusy(false) }
-  return <div className="app-shell">{screen === 'loading' && <div className="loading-screen"><span>⛏</span><p>광산 문을 여는 중...</p></div>}{screen === 'login' && <LoginScreen onLogin={handleLogin} loading={loginBusy} />}{screen === 'nickname' && <><LoginScreen onLogin={() => undefined} loading={false} /><NicknameModal onSubmit={handleNickname} onLogout={handleLogout} error={nicknameError} /></>}{screen === 'game' && profile && <GameScreen profile={profile} mining={mining} attacking={attacking} actionBusy={actionBusy} lastMine={lastMine} lastAttack={lastAttack} onMine={handleMine} onAttack={handleAttack} onEquip={handleEquip} onSell={handleSell} onRepair={handleRepair} onSellMonsterItems={handleSellMonsterItems} onEnchant={handleEnchant} onOpenChest={handleOpenChest} onOpenChestBulk={handleOpenChestBulk} onLogout={handleLogout} />}{!isSupabaseConfigured && screen === 'login' && <div className="config-badge">개발 환경 · Supabase 연결 필요</div>}{notice && <Modal title={notice.title} onClose={() => setNotice(null)} labelledBy="notice-modal-title"><div className="notice-content"><span aria-hidden="true">◆</span><p>{notice.message}</p><button className="ore-button ore-button--primary" type="button" onClick={() => setNotice(null)}>확인</button></div></Modal>}{openingReward && <ChestOpeningEffect result={openingReward} onClose={() => setOpeningReward(null)} />}{enchantReveal && <EnchantEffect pickaxeId={enchantReveal.pickaxeId} enchants={enchantReveal.enchants} onClose={() => setEnchantReveal(null)} />}{bulkOpening && <BulkChestOpeningEffect result={bulkOpening} onClose={() => setBulkOpening(null)} />}</div>
+  const handleRedeemCoupon = async (code: string) => {
+    if (!supabase || actionBusy || !profile) return
+    setActionBusy(true)
+    setCouponError('')
+    const { data, error } = await supabase.rpc('redeem_coupon', { p_code: code })
+    if (error) {
+      setCouponError('쿠폰을 확인하지 못했습니다. 최신 SQL 적용 여부를 확인해 주세요.')
+      setActionBusy(false)
+      return
+    }
+
+    const result = data as unknown as CouponResult
+    if (result.status === 'success' && result.inventory) {
+      setProfile({ ...profile, inventory: result.inventory, mana: Number(result.mana ?? profile.mana) })
+      setCouponOpen(false)
+      if (result.reward_type === 'chest' && result.chest_id && result.results?.length) {
+        const count = Number(result.count ?? result.results.length)
+        if (count === 1) {
+          const reward = result.results[0]
+          setOpeningReward({ status: 'success', chest_id: result.chest_id, pickaxe_id: reward.pickaxe_id, pickaxe_name: reward.pickaxe_name, inventory: result.inventory, balance: profile.balance, is_duplicate: reward.is_duplicate })
+        } else {
+          setBulkOpening({ status: 'success', chest_id: result.chest_id, count, results: result.results, inventory: result.inventory, balance: profile.balance })
+        }
+      } else {
+        setNotice({ title: '쿠폰 사용 완료', message: `${getCouponRewardLabel(result)} 보상을 받았습니다.` })
+      }
+    } else if (result.status === 'already_redeemed') setCouponError('이미 사용한 쿠폰입니다.')
+    else if (result.status === 'exhausted') setCouponError('사용 가능 인원이 모두 소진된 쿠폰입니다.')
+    else if (result.status === 'nickname_mismatch') setCouponError('현재 닉네임으로 사용할 수 없는 귀속 쿠폰입니다.')
+    else setCouponError('유효하지 않은 쿠폰 코드입니다.')
+    setActionBusy(false)
+  }
+  const openCoupon = () => { setCouponError(''); setCouponOpen(true) }
+  const closeCoupon = () => { if (!actionBusy) { setCouponError(''); setCouponOpen(false) } }
+  return <div className="app-shell">{screen === 'loading' && <div className="loading-screen"><span>⛏</span><p>광산 문을 여는 중...</p></div>}{screen === 'login' && <LoginScreen onLogin={handleLogin} loading={loginBusy} />}{screen === 'nickname' && <><LoginScreen onLogin={() => undefined} loading={false} /><NicknameModal onSubmit={handleNickname} onLogout={handleLogout} error={nicknameError} /></>}{screen === 'game' && profile && <GameScreen profile={profile} mining={mining} attacking={attacking} actionBusy={actionBusy} lastMine={lastMine} lastAttack={lastAttack} onMine={handleMine} onAttack={handleAttack} onEquip={handleEquip} onSell={handleSell} onRepair={handleRepair} onSellMonsterItems={handleSellMonsterItems} onEnchant={handleEnchant} onOpenChest={handleOpenChest} onOpenChestBulk={handleOpenChestBulk} onOpenCoupon={openCoupon} onLogout={handleLogout} />}{!isSupabaseConfigured && screen === 'login' && <div className="config-badge">개발 환경 · Supabase 연결 필요</div>}{couponOpen && <CouponModal busy={actionBusy} error={couponError} onClose={closeCoupon} onSubmit={handleRedeemCoupon} />}{notice && <Modal title={notice.title} onClose={() => setNotice(null)} labelledBy="notice-modal-title"><div className="notice-content"><span aria-hidden="true">◆</span><p>{notice.message}</p><button className="ore-button ore-button--primary" type="button" onClick={() => setNotice(null)}>확인</button></div></Modal>}{openingReward && <ChestOpeningEffect result={openingReward} onClose={() => setOpeningReward(null)} />}{enchantReveal && <EnchantEffect pickaxeId={enchantReveal.pickaxeId} enchants={enchantReveal.enchants} onClose={() => setEnchantReveal(null)} />}{bulkOpening && <BulkChestOpeningEffect result={bulkOpening} onClose={() => setBulkOpening(null)} />}</div>
 }
 export default App

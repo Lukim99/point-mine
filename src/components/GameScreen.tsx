@@ -27,6 +27,7 @@ interface GameScreenProps {
   onEnchant: (id: string) => void
   onOpenChest: (chestId: ChestId) => void
   onOpenChestBulk: (chestId: ChestId) => void
+  onOpenCoupon: () => void
   onLogout: () => void
 }
 
@@ -113,7 +114,7 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
   )
 }
 
-function ProfilePanel({ profile, equipped, onLogout }: { profile: UserProfile; equipped?: PickaxeInventoryItem; onLogout: () => void }) {
+function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: UserProfile; equipped?: PickaxeInventoryItem; onOpenCoupon: () => void; onLogout: () => void }) {
   return (
     <div className="profile-panel">
       <div className="miner-avatar"><span>⛏</span></div>
@@ -127,12 +128,15 @@ function ProfilePanel({ profile, equipped, onLogout }: { profile: UserProfile; e
           <div><PickaxeSprite pickaxeId={equipped.id} size="medium" enchanted={isEnchanted(equipped)} /><strong>{findPickaxe(equipped.id)?.name}</strong><Durability item={equipped} /></div>
         ) : <p>장착된 곡괭이 없음</p>}
       </div>
-      <button className="text-button logout-button" type="button" onClick={onLogout}>광산에서 나가기</button>
+      <div className="profile-actions">
+        <button className="coupon-button" type="button" onClick={onOpenCoupon}><span aria-hidden="true">◆</span> 쿠폰 사용</button>
+        <button className="text-button logout-button" type="button" onClick={onLogout}>광산에서 나가기</button>
+      </div>
     </div>
   )
 }
 
-export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onLogout }: GameScreenProps) {
+export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onOpenCoupon, onLogout }: GameScreenProps) {
   const [desktopView, setDesktopView] = useState<GameView>('mine')
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
@@ -154,12 +158,12 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
 
       {desktopView === 'shop' ? (
         <div className="desktop-layout shop-layout">
-          <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></aside>
+          <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onOpenCoupon={onOpenCoupon} onLogout={onLogout} /></aside>
           <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />
         </div>
       ) : (
         <div className="desktop-layout">
-          <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></aside>
+          <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onOpenCoupon={onOpenCoupon} onLogout={onLogout} /></aside>
           {desktopView === 'hunt' ? <HuntPanel {...huntAreaProps} /> : <MineArea {...mineAreaProps} />}
           <aside className="stone-panel"><InventoryPanel {...inventoryProps} compact /></aside>
         </div>
@@ -171,7 +175,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
           {mobileTab === 'hunt' && <HuntPanel {...huntAreaProps} />}
           {mobileTab === 'shop' && <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />}
           {mobileTab === 'inventory' && <section className="stone-panel mobile-panel"><InventoryPanel {...inventoryProps} /></section>}
-          {mobileTab === 'profile' && <section className="wood-panel mobile-panel"><ProfilePanel profile={profile} equipped={equipped} onLogout={onLogout} /></section>}
+          {mobileTab === 'profile' && <section className="wood-panel mobile-panel"><ProfilePanel profile={profile} equipped={equipped} onOpenCoupon={onOpenCoupon} onLogout={onLogout} /></section>}
         </div>
         <nav className="mobile-nav" aria-label="주 메뉴">
           <button type="button" className={mobileTab === 'mine' ? 'is-active' : ''} onClick={() => setMobileTab('mine')}><span>⛏</span>채굴</button>
