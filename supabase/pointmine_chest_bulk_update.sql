@@ -35,6 +35,7 @@ declare
   v_pickaxe_ev numeric(14, 4);
   v_is_duplicate boolean;
   v_has_equipped boolean;
+  v_reward_names text[] := '{}'::text[];
   v_results jsonb := '[]'::jsonb;
 begin
   if v_uid is null then
@@ -169,6 +170,7 @@ begin
       'durability', v_pickaxe_durability,
       'is_duplicate', v_is_duplicate
     ));
+    v_reward_names := array_append(v_reward_names, v_pickaxe_name);
 
     insert into public.pointmine_chest_openings
       (auth_user_id, chest_id, pickaxe_id, price, lk_company_share, iktebot_share, lotto_fund_share, net_profit)
@@ -203,6 +205,7 @@ begin
   perform public.send_kakao_notification(
     '[ 포인트 광산 구매 ]' || E'\n' ||
     '✅ ' || coalesce(v_nickname, '광부') || '님이 ' || to_char(v_total_price, 'FM9,999,999,999') || ' P를 소모해 ' || v_chest_name || ' ' || v_count || '개를 구매했습니다.' || E'\n' ||
+    '⛏️ 획득 곡괭이:' || E'\n- ' || array_to_string(v_reward_names, E'\n- ') || E'\n' ||
     '💰 잔액: ' || to_char(v_new_balance, 'FM9,999,999,999') || ' P' || E'\n\n' ||
     '[ 포인트 분배 ]' || E'\n' ||
     '- 로또기금: ' || to_char(v_lotto_fund_share * v_count, 'FM9,999,999,999') || ' P' || E'\n' ||

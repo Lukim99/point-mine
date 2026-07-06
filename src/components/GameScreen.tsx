@@ -59,7 +59,9 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
   onMine: () => void
 }) {
   const definition = equipped ? findPickaxe(equipped.id) : null
-  const canMine = Boolean(equipped && equipped.durability > 0)
+  // 취약(+레벨)·더블 채굴(2배)로 늘어난 내구도 소모량. 이보다 내구도가 적으면 채굴 불가.
+  const mineDurCost = (1 + (equipped?.enchants?.fragile ?? 0)) * ((equipped?.enchants?.double_mine ?? 0) > 0 ? 2 : 1)
+  const canMine = Boolean(equipped && equipped.durability >= mineDurCost)
   const isMaxFloor = floor >= 100
   const currentExperience = parseExperience(experience)
   const requiredExperience = isMaxFloor ? 0n : getRequiredExperience(floor)
@@ -108,6 +110,7 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
             <span aria-hidden="true">⛏</span>{mining ? '채굴 중...' : '광맥 채굴'}
           </button>
           {equipped && <small>남은 내구도 {equipped.durability} / {equipped.maxDurability}</small>}
+          {equipped && equipped.durability > 0 && equipped.durability < mineDurCost && <small className="hunt-warn">내구도가 부족해 채굴할 수 없습니다 (필요 {mineDurCost})</small>}
         </div>
       </div>
     </section>

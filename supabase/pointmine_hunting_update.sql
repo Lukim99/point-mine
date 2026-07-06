@@ -159,10 +159,6 @@ begin
     return jsonb_build_object('status', 'no_pickaxe');
   end if;
 
-  if v_durability <= 0 then
-    return jsonb_build_object('status', 'broken_pickaxe');
-  end if;
-
   -- 마법 부여 레벨 추출 (없으면 0)
   v_luck := coalesce((v_enchants->>'luck')::smallint, 0);
   v_miner_eye := coalesce((v_enchants->>'miner_eye')::smallint, 0);
@@ -170,6 +166,12 @@ begin
   v_fragile := coalesce((v_enchants->>'fragile')::smallint, 0);
   v_unlucky := coalesce((v_enchants->>'unlucky')::smallint, 0);
   v_double := coalesce((v_enchants->>'double_mine')::smallint, 0);
+
+  -- 내구도 소모량: 취약은 +레벨, 더블 채굴은 2배. 소모량보다 내구도가 적으면 채굴할 수 없습니다.
+  v_dur_cost := (1 + v_fragile) * (case when v_double > 0 then 2 else 1 end);
+  if v_durability < v_dur_cost then
+    return jsonb_build_object('status', 'broken_pickaxe');
+  end if;
 
   select rarity_rank into v_pickaxe_rank
   from public.pointmine_pickaxes
@@ -198,8 +200,6 @@ begin
   )
   limit 1;
 
-  -- 내구도 소모: 취약은 소모 +레벨, 더블 채굴은 2배
-  v_dur_cost := (1 + v_fragile) * (case when v_double > 0 then 2 else 1 end);
   v_remaining := greatest(0, v_durability - v_dur_cost);
 
   -- 불운: 레벨당 5% 확률로 채굴 실패(내구도는 소모)
