@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import '../FloorProgress.css'
-import { findPickaxe, isEnchanted, type AttackResult, type ChestId, type MineResult, type MonsterItemId, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
+import { findPickaxe, isEnchanted, isVipActive, kstToday, type AttackResult, type ChestId, type MineResult, type MonsterItemId, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
 import { Durability } from './Durability'
 import { HuntPanel } from './HuntPanel'
 import { InventoryPanel } from './InventoryPanel'
@@ -27,6 +27,8 @@ interface GameScreenProps {
   onEnchant: (id: string) => void
   onOpenChest: (chestId: ChestId) => void
   onOpenChestBulk: (chestId: ChestId) => void
+  onPurchaseVip: () => void
+  onOpenFreeVipChest: (chestId: ChestId) => void
   onOpenCoupon: () => void
   onLogout: () => void
 }
@@ -139,13 +141,16 @@ function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: 
   )
 }
 
-export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onOpenCoupon, onLogout }: GameScreenProps) {
+export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest, onOpenCoupon, onLogout }: GameScreenProps) {
   const [desktopView, setDesktopView] = useState<GameView>('mine')
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
+  const vipActive = isVipActive(profile.vipExpiresAt)
+  const today = kstToday()
   const inventoryProps = { inventory: profile.inventory, mana: profile.mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant }
   const mineAreaProps = { equipped, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
   const huntAreaProps = { equipped, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, lastAttack, onAttack }
+  const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable: vipActive && profile.vipLastNormalFree !== today, freePremiumAvailable: vipActive && profile.vipLastPremiumFree !== today, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest }
 
   return (
     <main className="game-screen">
@@ -162,7 +167,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
       {desktopView === 'shop' ? (
         <div className="desktop-layout shop-layout">
           <aside className="wood-panel"><ProfilePanel profile={profile} equipped={equipped} onOpenCoupon={onOpenCoupon} onLogout={onLogout} /></aside>
-          <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />
+          <ShopPanel {...shopProps} />
         </div>
       ) : (
         <div className="desktop-layout">
@@ -176,7 +181,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
         <div className="mobile-content">
           {mobileTab === 'mine' && <MineArea {...mineAreaProps} />}
           {mobileTab === 'hunt' && <HuntPanel {...huntAreaProps} />}
-          {mobileTab === 'shop' && <ShopPanel balance={profile.balance} busy={actionBusy} onOpenChest={onOpenChest} onOpenChestBulk={onOpenChestBulk} />}
+          {mobileTab === 'shop' && <ShopPanel {...shopProps} />}
           {mobileTab === 'inventory' && <section className="stone-panel mobile-panel"><InventoryPanel {...inventoryProps} /></section>}
           {mobileTab === 'profile' && <section className="wood-panel mobile-panel"><ProfilePanel profile={profile} equipped={equipped} onOpenCoupon={onOpenCoupon} onLogout={onLogout} /></section>}
         </div>

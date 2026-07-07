@@ -39,6 +39,23 @@
 .shop-heading { display: flex; align-items: flex-end; justify-content: space-between; flex: 0 0 auto; padding: 0 4px 17px; border-bottom: 1px solid rgba(206, 164, 98, 0.23); }
 .shop-heading h2 { margin-top: 3px; color: #fff0d4; font-family: Georgia, serif; font-size: clamp(22px, 2.2vw, 30px); }
 .shop-heading p { margin-top: 6px; color: #998e7c; font-size: 11px; }
+
+/* VIP 티켓 카드 */
+.vip-card { flex: 0 0 auto; margin: 12px 0 4px; padding: 12px 14px; border: 1px solid #6a5a3a; border-radius: 6px; background: linear-gradient(135deg, rgba(58, 44, 20, 0.85), rgba(24, 19, 13, 0.9)); }
+.vip-card.is-active { border-color: #c79a3f; box-shadow: 0 0 16px rgba(199, 154, 63, 0.28) inset, 0 0 10px rgba(199, 154, 63, 0.18); }
+.vip-card-head { display: flex; align-items: center; gap: 11px; }
+.vip-badge { display: inline-flex; align-items: center; padding: 3px 9px; color: #241706; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; border-radius: 4px; background: linear-gradient(#ffdf8f, #d9a63f); box-shadow: 0 2px 0 #7a561d; }
+.vip-card-head strong { color: #ffe9bd; font-family: Georgia, serif; font-size: 14px; }
+.vip-card-head p { margin-top: 2px; color: #c2ab84; font-size: 10px; }
+.vip-benefits { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 9px 0; padding: 0; list-style: none; }
+.vip-benefits li { position: relative; padding-left: 12px; color: #cbb795; font-size: 10px; }
+.vip-benefits li::before { position: absolute; left: 0; color: #e0b256; content: '◆'; font-size: 7px; }
+.vip-free-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.vip-free-actions .vip-buy-button { grid-column: 1 / -1; }
+.vip-free-button, .vip-buy-button { min-height: 36px; padding: 4px 8px; color: #2a1c08; font-size: 10px; font-weight: 800; cursor: pointer; border: 1px solid #e6b95f; border-radius: 4px; background: linear-gradient(#efc873, #c1852f); box-shadow: 0 3px 0 #6f4c1b; }
+.vip-buy-button { width: 100%; }
+.vip-free-button:hover:not(:disabled), .vip-buy-button:hover:not(:disabled) { filter: brightness(1.08); }
+.vip-free-button:disabled, .vip-buy-button:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.5; }
 .shop-balance { display: flex; align-items: flex-end; flex-direction: column; padding: 9px 13px; border: 1px solid #51422e; border-radius: 3px; background: #15110e; }
 .shop-balance span { color: #857968; font-size: 8px; }
 .shop-balance strong { color: #ffd070; font-family: Georgia, serif; font-size: 18px; }

@@ -182,6 +182,9 @@ export interface UserProfile {
   mineExperience: string
   huntMonster: MonsterId | null
   huntMonsterHp: number | null
+  vipExpiresAt: string | null
+  vipLastNormalFree: string | null
+  vipLastPremiumFree: string | null
 }
 
 // 처치 시 지급된 보상 한 건을 표현합니다.
@@ -269,6 +272,37 @@ export interface BulkOpenChestResult {
 
 // 한 번에 구매·개봉하는 상자 개수
 export const BULK_CHEST_COUNT = 5
+
+// VIP 티켓
+export const VIP_PRICE = 3000
+export const VIP_DAYS = 7
+export const VIP_SINGLE_DISCOUNT = 5 // 상자 1개 구매 할인율(%)
+export const VIP_BULK_DISCOUNT = 10 // 상자 5개 구매 할인율(%)
+export const VIP_DAILY_MANA = 5
+
+export interface VipPurchaseResult {
+  status: 'success' | 'insufficient_balance' | 'company_not_found'
+  balance?: number
+  vip_expires_at?: string
+}
+
+export interface FreeVipChestResult {
+  status: 'success' | 'not_vip' | 'already_claimed' | 'invalid_chest'
+  chest_id?: ChestId
+  count?: number
+  results?: BulkChestReward[]
+  inventory?: InventoryItem[]
+}
+
+// VIP 할인이 적용된 상자 가격(정수 내림, 서버와 동일한 계산)
+export const discountedChestPrice = (price: number, vipActive: boolean, discountPercent: number) =>
+  vipActive ? price - Math.floor((price * discountPercent) / 100) : price
+
+// KST(Asia/Seoul) 기준 오늘 날짜(YYYY-MM-DD)
+export const kstToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date())
+
+// VIP 만료 시각 문자열로 현재 VIP 활성 여부 판단
+export const isVipActive = (vipExpiresAt: string | null) => Boolean(vipExpiresAt && new Date(vipExpiresAt).getTime() > Date.now())
 
 export const findPickaxe = (id: string) => PICKAXES.find((pickaxe) => pickaxe.id === id)
 export const findOre = (id: string) => ORES.find((ore) => ore.id === id)

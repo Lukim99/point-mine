@@ -1,13 +1,19 @@
 import { useState } from 'react'
-import { BULK_CHEST_COUNT, CHESTS, findPickaxe, type ChestDefinition, type ChestId } from '../game'
+import { BULK_CHEST_COUNT, CHESTS, discountedChestPrice, findPickaxe, VIP_BULK_DISCOUNT, VIP_DAILY_MANA, VIP_DAYS, VIP_PRICE, VIP_SINGLE_DISCOUNT, type ChestDefinition, type ChestId } from '../game'
 import { ChestSprite } from './ChestSprite'
 import { Modal } from './Modal'
 
 interface ShopPanelProps {
   balance: number
   busy: boolean
+  vipActive: boolean
+  vipExpiresAt: string | null
+  freeNormalAvailable: boolean
+  freePremiumAvailable: boolean
   onOpenChest: (chestId: ChestId) => void
   onOpenChestBulk: (chestId: ChestId) => void
+  onPurchaseVip: () => void
+  onOpenFreeVipChest: (chestId: ChestId) => void
 }
 
 const formatChance = (chance: number) => {
@@ -15,7 +21,13 @@ const formatChance = (chance: number) => {
   return `${chance.toFixed(fractionDigits)}%`
 }
 
-export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopPanelProps) {
+const formatVipUntil = (vipExpiresAt: string | null) => {
+  if (!vipExpiresAt) return ''
+  const date = new Date(vipExpiresAt)
+  return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date)
+}
+
+export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest }: ShopPanelProps) {
   const [rateChest, setRateChest] = useState<ChestDefinition | null>(null)
 
   return (
@@ -29,10 +41,42 @@ export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopP
         <div className="shop-balance"><span>사용 가능</span><strong>{balance.toLocaleString('ko-KR')} P</strong></div>
       </div>
 
+      <div className={`vip-card ${vipActive ? 'is-active' : ''}`}>
+        <div className="vip-card-head">
+          <span className="vip-badge">VIP</span>
+          <div>
+            <strong>포인트 광산 VIP 티켓</strong>
+            <p>{vipActive ? `활성 · ${formatVipUntil(vipExpiresAt)}까지` : `${VIP_PRICE.toLocaleString('ko-KR')} P · ${VIP_DAYS}일`}</p>
+          </div>
+        </div>
+        <ul className="vip-benefits">
+          <li>매일 일반·고급 상자 무료 개봉 1회</li>
+          <li>매일 마나 {VIP_DAILY_MANA}✦ 지급</li>
+          <li>상자 1개 {VIP_SINGLE_DISCOUNT}% · {BULK_CHEST_COUNT}개 {VIP_BULK_DISCOUNT}% 할인</li>
+        </ul>
+        {vipActive ? (
+          <div className="vip-free-actions">
+            <button className="vip-free-button" type="button" onClick={() => onOpenFreeVipChest('normal')} disabled={busy || !freeNormalAvailable}>
+              {freeNormalAvailable ? '일반 상자 무료 개봉' : '일반 오늘 완료'}
+            </button>
+            <button className="vip-free-button" type="button" onClick={() => onOpenFreeVipChest('premium')} disabled={busy || !freePremiumAvailable}>
+              {freePremiumAvailable ? '고급 상자 무료 개봉' : '고급 오늘 완료'}
+            </button>
+            <button className="vip-buy-button" type="button" onClick={onPurchaseVip} disabled={busy || balance < VIP_PRICE}>{VIP_DAYS}일 연장 · {VIP_PRICE.toLocaleString('ko-KR')} P</button>
+          </div>
+        ) : (
+          <button className="vip-buy-button" type="button" onClick={onPurchaseVip} disabled={busy || balance < VIP_PRICE}>
+            {balance < VIP_PRICE ? '포인트 부족' : `VIP 티켓 구매 · ${VIP_PRICE.toLocaleString('ko-KR')} P`}
+          </button>
+        )}
+      </div>
+
       <div className="chest-shop-grid">
         {CHESTS.map((chest) => {
-          const canBuy = balance >= chest.price
-          const bulkPrice = chest.price * BULK_CHEST_COUNT
+          const singlePrice = discountedChestPrice(chest.price, vipActive, VIP_SINGLE_DISCOUNT)
+          const bulkUnit = discountedChestPrice(chest.price, vipActive, VIP_BULK_DISCOUNT)
+          const bulkPrice = bulkUnit * BULK_CHEST_COUNT
+          const canBuy = balance >= singlePrice
           const canBuyBulk = balance >= bulkPrice
           return (
             <article className={`chest-card chest-card--${chest.id}`} key={chest.id}>
@@ -54,7 +98,7 @@ export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopP
                   disabled={busy || !canBuy}
                 >
                   <span>{busy ? '개봉 준비 중...' : canBuy ? '상자 구매 및 개봉' : '포인트 부족'}</span>
-                  <strong>{chest.price.toLocaleString('ko-KR')} P</strong>
+                  <strong>{singlePrice.toLocaleString('ko-KR')} P{vipActive ? ' ▼' : ''}</strong>
                 </button>
                 <button
                   className="buy-chest-button buy-chest-button--bulk"
@@ -63,7 +107,7 @@ export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopP
                   disabled={busy || !canBuyBulk}
                 >
                   <span>{busy ? '개봉 준비 중...' : canBuyBulk ? `${BULK_CHEST_COUNT}개 구매 및 개봉` : '포인트 부족'}</span>
-                  <strong>{bulkPrice.toLocaleString('ko-KR')} P</strong>
+                  <strong>{bulkPrice.toLocaleString('ko-KR')} P{vipActive ? ' ▼' : ''}</strong>
                 </button>
               </div>
             </article>
@@ -71,7 +115,7 @@ export function ShopPanel({ balance, busy, onOpenChest, onOpenChestBulk }: ShopP
         })}
       </div>
 
-      <p className="shop-footnote">중복 곡괭이는 기존 장비에 기본 내구도가 합산됩니다.</p>
+      <p className="shop-footnote">중복 곡괭이는 기존 장비에 기본 내구도가 합산됩니다.{vipActive ? ' VIP 할인 적용가입니다.' : ''}</p>
 
       {rateChest && (
         <Modal title={`${rateChest.name} 확률`} onClose={() => setRateChest(null)} labelledBy="chest-rates-title">
