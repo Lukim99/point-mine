@@ -38,7 +38,7 @@ export function BulkChestOpeningEffect({ result, onClose }: BulkChestOpeningEffe
       <div className="opening-rays" aria-hidden="true" />
       <div className="bulk-opening-stage" aria-live="polite" tabIndex={-1} ref={stageRef}>
         <p className="opening-kicker">{chest.name} ×{result.count ?? rewards.length}</p>
-        <div className="bulk-reward-grid">
+        <div className={`bulk-reward-grid ${rewards.length > 5 ? 'bulk-reward-grid--large' : ''}`}>
           {rewards.map((reward, index) => {
             const pickaxe = findPickaxe(reward.pickaxe_id)
             return (

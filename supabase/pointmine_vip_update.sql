@@ -92,7 +92,7 @@ begin
 end;
 $$;
 
--- 3) VIP 무료 상자 개봉 (일반·고급 각각 하루 1회, 무료 확률·수수료·원장 미적용)
+-- 3) VIP 무료 상자 개봉 (일반·고급 각각 하루 1회, 쿠폰과 동일한 원장·지급 제한 적용)
 create or replace function public.open_free_vip_chest(p_chest_id text)
 returns jsonb
 language plpgsql
@@ -101,6 +101,7 @@ set search_path = ''
 as $$
 declare
   v_uid uuid := auth.uid();
+  v_nickname text;
   v_inventory jsonb;
   v_new_inventory jsonb;
   v_expires timestamptz;
@@ -111,6 +112,9 @@ declare
   v_pickaxe_id text;
   v_pickaxe_name text;
   v_pickaxe_durability integer;
+  v_pickaxe_ev numeric(14, 4);
+  v_chest_name text;
+  v_net_profit numeric(20, 4);
 begin
   if v_uid is null then
     raise exception '인증이 필요합니다.' using errcode = '42501';
@@ -120,9 +124,9 @@ begin
     return jsonb_build_object('status', 'invalid_chest');
   end if;
 
-  select inventory, vip_expires_at,
+  select nickname, inventory, vip_expires_at,
          case when p_chest_id = 'normal' then vip_last_normal_free else vip_last_premium_free end
-  into v_inventory, v_expires, v_last
+  into v_nickname, v_inventory, v_expires, v_last
   from public.users
   where auth_user_id = v_uid
   for update;
@@ -144,17 +148,40 @@ begin
   end if;
   v_new_inventory := v_inventory;
 
+  select name into v_chest_name
+  from public.pointmine_chests
+  where id = p_chest_id;
+
+  select net_profit into v_net_profit
+  from public.pointmine_chest_ledger
+  where id = true
+  for update;
+
+  if not found then
+    insert into public.pointmine_chest_ledger (id, net_profit)
+    values (true, 0)
+    on conflict (id) do nothing;
+
+    select net_profit into v_net_profit
+    from public.pointmine_chest_ledger
+    where id = true
+    for update;
+  end if;
+
+  v_net_profit := coalesce(v_net_profit, 0);
+
   select exists (
     select 1 from jsonb_array_elements(v_new_inventory) as item
     where item->>'type' = 'pickaxe' and coalesce((item->>'equipped')::boolean, false)
   ) into v_has_equipped;
 
-  select pickaxe.id, pickaxe.name, pickaxe.max_durability
-  into v_pickaxe_id, v_pickaxe_name, v_pickaxe_durability
+  select pickaxe.id, pickaxe.name, pickaxe.max_durability, pickaxe.expected_value
+  into v_pickaxe_id, v_pickaxe_name, v_pickaxe_durability, v_pickaxe_ev
   from public.pointmine_chest_drops as drop_rate
   join public.pointmine_pickaxes as pickaxe on pickaxe.id = drop_rate.pickaxe_id
   where drop_rate.chest_id = p_chest_id
     and not (p_chest_id = 'premium' and pickaxe.id = 'master')
+    and (pickaxe.rarity_rank < 5 or pickaxe.expected_value <= v_net_profit)
   order by -ln(greatest(random(), 0.000000000001)) / drop_rate.weight
   limit 1;
 
@@ -192,6 +219,22 @@ begin
   else
     update public.users set inventory = v_new_inventory, vip_last_premium_free = v_today where auth_user_id = v_uid;
   end if;
+
+  update public.pointmine_chest_ledger
+  set net_profit = v_net_profit - v_pickaxe_ev
+  where id = true;
+
+  insert into public.pointmine_chest_openings
+    (auth_user_id, chest_id, pickaxe_id, price, lk_company_share, iktebot_share,
+     lotto_fund_share, net_profit, opening_source)
+  values
+    (v_uid, p_chest_id, v_pickaxe_id, 0, 0, 0, 0, -v_pickaxe_ev, 'coupon');
+
+  perform public.send_kakao_notification(
+    '[ 포인트 광산 알림 ]' || E'\n' ||
+    '✅ ' || v_nickname || '님이 VIP 무료 혜택으로 ' || v_chest_name || '를 열었습니다.' || E'\n' ||
+    '⛏️ 획득 곡괭이: ' || v_pickaxe_name
+  );
 
   return jsonb_build_object(
     'status', 'success',
@@ -347,9 +390,10 @@ begin
   perform 1 from public.users where nickname = '로또기금' for update;
   if not found then return jsonb_build_object('status', 'company_not_found'); end if;
 
-  v_lk_company_share := (v_paid * 98) / 100;
-  v_iktebot_share := v_paid / 100;
-  v_lotto_fund_share := v_paid - v_lk_company_share - v_iktebot_share;
+  -- 정수 포인트에서도 두 1% 몫이 동일하도록 반올림하고, 엘케이컴퍼니가 나머지를 받습니다.
+  v_iktebot_share := round(v_paid::numeric / 100)::bigint;
+  v_lotto_fund_share := v_iktebot_share;
+  v_lk_company_share := v_paid - v_iktebot_share - v_lotto_fund_share;
   v_net_revenue := v_paid - v_iktebot_share - v_lotto_fund_share;
 
   select net_profit into v_net_profit
@@ -447,7 +491,7 @@ begin
 end;
 $$;
 
--- 6) 일괄 상자 개봉 재정의: VIP 10% 할인 적용
+-- 6) 일괄 상자 개봉 재정의: VIP 10% 할인 및 VIP 전용 10개 구매 적용
 create or replace function public.open_pickaxe_chest_bulk(p_chest_id text, p_count integer)
 returns jsonb
 language plpgsql
@@ -507,6 +551,10 @@ begin
     raise exception '연동된 사용자가 없습니다.' using errcode = 'P0002';
   end if;
 
+  if v_count = 10 and (v_vip_expires_at is null or v_vip_expires_at <= now()) then
+    return jsonb_build_object('status', 'vip_required');
+  end if;
+
   -- VIP면 상자 1개당 10% 할인
   if v_vip_expires_at is not null and v_vip_expires_at > now() then
     v_paid := v_price - (v_price * 10) / 100;
@@ -526,9 +574,10 @@ begin
   perform 1 from public.users where nickname = '로또기금' for update;
   if not found then return jsonb_build_object('status', 'company_not_found'); end if;
 
-  v_lk_company_share := (v_paid * 98) / 100;
-  v_iktebot_share := v_paid / 100;
-  v_lotto_fund_share := v_paid - v_lk_company_share - v_iktebot_share;
+  -- 정수 포인트에서도 두 1% 몫이 동일하도록 반올림하고, 엘케이컴퍼니가 나머지를 받습니다.
+  v_iktebot_share := round(v_paid::numeric / 100)::bigint;
+  v_lotto_fund_share := v_iktebot_share;
+  v_lk_company_share := v_paid - v_iktebot_share - v_lotto_fund_share;
   v_net_revenue := v_paid - v_iktebot_share - v_lotto_fund_share;
 
   if jsonb_typeof(v_inventory) <> 'array' then
@@ -651,6 +700,6 @@ grant execute on function public.open_pickaxe_chest_bulk(text, integer) to authe
 
 comment on column public.users.vip_expires_at is 'VIP 티켓 만료 시각(없거나 과거면 비VIP)';
 comment on function public.purchase_vip_ticket() is '3,000P로 VIP 7일을 구매(연장)하고 카카오 알림을 보내는 함수';
-comment on function public.open_free_vip_chest(text) is 'VIP 전용 일일 무료 상자 개봉(일반·고급 각 1회/일, KST)';
+comment on function public.open_free_vip_chest(text) is 'VIP 전용 일일 무료 상자 개봉(일반·고급 각 1회/일, 쿠폰과 동일한 원장·지급 제한 적용)';
 
 commit;

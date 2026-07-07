@@ -262,7 +262,7 @@ export interface BulkChestReward {
 }
 
 export interface BulkOpenChestResult {
-  status: 'success' | 'insufficient_balance' | 'invalid_chest' | 'invalid_count' | 'company_not_found'
+  status: 'success' | 'insufficient_balance' | 'invalid_chest' | 'invalid_count' | 'vip_required' | 'company_not_found'
   chest_id?: ChestId
   count?: number
   results?: BulkChestReward[]
@@ -272,12 +272,13 @@ export interface BulkOpenChestResult {
 
 // 한 번에 구매·개봉하는 상자 개수
 export const BULK_CHEST_COUNT = 5
+export const VIP_BULK_CHEST_COUNT = 10
 
 // VIP 티켓
 export const VIP_PRICE = 3000
 export const VIP_DAYS = 7
 export const VIP_SINGLE_DISCOUNT = 5 // 상자 1개 구매 할인율(%)
-export const VIP_BULK_DISCOUNT = 10 // 상자 5개 구매 할인율(%)
+export const VIP_BULK_DISCOUNT = 10 // 상자 일괄 구매 할인율(%)
 export const VIP_DAILY_MANA = 5
 
 export interface VipPurchaseResult {

@@ -7,6 +7,7 @@ import { InventoryPanel } from './InventoryPanel'
 import { OreSprite } from './OreSprite'
 import { PickaxeSprite } from './PickaxeSprite'
 import { ShopPanel } from './ShopPanel'
+import { VipModal } from './VipModal'
 
 type GameView = 'mine' | 'hunt' | 'shop'
 type MobileTab = 'mine' | 'hunt' | 'shop' | 'inventory' | 'profile'
@@ -26,7 +27,7 @@ interface GameScreenProps {
   onSellMonsterItems: (itemIds: MonsterItemId[]) => void
   onEnchant: (id: string) => void
   onOpenChest: (chestId: ChestId) => void
-  onOpenChestBulk: (chestId: ChestId) => void
+  onOpenChestBulk: (chestId: ChestId, count: number) => void
   onPurchaseVip: () => void
   onOpenFreeVipChest: (chestId: ChestId) => void
   onOpenCoupon: () => void
@@ -145,13 +146,16 @@ function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: 
 export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest, onOpenCoupon, onLogout }: GameScreenProps) {
   const [desktopView, setDesktopView] = useState<GameView>('mine')
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
+  const [vipModalOpen, setVipModalOpen] = useState(false)
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
   const vipActive = isVipActive(profile.vipExpiresAt)
   const today = kstToday()
+  const freeNormalAvailable = vipActive && profile.vipLastNormalFree !== today
+  const freePremiumAvailable = vipActive && profile.vipLastPremiumFree !== today
   const inventoryProps = { inventory: profile.inventory, mana: profile.mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant }
   const mineAreaProps = { equipped, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
   const huntAreaProps = { equipped, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, lastAttack, onAttack }
-  const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable: vipActive && profile.vipLastNormalFree !== today, freePremiumAvailable: vipActive && profile.vipLastPremiumFree !== today, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest }
+  const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onOpenVipModal: () => setVipModalOpen(true), onOpenFreeVipChest }
 
   return (
     <main className="game-screen">
@@ -163,15 +167,13 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
           <button type="button" className={desktopView === 'shop' ? 'is-active' : ''} onClick={() => setDesktopView('shop')}>상점</button>
         </nav>
         <div className="header-right">
-          {vipActive && (
-            <span className="header-vip-ticket" title="VIP 활성">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 1 0-4Z" />
-                <path d="M9 6v12" strokeDasharray="2 2" />
-              </svg>
-              VIP
-            </span>
-          )}
+          <button type="button" className={`header-vip-ticket ${vipActive ? 'is-active' : ''}`} onClick={() => setVipModalOpen(true)} title={vipActive ? 'VIP 이용 중' : 'VIP 티켓 구매'}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 1 0-4Z" />
+              <path d="M9 6v12" strokeDasharray="2 2" />
+            </svg>
+            VIP
+          </button>
           <div className="header-balance"><span>보유 포인트</span><strong>{profile.balance.toLocaleString('ko-KR')} P</strong></div>
         </div>
       </header>
@@ -205,6 +207,20 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
           <button type="button" className={mobileTab === 'profile' ? 'is-active' : ''} onClick={() => setMobileTab('profile')}><span>♟</span>광부 정보</button>
         </nav>
       </div>
+
+      {vipModalOpen && (
+        <VipModal
+          vipActive={vipActive}
+          vipExpiresAt={profile.vipExpiresAt}
+          balance={profile.balance}
+          busy={actionBusy}
+          freeNormalAvailable={freeNormalAvailable}
+          freePremiumAvailable={freePremiumAvailable}
+          onPurchase={onPurchaseVip}
+          onOpenFreeChest={onOpenFreeVipChest}
+          onClose={() => setVipModalOpen(false)}
+        />
+      )}
     </main>
   )
 }
