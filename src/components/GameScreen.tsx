@@ -120,10 +120,11 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
 }
 
 function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: UserProfile; equipped?: PickaxeInventoryItem; onOpenCoupon: () => void; onLogout: () => void }) {
+  const vip = isVipActive(profile.vipExpiresAt)
   return (
-    <div className="profile-panel">
+    <div className={`profile-panel ${vip ? 'is-vip' : ''}`}>
       <div className="miner-avatar"><span>⛏</span></div>
-      <span className="section-kicker">광부</span>
+      <span className="section-kicker">{vip ? 'VIP 광부' : '광부'}</span>
       <h2>{profile.nickname}</h2>
       <div className="balance-card"><span>보유 포인트</span><strong>{profile.balance.toLocaleString('ko-KR')}<small>P</small></strong></div>
       <div className="balance-card mana-card"><span>보유 마나</span><strong>{profile.mana.toLocaleString('ko-KR')}<small>✦</small></strong></div>
@@ -161,7 +162,18 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
           <button type="button" className={desktopView === 'hunt' ? 'is-active' : ''} onClick={() => setDesktopView('hunt')}>사냥터</button>
           <button type="button" className={desktopView === 'shop' ? 'is-active' : ''} onClick={() => setDesktopView('shop')}>상점</button>
         </nav>
-        <div className="header-balance"><span>보유 포인트</span><strong>{profile.balance.toLocaleString('ko-KR')} P</strong></div>
+        <div className="header-right">
+          {vipActive && (
+            <span className="header-vip-ticket" title="VIP 활성">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 1 0-4Z" />
+                <path d="M9 6v12" strokeDasharray="2 2" />
+              </svg>
+              VIP
+            </span>
+          )}
+          <div className="header-balance"><span>보유 포인트</span><strong>{profile.balance.toLocaleString('ko-KR')} P</strong></div>
+        </div>
       </header>
 
       {desktopView === 'shop' ? (

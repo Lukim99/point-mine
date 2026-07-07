@@ -80,6 +80,47 @@
 .vip-modal-confirm:hover:not(:disabled) { filter: brightness(1.07); }
 .vip-modal-confirm:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #6e4a1a; }
 .vip-modal-confirm:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.55; }
+.vip-modal-icon svg { width: 20px; height: 20px; color: #ffe1a2; }
+.vip-benefits li svg { display: none; }
+
+/* 모바일: VIP 카드를 실제 티켓처럼 표시 */
+@media (max-width: 767px) {
+  .vip-card { position: relative; margin: 10px 0 6px; padding: 14px; border-radius: 10px; background: repeating-linear-gradient(135deg, rgba(70, 53, 24, 0.4) 0 10px, rgba(52, 40, 19, 0.4) 10px 20px), linear-gradient(135deg, rgba(66, 50, 24, 0.95), rgba(24, 19, 13, 0.96)); }
+  .vip-card-head { padding-bottom: 12px; border-bottom: 2px dashed rgba(214, 166, 63, 0.5); }
+  .vip-card::before, .vip-card::after { position: absolute; top: 56px; width: 16px; height: 16px; content: ''; border-radius: 50%; background: #100d0b; box-shadow: inset 0 0 0 1px rgba(214, 166, 63, 0.35); }
+  .vip-card::before { left: -8px; }
+  .vip-card::after { right: -8px; }
+  .vip-benefits { margin-top: 11px; }
+}
+
+/* VIP 티켓 구매 연출 (티켓 찢기) */
+.vip-tear-overlay { position: fixed; inset: 0; z-index: 212; display: grid; overflow: hidden; place-items: center; background: radial-gradient(circle at 50% 42%, rgba(58, 44, 18, 0.92), rgba(6, 5, 3, 0.97) 70%); animation: enchant-overlay-in 260ms ease both; }
+.vip-tear-flash { position: absolute; inset: -20%; pointer-events: none; opacity: 0; background: radial-gradient(circle, #fff4d6 0, #ffcf7a 24%, rgba(214, 150, 47, 0.7) 42%, transparent 66%); animation: opening-flash 1s 0.55s ease-out both; }
+.vip-tear-stage { position: relative; z-index: 3; display: flex; align-items: center; flex-direction: column; gap: 18px; width: min(460px, 92vw); padding: 20px; text-align: center; }
+.vip-tear-stage .opening-kicker { position: static; color: #f0cf8c; }
+.vip-ticket { position: relative; display: flex; width: min(400px, 86vw); height: 128px; filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.6)); }
+.vip-ticket-half { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 4px; flex: 1; color: #2a1c08; background: linear-gradient(135deg, #ffe6a4, #d9a441); }
+.vip-ticket-half--left { border-radius: 10px 0 0 10px; box-shadow: inset 0 0 0 2px rgba(122, 86, 29, 0.4); animation: vip-tear-left 720ms 0.65s cubic-bezier(0.4, 0.1, 0.3, 1) forwards; }
+.vip-ticket-half--right { border-radius: 0 10px 10px 0; box-shadow: inset 0 0 0 2px rgba(122, 86, 29, 0.4); animation: vip-tear-right 720ms 0.65s cubic-bezier(0.4, 0.1, 0.3, 1) forwards; }
+.vip-ticket-badge { font-family: Georgia, serif; font-size: 34px; font-weight: 900; letter-spacing: 0.08em; }
+.vip-ticket-sub { font-size: 11px; font-weight: 800; letter-spacing: 0.42em; opacity: 0.75; }
+.vip-ticket-title { color: #4a3416; font-size: 15px; font-weight: 800; }
+.vip-ticket-days { font-family: Georgia, serif; font-size: 20px; font-weight: 900; }
+.vip-ticket-perf { position: absolute; top: 8px; bottom: 8px; left: 50%; width: 0; border-left: 2px dashed rgba(90, 60, 20, 0.6); transform: translateX(-50%); animation: vip-perf-fade 300ms 0.65s ease forwards; }
+.vip-tear-card { display: flex; align-items: center; flex-direction: column; gap: 7px; opacity: 0; animation: enchant-fade-up 600ms 1.35s ease both; }
+.vip-tear-card h2 { color: #ffeec2; font-family: Georgia, serif; font-size: clamp(22px, 3vw, 30px); text-shadow: 0 0 16px rgba(226, 176, 74, 0.7); }
+.vip-tear-card p { color: #d8c39c; font-size: 12px; }
+.vip-tear-confirm { position: static; margin-top: 2px; }
+
+@keyframes vip-tear-left {
+  0% { transform: translate(0, 0) rotate(0); }
+  100% { transform: translate(-42px, 46px) rotate(-16deg); opacity: 0; }
+}
+@keyframes vip-tear-right {
+  0% { transform: translate(0, 0) rotate(0); }
+  100% { transform: translate(42px, 46px) rotate(16deg); opacity: 0; }
+}
+@keyframes vip-perf-fade { to { opacity: 0; } }
 .shop-balance { display: flex; align-items: flex-end; flex-direction: column; padding: 9px 13px; border: 1px solid #51422e; border-radius: 3px; background: #15110e; }
 .shop-balance span { color: #857968; font-size: 8px; }
 .shop-balance strong { color: #ffd070; font-family: Georgia, serif; font-size: 18px; }

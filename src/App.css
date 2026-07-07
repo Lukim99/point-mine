@@ -305,6 +305,14 @@
 .mini-brand div { display: flex; flex-direction: column; }
 .mini-brand strong { color: #fff0d4; font-family: Georgia, 'Times New Roman', serif; font-size: 17px; letter-spacing: -0.04em; }
 .mini-brand small { margin-top: 1px; color: #8d806e; font-size: 7px; font-weight: 800; letter-spacing: 0.2em; }
+.profile-panel.is-vip .section-kicker { color: #ffd579; text-shadow: 0 0 10px rgba(214, 166, 63, 0.45); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+/* PC 헤더: 보유 포인트 왼쪽 VIP 티켓 표시 */
+.header-vip-ticket { position: relative; display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; color: #2a1c08; font-size: 11px; font-weight: 900; letter-spacing: 0.06em; border-radius: 5px; background: linear-gradient(135deg, #ffdf8f, #d9a63f); box-shadow: 0 2px 0 #7a561d, 0 0 12px rgba(214, 166, 63, 0.4); }
+.header-vip-ticket svg { width: 16px; height: 16px; }
+.header-vip-ticket::before, .header-vip-ticket::after { position: absolute; top: 50%; width: 6px; height: 6px; content: ''; border-radius: 50%; background: rgba(14, 11, 9, 0.9); transform: translateY(-50%); }
+.header-vip-ticket::before { left: -3px; }
+.header-vip-ticket::after { right: -3px; }
 .header-balance { display: flex; align-items: center; gap: 12px; }
 .header-balance span { color: #9b8e7b; font-size: 10px; }
 .header-balance strong { color: var(--gold-bright); font-family: Georgia, serif; font-size: 17px; }
@@ -469,6 +477,7 @@
   .game-header { height: calc(58px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 16px 0; background: rgba(14, 11, 9, 0.72); }
   .mini-brand > span { width: 31px; height: 31px; font-size: 19px; }
   .mini-brand strong { font-size: 15px; }
+  .header-vip-ticket { display: none; }
   .header-balance { flex-direction: column; align-items: flex-end; gap: 0; }
   .header-balance span { font-size: 8px; }
   .header-balance strong { font-size: 15px; }

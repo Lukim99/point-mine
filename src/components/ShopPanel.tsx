@@ -28,10 +28,23 @@ const formatVipUntil = (vipExpiresAt: string | null) => {
 }
 
 const VIP_BENEFITS = [
-  { icon: '🎁', title: '매일 무료 상자 개봉', desc: '일반, 고급 상자를 하루 1회씩 무료 개봉' },
-  { icon: '✦', title: `매일 마나 ${VIP_DAILY_MANA} 지급`, desc: '접속하면 자동으로 마나를 받습니다' },
-  { icon: '％', title: '상자 구매 할인', desc: `1개 구매 ${VIP_SINGLE_DISCOUNT}%, ${BULK_CHEST_COUNT}개 구매 ${VIP_BULK_DISCOUNT}% 할인` },
-]
+  { id: 'gift', title: '매일 무료 상자 개봉', desc: '일반, 고급 상자를 하루 1회씩 무료 개봉' },
+  { id: 'mana', title: `매일 마나 ${VIP_DAILY_MANA} 지급`, desc: '접속하면 자동으로 마나를 받습니다' },
+  { id: 'discount', title: '상자 구매 할인', desc: `1개 구매 ${VIP_SINGLE_DISCOUNT}%, ${BULK_CHEST_COUNT}개 구매 ${VIP_BULK_DISCOUNT}% 할인` },
+] as const
+
+function BenefitIcon({ id }: { id: string }) {
+  const common = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  if (id === 'gift') return (
+    <svg {...common}><rect x="3" y="8" width="18" height="4" rx="1" /><path d="M5 12v8h14v-8" /><path d="M12 8v12" /><path d="M12 8s-1.8-4.5-4.2-3.4C5.6 5.6 8.2 8 12 8Z" /><path d="M12 8s1.8-4.5 4.2-3.4C18.4 5.6 15.8 8 12 8Z" /></svg>
+  )
+  if (id === 'mana') return (
+    <svg {...common}><path d="M12 3l2.3 6.2L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3z" /></svg>
+  )
+  return (
+    <svg {...common}><path d="M6.5 6.5 17.5 17.5" /><circle cx="7" cy="7" r="1.9" /><circle cx="17" cy="17" r="1.9" /></svg>
+  )
+}
 
 export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest }: ShopPanelProps) {
   const [rateChest, setRateChest] = useState<ChestDefinition | null>(null)
@@ -161,8 +174,8 @@ export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAv
 
             <ul className="vip-modal-benefits">
               {VIP_BENEFITS.map((benefit) => (
-                <li key={benefit.title}>
-                  <span className="vip-modal-icon" aria-hidden="true">{benefit.icon}</span>
+                <li key={benefit.id}>
+                  <span className="vip-modal-icon" aria-hidden="true"><BenefitIcon id={benefit.id} /></span>
                   <span className="vip-modal-text">
                     <strong>{benefit.title}</strong>
                     <small>{benefit.desc}</small>
