@@ -56,6 +56,30 @@
 .vip-buy-button { width: 100%; }
 .vip-free-button:hover:not(:disabled), .vip-buy-button:hover:not(:disabled) { filter: brightness(1.08); }
 .vip-free-button:disabled, .vip-buy-button:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.5; }
+
+/* VIP 구매 모달 */
+.vip-modal { display: flex; flex-direction: column; gap: 14px; margin-top: 10px; text-align: left; }
+.vip-modal-hero { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid #6a5a3a; border-radius: 8px; background: radial-gradient(circle at 20% 20%, rgba(214, 166, 63, 0.22), transparent 60%), linear-gradient(135deg, rgba(58, 44, 20, 0.9), rgba(20, 16, 11, 0.92)); }
+.vip-badge--lg { padding: 6px 14px; font-size: 16px; letter-spacing: 0.12em; }
+.vip-modal-price { text-align: right; }
+.vip-modal-price strong { color: #ffe6a8; font-family: Georgia, serif; font-size: 30px; }
+.vip-modal-price strong small { font-size: 14px; }
+.vip-modal-price span { display: block; margin-top: 2px; color: #c2ab84; font-size: 11px; }
+.vip-modal-benefits { display: flex; flex-direction: column; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.vip-modal-benefits li { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border: 1px solid #453922; border-radius: 6px; background: rgba(30, 25, 17, 0.7); }
+.vip-modal-icon { display: grid; place-items: center; flex: 0 0 auto; width: 38px; height: 38px; font-size: 18px; border-radius: 8px; background: linear-gradient(#7a5c26, #4a3819); box-shadow: inset 0 1px #a97f3a; }
+.vip-modal-text { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.vip-modal-text strong { color: #ffe9bd; font-size: 13px; }
+.vip-modal-text small { color: #b6a382; font-size: 10px; line-height: 1.45; }
+.vip-modal-note { color: #d3b06a; font-size: 10px; line-height: 1.5; }
+.vip-modal-balance { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; border: 1px solid #453922; border-radius: 6px; background: rgba(24, 20, 14, 0.7); }
+.vip-modal-balance span { color: #a99c86; font-size: 11px; }
+.vip-modal-balance strong { color: #ffd27d; font-family: Georgia, serif; font-size: 15px; }
+.vip-modal-balance strong.is-short { color: #e2844f; }
+.vip-modal-confirm { min-height: 46px; color: #2a1c08; font-size: 13px; font-weight: 900; cursor: pointer; border: 1px solid #ffd48b; border-radius: 5px; background: linear-gradient(#f0cd78, #c1852f); box-shadow: 0 4px 0 #6e4a1a; }
+.vip-modal-confirm:hover:not(:disabled) { filter: brightness(1.07); }
+.vip-modal-confirm:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #6e4a1a; }
+.vip-modal-confirm:disabled { cursor: not-allowed; filter: grayscale(0.6); opacity: 0.55; }
 .shop-balance { display: flex; align-items: flex-end; flex-direction: column; padding: 9px 13px; border: 1px solid #51422e; border-radius: 3px; background: #15110e; }
 .shop-balance span { color: #857968; font-size: 8px; }
 .shop-balance strong { color: #ffd070; font-family: Georgia, serif; font-size: 18px; }

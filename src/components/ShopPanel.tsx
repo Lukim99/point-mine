@@ -27,15 +27,24 @@ const formatVipUntil = (vipExpiresAt: string | null) => {
   return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date)
 }
 
+const VIP_BENEFITS = [
+  { icon: '🎁', title: '매일 무료 상자 개봉', desc: '일반, 고급 상자를 하루 1회씩 무료 개봉' },
+  { icon: '✦', title: `매일 마나 ${VIP_DAILY_MANA} 지급`, desc: '접속하면 자동으로 마나를 받습니다' },
+  { icon: '％', title: '상자 구매 할인', desc: `1개 구매 ${VIP_SINGLE_DISCOUNT}%, ${BULK_CHEST_COUNT}개 구매 ${VIP_BULK_DISCOUNT}% 할인` },
+]
+
 export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest }: ShopPanelProps) {
   const [rateChest, setRateChest] = useState<ChestDefinition | null>(null)
+  const [vipModalOpen, setVipModalOpen] = useState(false)
+  const canBuyVip = balance >= VIP_PRICE
+  const confirmVip = () => { onPurchaseVip(); setVipModalOpen(false) }
 
   return (
     <section className="shop-panel" aria-labelledby="shop-title">
       <div className="shop-heading">
         <div>
           <span className="section-kicker">광부 조달소</span>
-          <h2 id="shop-title">곡괭이 상점</h2>
+          <h2 id="shop-title">상점</h2>
           <p>상자를 열어 새로운 장비를 획득하세요.</p>
         </div>
         <div className="shop-balance"><span>사용 가능</span><strong>{balance.toLocaleString('ko-KR')} P</strong></div>
@@ -46,13 +55,13 @@ export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAv
           <span className="vip-badge">VIP</span>
           <div>
             <strong>포인트 광산 VIP 티켓</strong>
-            <p>{vipActive ? `활성 · ${formatVipUntil(vipExpiresAt)}까지` : `${VIP_PRICE.toLocaleString('ko-KR')} P · ${VIP_DAYS}일`}</p>
+            <p>{vipActive ? `${formatVipUntil(vipExpiresAt)}까지 이용 중` : `${VIP_PRICE.toLocaleString('ko-KR')} P / ${VIP_DAYS}일`}</p>
           </div>
         </div>
         <ul className="vip-benefits">
-          <li>매일 일반·고급 상자 무료 개봉 1회</li>
+          <li>매일 일반, 고급 상자 무료 개봉 1회</li>
           <li>매일 마나 {VIP_DAILY_MANA}✦ 지급</li>
-          <li>상자 1개 {VIP_SINGLE_DISCOUNT}% · {BULK_CHEST_COUNT}개 {VIP_BULK_DISCOUNT}% 할인</li>
+          <li>상자 1개 {VIP_SINGLE_DISCOUNT}%, {BULK_CHEST_COUNT}개 {VIP_BULK_DISCOUNT}% 할인</li>
         </ul>
         {vipActive ? (
           <div className="vip-free-actions">
@@ -62,11 +71,11 @@ export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAv
             <button className="vip-free-button" type="button" onClick={() => onOpenFreeVipChest('premium')} disabled={busy || !freePremiumAvailable}>
               {freePremiumAvailable ? '고급 상자 무료 개봉' : '고급 오늘 완료'}
             </button>
-            <button className="vip-buy-button" type="button" onClick={onPurchaseVip} disabled={busy || balance < VIP_PRICE}>{VIP_DAYS}일 연장 · {VIP_PRICE.toLocaleString('ko-KR')} P</button>
+            <button className="vip-buy-button" type="button" onClick={() => setVipModalOpen(true)} disabled={busy}>{VIP_DAYS}일 연장하기</button>
           </div>
         ) : (
-          <button className="vip-buy-button" type="button" onClick={onPurchaseVip} disabled={busy || balance < VIP_PRICE}>
-            {balance < VIP_PRICE ? '포인트 부족' : `VIP 티켓 구매 · ${VIP_PRICE.toLocaleString('ko-KR')} P`}
+          <button className="vip-buy-button" type="button" onClick={() => setVipModalOpen(true)} disabled={busy}>
+            VIP 티켓 구매하기
           </button>
         )}
       </div>
@@ -135,6 +144,40 @@ export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAv
                 })}
               </tbody>
             </table>
+          </div>
+        </Modal>
+      )}
+
+      {vipModalOpen && (
+        <Modal title="포인트 광산 VIP 티켓" onClose={() => setVipModalOpen(false)} labelledBy="vip-modal-title">
+          <div className="vip-modal">
+            <div className="vip-modal-hero">
+              <span className="vip-badge vip-badge--lg">VIP</span>
+              <div className="vip-modal-price">
+                <strong>{VIP_PRICE.toLocaleString('ko-KR')}<small> P</small></strong>
+                <span>{VIP_DAYS}일 이용권</span>
+              </div>
+            </div>
+
+            <ul className="vip-modal-benefits">
+              {VIP_BENEFITS.map((benefit) => (
+                <li key={benefit.title}>
+                  <span className="vip-modal-icon" aria-hidden="true">{benefit.icon}</span>
+                  <span className="vip-modal-text">
+                    <strong>{benefit.title}</strong>
+                    <small>{benefit.desc}</small>
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            {vipActive && <p className="vip-modal-note">이미 VIP 이용 중이며, 구매하면 {formatVipUntil(vipExpiresAt)}에서 {VIP_DAYS}일 연장됩니다.</p>}
+
+            <div className="vip-modal-balance"><span>보유 포인트</span><strong className={canBuyVip ? '' : 'is-short'}>{balance.toLocaleString('ko-KR')} P</strong></div>
+
+            <button className="vip-modal-confirm" type="button" onClick={confirmVip} disabled={busy || !canBuyVip}>
+              {canBuyVip ? `${VIP_PRICE.toLocaleString('ko-KR')} P로 ${vipActive ? '연장' : '구매'}하기` : '포인트가 부족합니다'}
+            </button>
           </div>
         </Modal>
       )}
