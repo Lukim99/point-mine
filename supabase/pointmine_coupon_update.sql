@@ -407,6 +407,24 @@ set reward_type = excluded.reward_type,
     reward_id = excluded.reward_id,
     reward_amount = excluded.reward_amount;
 
+-- 추가 지급 쿠폰 등록 (고급 상자 1회 뽑기권)
+insert into public.pointmine_coupons
+  (code_hash, reward_type, reward_id, reward_amount, nickname)
+values
+  (public.pointmine_hash_coupon('8FKQJSAD'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('DAPS092E'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('FZXSWKJR'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('091ZMXND'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('OPAS92AS'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('ZXJVCFJSD'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('BNSRETIO'), 'chest', 'premium', 1, null),
+  (public.pointmine_hash_coupon('7ZNDI3DK'), 'chest', 'premium', 1, null)
+on conflict (code_hash) do update
+set reward_type = excluded.reward_type,
+    reward_id = excluded.reward_id,
+    reward_amount = excluded.reward_amount,
+    nickname = excluded.nickname;
+
 comment on table public.pointmine_coupons is
   '쿠폰 정의. 코드는 pointmine_hash_coupon(SHA-256)으로 해시해 저장하며 nickname이 있으면 해당 닉네임에 귀속';
 comment on column public.pointmine_coupons.nickname is
