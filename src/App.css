@@ -362,6 +362,10 @@
 .pickaxe-sprite--small { width: 48px; height: 48px; }
 .pickaxe-sprite--medium { width: clamp(66px, 7vw, 90px); height: clamp(66px, 7vw, 90px); }
 .pickaxe-sprite--large { width: clamp(110px, 13vw, 170px); height: clamp(110px, 13vw, 170px); }
+.ability-stone-sprite { display: inline-block; flex: 0 0 auto; aspect-ratio: 1; background-repeat: no-repeat; background-size: 400% 100%; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 7px rgba(123, 190, 224, 0.28)); }
+.ability-stone-sprite--small { width: 42px; }
+.ability-stone-sprite--medium { width: 68px; }
+.ability-stone-sprite--large { width: clamp(96px, 12vw, 132px); }
 
 .durability { width: 100%; height: 5px; overflow: hidden; border: 1px solid #17130e; border-radius: 4px; background: #0d0c0a; box-shadow: inset 0 1px 2px #000; }
 .durability span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #b5642d, #e2b455); box-shadow: 0 0 5px #d88832; transition: width 220ms ease; }
@@ -388,6 +392,8 @@
 .mine-result > span { color: #ed9e3b; font-size: 24px; text-shadow: 0 0 8px #cf5f26; }
 .mine-result strong { margin-top: 2px; color: #ffedc8; font-size: 12px; }
 .mine-result small { color: #d29d51; font-size: 9px; }
+.mine-result .stone-drop-line { display: flex; align-items: center; gap: 4px; margin-top: 5px; color: #aee4ff; font-size: 9px; font-style: normal; font-weight: 800; }
+.mine-result .stone-drop-line .ability-stone-sprite { width: 24px; }
 .mine-controls { position: absolute; right: 0; bottom: 0; left: 0; z-index: 4; display: flex; align-items: center; flex-direction: column; padding: 20px 20px clamp(17px, 2.5vh, 26px); background: linear-gradient(transparent, rgba(8, 7, 6, 0.93) 24%); }
 .mine-controls > p { margin-bottom: 7px; color: #c6b9a4; font-size: 10px; }
 .mine-controls > .durability { width: min(220px, 70%); margin-bottom: 10px; }
@@ -678,6 +684,283 @@
 .ore-button--enchant small { color: #7fb4dd; font-size: 9px; }
 .ore-button--enchant small.is-short { color: #e2844f; }
 .ore-button--enchant:disabled { opacity: 0.45; }
+.engraved-stone-button { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 9px; width: 100%; min-width: 0; min-height: 78px; padding: 7px 10px; color: inherit; font: inherit; text-align: left; cursor: pointer; border: 1px solid #40545e; border-radius: 4px; background: linear-gradient(100deg, rgba(59, 92, 108, 0.2), rgba(23, 23, 21, 0.92) 62%); }
+.engraved-stone-button.has-stone { border-color: #607985; box-shadow: inset 0 0 0 1px rgba(120, 194, 220, 0.12), 0 0 14px rgba(84, 150, 180, 0.14); }
+.engraved-stone-button:hover:not(:disabled) { border-color: #8ab3c5; filter: brightness(1.08); }
+.engraved-stone-button:disabled { cursor: wait; opacity: 0.62; }
+.engraved-stone-summary { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.engraved-stone-summary > strong { color: #dff3ff; font-size: 11px; }
+.engraved-stone-summary > small { color: #8aa9b8; font-size: 9px; }
+.engraved-stone-option { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.engraved-stone-option strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.engraved-stone-option.is-positive strong { color: #bff0d0; }
+.engraved-stone-option.is-negative strong { color: #f2bcae; }
+.engraved-stone-empty-icon { display: grid; place-content: center; width: 52px; height: 52px; color: #83c8df; font-size: 22px; border: 1px solid #456270; border-radius: 50%; background: rgba(22, 31, 35, 0.76); box-shadow: inset 0 0 18px rgba(82, 164, 190, 0.16); }
+.engraved-stone-cta { align-self: center; padding: 4px 8px; color: #ffd995; font-size: 9px; font-weight: 900; border: 1px solid #765937; border-radius: 3px; background: rgba(76, 55, 31, 0.72); white-space: nowrap; }
+.ability-stone-detail { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.ability-stone-detail-head { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.ability-stone-detail-head > div { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 7px; }
+.ability-stone-detail-head small { color: #9d9588; font-size: 9px; line-height: 1.5; }
+.ability-stone-option-list .enchant-detail-title { min-width: 0; }
+.ability-stone-option-list .enchant-detail-title strong { min-width: 0; overflow-wrap: anywhere; }
+.ability-stone-tier { flex: 0 0 auto; padding: 2px 5px; color: #b9c3ce; font-size: 7px; font-style: normal; font-weight: 900; border: 1px solid #535d66; border-radius: 2px; background: #252b30; }
+.ability-stone-tier--common { color: #d6d0c3; border-color: #6a655d; background: #302d29; }
+.ability-stone-tier--rare { color: #ffd683; border-color: #9c7334; background: #453217; }
+.ability-stone-target { display: flex; flex-direction: column; gap: 6px; }
+.ability-stone-target > span { color: #a99c86; font-size: 10px; font-weight: 800; }
+.ability-stone-target select { width: 100%; height: 42px; padding: 0 11px; color: #f1e2c9; border: 1px solid #5a5144; border-radius: 3px; background: #171613; }
+.ability-stone-actions { display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 8px; }
+.ability-stone-actions .ore-button { margin-top: 0; }
+.ability-stone-dismantle { justify-content: center; color: #f1c4b8; border-color: #74483e; background: linear-gradient(#58362f, #38221e); }
+
+/* 어빌리티 스톤 각인 선택 */
+.stone-modal.ability-stone-list-modal { width: min(690px, 100%); overflow-y: auto; }
+.ability-stone-engrave-list { display: flex; flex-direction: column; gap: 13px; margin-top: 14px; }
+.ability-stone-engrave-target { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border: 1px solid #455865; border-radius: 4px; background: rgba(20, 28, 32, 0.72); }
+.ability-stone-engrave-target span { color: #8aa9b8; font-size: 10px; font-weight: 800; }
+.ability-stone-engrave-target strong { overflow: hidden; color: #e7f7ff; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.ability-stone-select-list { display: grid; gap: 8px; }
+.ability-stone-select-item { display: grid; grid-template-columns: 76px minmax(0, 1fr); align-items: center; gap: 10px; width: 100%; min-width: 0; padding: 9px 11px; color: inherit; font: inherit; text-align: left; cursor: pointer; border: 1px solid #46515a; border-radius: 4px; background: linear-gradient(105deg, rgba(54, 85, 103, 0.24), rgba(24, 24, 22, 0.95) 62%); }
+.ability-stone-select-item.is-ready:hover:not(:disabled) { border-color: #86bed1; box-shadow: 0 0 18px rgba(88, 176, 210, 0.16); transform: translateY(-1px); }
+.ability-stone-select-item.is-current { border-color: #b79553; background: linear-gradient(105deg, rgba(125, 90, 43, 0.25), rgba(24, 24, 22, 0.95) 62%); }
+.ability-stone-select-item.is-locked { filter: grayscale(0.55); opacity: 0.62; }
+.ability-stone-select-item:disabled { cursor: default; }
+.ability-stone-select-body { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.ability-stone-select-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; min-width: 0; }
+.ability-stone-select-head strong { overflow: hidden; color: #dff3ff; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.ability-stone-select-head em { flex: 0 0 auto; color: #ffd995; font-size: 9px; font-style: normal; font-weight: 900; }
+.ability-stone-select-score { color: #8fc4d8; font-size: 9px; font-weight: 800; }
+.ability-stone-select-options { display: grid; gap: 3px; }
+.ability-stone-select-options small { overflow: hidden; font-size: 9px; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
+.ability-stone-select-options .is-positive { color: #bff0d0; }
+.ability-stone-select-options .is-negative { color: #f2bcae; }
+
+/* 어빌리티 스톤 세공 작업대 */
+.stone-modal.ability-facet-modal { width: min(760px, 100%); padding: 28px 30px 26px; overflow-y: auto; }
+.ability-facet-workbench { position: relative; display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.ability-facet-head { display: grid; grid-template-columns: 118px minmax(0, 1fr); align-items: center; gap: 20px; padding: 4px 14px 12px; border-bottom: 1px solid #4b4942; }
+.ability-facet-overview { display: flex; min-width: 0; flex-direction: column; gap: 14px; }
+.ability-facet-status-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ability-facet-status-row small { overflow: hidden; color: #9aaeb8; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.ability-facet-chance > div:first-child { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+.ability-facet-chance span { color: #b9ae9a; font-size: 10px; font-weight: 800; }
+.ability-facet-chance strong { color: #ffd47e; font-size: 22px; }
+.ability-facet-chance-track { height: 8px; overflow: hidden; border: 1px solid #514938; border-radius: 3px; background: #11110f; box-shadow: inset 0 2px 4px #000; }
+.ability-facet-chance-track span { display: block; height: 100%; background: linear-gradient(90deg, #b87531, #f0c66c); box-shadow: 0 0 9px rgba(239, 189, 91, 0.55); transition: width 180ms ease; }
+.ability-facet-lines { display: grid; gap: 9px; }
+.ability-facet-line { display: grid; grid-template-areas: 'title action' 'nodes action' 'levels action'; grid-template-columns: minmax(0, 1fr) 88px; align-items: center; gap: 8px 14px; min-width: 0; padding: 12px 13px; border: 1px solid #4f5c5c; border-left: 3px solid #579b87; border-radius: 4px; background: linear-gradient(100deg, rgba(50, 94, 83, 0.22), rgba(26, 26, 23, 0.92) 58%); }
+.ability-facet-line--negative { border-color: #684b45; border-left-color: #b46758; background: linear-gradient(100deg, rgba(105, 54, 46, 0.22), rgba(28, 25, 23, 0.92) 58%); }
+.ability-facet-line.is-last-success { animation: facet-line-success 720ms ease both; }
+.ability-facet-line.is-last-failure { animation: facet-line-failure 720ms ease both; }
+.ability-facet-line-title { grid-area: title; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 0; }
+.ability-facet-line-title > div { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.ability-facet-line-title strong { overflow: hidden; color: #e8f2e9; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.ability-facet-line--negative .ability-facet-line-title strong { color: #f0d6cf; }
+.ability-facet-line-title em { flex: 0 0 auto; color: #8dbdab; font-size: 9px; font-style: normal; font-weight: 900; }
+.ability-facet-line--negative .ability-facet-line-title em { color: #d38e7f; }
+.ability-facet-result { flex: 0 1 auto; overflow: hidden; color: #9d998f; font-size: 9px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.ability-facet-result.is-success { color: #74d9ad; }
+.ability-facet-result.is-failure { color: #d77c68; }
+.ability-facet-node-row { grid-area: nodes; display: grid; grid-template-columns: repeat(10, minmax(16px, 1fr)); gap: 5px; width: min(100%, 440px); }
+.ability-facet-node { aspect-ratio: 1; min-width: 0; border: 1px solid #5e5b54; border-radius: 50%; background: #1a1a18; box-shadow: inset 0 2px 3px #090909; }
+.ability-facet-node.is-success { border-color: #8ed9bc; background: #4aa17f; box-shadow: inset 0 1px #c7f2de, 0 0 8px rgba(74, 170, 132, 0.66); }
+.ability-facet-node.is-failure { border-color: #574a47; background: #302b29; box-shadow: inset 0 0 0 3px #1b1918; }
+.ability-facet-line--negative .ability-facet-node.is-success { border-color: #e09b8b; background: #ad5d4f; box-shadow: inset 0 1px #f3c3b8, 0 0 8px rgba(183, 91, 75, 0.62); }
+.ability-facet-levels { grid-area: levels; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; width: min(100%, 440px); }
+.ability-facet-levels > span { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 23px; color: #69665f; border: 1px solid #3f3e39; border-radius: 2px; background: #1b1b19; }
+.ability-facet-levels small { color: inherit; font-size: 8px; }
+.ability-facet-levels strong { overflow: hidden; color: inherit; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
+.ability-facet-levels > span.is-active { color: #bdebd8; border-color: #568f7a; background: #233c33; }
+.ability-facet-line--negative .ability-facet-levels > span.is-active { color: #f0b7aa; border-color: #9a5e52; background: #462b26; }
+.ability-facet-button { grid-area: action; align-self: stretch; min-height: 68px; color: #f5e7ca; font-size: 11px; font-weight: 900; cursor: pointer; border: 1px solid #a47c41; border-radius: 3px; background: linear-gradient(#79582f, #4b351f); box-shadow: inset 0 1px rgba(255, 227, 173, 0.24), 0 3px 7px rgba(0, 0, 0, 0.42); }
+.ability-facet-button:hover:not(:disabled) { filter: brightness(1.14); }
+.ability-facet-button:disabled { color: #6f6a61; cursor: default; border-color: #45433e; background: #292825; box-shadow: none; }
+.ability-facet-footer { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px; padding-top: 3px; }
+.ability-facet-footer .ability-stone-target { min-width: 0; }
+.ability-facet-footer .ability-stone-actions { grid-template-columns: repeat(auto-fit, minmax(82px, 1fr)); min-width: 204px; }
+.ability-facet-lock { align-self: center; color: #847f75; font-size: 9px; font-weight: 800; }
+.ability-facet-burst { position: absolute; top: 47%; left: 50%; z-index: 3; display: grid; place-items: center; width: min(280px, 72%); aspect-ratio: 1; pointer-events: none; transform: translate(-50%, -50%); animation: facet-burst-out 980ms ease both; }
+.ability-facet-burst::before,
+.ability-facet-burst::after { position: absolute; inset: 16%; content: ''; border: 2px solid rgba(160, 236, 220, 0.75); border-radius: 50%; animation: facet-burst-ring 980ms ease-out both; }
+.ability-facet-burst::after { inset: 27%; border-color: rgba(255, 226, 144, 0.62); animation-delay: 80ms; }
+.ability-facet-burst.is-failure::before { border-color: rgba(236, 116, 94, 0.68); }
+.ability-facet-burst.is-failure::after { border-color: rgba(126, 74, 64, 0.76); }
+.ability-facet-burst-core { position: relative; z-index: 2; display: grid; place-items: center; width: 118px; height: 118px; border: 1px solid rgba(120, 220, 200, 0.5); border-radius: 50%; background: radial-gradient(circle, rgba(52, 90, 83, 0.84), rgba(10, 14, 13, 0.18) 70%); box-shadow: 0 0 32px rgba(95, 230, 205, 0.5), inset 0 0 20px rgba(178, 255, 234, 0.14); animation: facet-core-pop 780ms cubic-bezier(.2, 1.5, .32, 1) both; }
+.ability-facet-burst.is-failure .ability-facet-burst-core { border-color: rgba(232, 112, 93, 0.5); background: radial-gradient(circle, rgba(92, 45, 39, 0.86), rgba(12, 9, 8, 0.18) 70%); box-shadow: 0 0 28px rgba(230, 87, 67, 0.42), inset 0 0 18px rgba(255, 188, 172, 0.1); }
+.ability-facet-burst-core .ability-stone-sprite { position: absolute; opacity: 0.36; transform: scale(1.1); }
+.ability-facet-burst-core strong { position: relative; z-index: 1; color: #e9fff5; font-size: 22px; font-weight: 900; text-shadow: 0 0 12px rgba(120, 255, 220, 0.8); }
+.ability-facet-burst.is-failure .ability-facet-burst-core strong { color: #ffd8cf; text-shadow: 0 0 12px rgba(255, 100, 72, 0.8); }
+.ability-facet-burst-core small { position: relative; z-index: 1; color: #ffe5a8; font-size: 10px; font-weight: 900; }
+.ability-facet-burst-sparks { position: absolute; inset: 0; }
+.ability-facet-burst-sparks i { position: absolute; top: 50%; left: 50%; width: 7px; height: 18px; border-radius: 999px; background: linear-gradient(#ffffff, #79f4d5); box-shadow: 0 0 10px rgba(112, 246, 212, 0.8); transform-origin: 0 0; animation: facet-spark-flight 820ms ease-out both; }
+.ability-facet-burst.is-failure .ability-facet-burst-sparks i { background: linear-gradient(#ffe7df, #e2674f); box-shadow: 0 0 10px rgba(232, 96, 68, 0.7); }
+.ability-facet-burst-sparks i:nth-child(1) { transform: rotate(0deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(2) { transform: rotate(30deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(3) { transform: rotate(60deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(4) { transform: rotate(90deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(5) { transform: rotate(120deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(6) { transform: rotate(150deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(7) { transform: rotate(180deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(8) { transform: rotate(210deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(9) { transform: rotate(240deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(10) { transform: rotate(270deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(11) { transform: rotate(300deg) translateY(-78px); }
+.ability-facet-burst-sparks i:nth-child(12) { transform: rotate(330deg) translateY(-78px); }
+
+@media (max-width: 620px) {
+  .modal-backdrop { padding: 10px; }
+  .stone-modal.ability-facet-modal { max-height: calc(100dvh - 20px); padding: 24px 14px 18px; }
+  .ability-facet-modal h2 { padding-right: 30px; font-size: 18px; }
+  .ability-facet-head { grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 2px 5px 10px; }
+  .ability-facet-head .ability-stone-sprite { width: 72px; }
+  .ability-facet-chance strong { font-size: 18px; }
+  .ability-facet-line { grid-template-areas: 'title' 'nodes' 'levels' 'action'; grid-template-columns: minmax(0, 1fr); gap: 7px; padding: 10px; }
+  .ability-facet-line-title { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .ability-facet-node-row { gap: 4px; width: 100%; }
+  .ability-facet-levels { width: 100%; }
+  .ability-facet-button { min-height: 34px; }
+  .ability-facet-footer { grid-template-columns: minmax(0, 1fr); align-items: stretch; }
+  .ability-facet-footer .ability-stone-actions { min-width: 0; }
+}
+
+/* 어빌리티 스톤 각인 연출 */
+.stone-engrave-overlay { position: fixed; inset: 0; z-index: 220; display: grid; place-items: center; overflow: hidden; padding: 24px; color: #edfaff; background: radial-gradient(circle at 50% 50%, rgba(24, 55, 68, 0.72), rgba(3, 5, 7, 0.96) 62%); animation: stone-engrave-overlay-in 180ms ease-out both; }
+.stone-engrave-aurora { position: absolute; inset: -18%; background: conic-gradient(from 40deg, transparent 0 10%, rgba(102, 220, 204, 0.28) 18%, transparent 29%, rgba(226, 179, 98, 0.22) 40%, transparent 54%, rgba(151, 136, 255, 0.26) 65%, transparent 78%, rgba(106, 225, 186, 0.18) 88%, transparent 100%); filter: blur(12px); animation: stone-engrave-aurora-spin 3s ease-in-out both; }
+.stone-engrave-grid { position: absolute; inset: 0; opacity: 0.28; background-image: linear-gradient(rgba(130, 224, 220, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(130, 224, 220, 0.15) 1px, transparent 1px); background-size: 52px 52px; mask-image: radial-gradient(circle at 50% 50%, #000, transparent 70%); animation: stone-engrave-grid-drop 2.8s ease-out both; }
+.stone-engrave-particles { position: absolute; inset: 0; pointer-events: none; }
+.stone-engrave-particles i { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; border-radius: 50%; background: #9ff7e6; box-shadow: 0 0 16px #72e6d4; animation: stone-engrave-particle 2.5s ease-out both; }
+.stone-engrave-particles i:nth-child(3n) { background: #ffd58b; box-shadow: 0 0 15px #f0b85b; }
+.stone-engrave-particles i:nth-child(4n) { background: #c7bdff; box-shadow: 0 0 15px #9e91ff; }
+.stone-engrave-particles i:nth-child(1) { --tx: -42vw; --ty: -31vh; animation-delay: 80ms; }
+.stone-engrave-particles i:nth-child(2) { --tx: -31vw; --ty: 24vh; animation-delay: 160ms; }
+.stone-engrave-particles i:nth-child(3) { --tx: -18vw; --ty: -39vh; animation-delay: 240ms; }
+.stone-engrave-particles i:nth-child(4) { --tx: -7vw; --ty: 33vh; animation-delay: 320ms; }
+.stone-engrave-particles i:nth-child(5) { --tx: 12vw; --ty: -35vh; animation-delay: 110ms; }
+.stone-engrave-particles i:nth-child(6) { --tx: 24vw; --ty: 31vh; animation-delay: 210ms; }
+.stone-engrave-particles i:nth-child(7) { --tx: 39vw; --ty: -23vh; animation-delay: 310ms; }
+.stone-engrave-particles i:nth-child(8) { --tx: 44vw; --ty: 18vh; animation-delay: 410ms; }
+.stone-engrave-particles i:nth-child(9) { --tx: -36vw; --ty: 4vh; animation-delay: 510ms; }
+.stone-engrave-particles i:nth-child(10) { --tx: 36vw; --ty: 4vh; animation-delay: 610ms; }
+.stone-engrave-particles i:nth-child(11) { --tx: -4vw; --ty: -42vh; animation-delay: 120ms; }
+.stone-engrave-particles i:nth-child(12) { --tx: 4vw; --ty: 42vh; animation-delay: 220ms; }
+.stone-engrave-particles i:nth-child(13) { --tx: -25vw; --ty: -17vh; animation-delay: 340ms; }
+.stone-engrave-particles i:nth-child(14) { --tx: 25vw; --ty: 17vh; animation-delay: 440ms; }
+.stone-engrave-particles i:nth-child(15) { --tx: 17vw; --ty: -25vh; animation-delay: 540ms; }
+.stone-engrave-particles i:nth-child(16) { --tx: -17vw; --ty: 25vh; animation-delay: 640ms; }
+.stone-engrave-particles i:nth-child(17) { --tx: 31vw; --ty: -2vh; animation-delay: 740ms; }
+.stone-engrave-particles i:nth-child(18) { --tx: -31vw; --ty: 2vh; animation-delay: 840ms; }
+.stone-engrave-stage { position: relative; z-index: 2; display: flex; align-items: center; flex-direction: column; width: min(620px, 100%); max-height: calc(100dvh - 48px); overflow-y: auto; padding: 26px 28px 24px; text-align: center; outline: none; border: 1px solid rgba(134, 215, 220, 0.5); border-radius: 8px; background: linear-gradient(160deg, rgba(20, 31, 36, 0.88), rgba(9, 12, 15, 0.92)); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.72), inset 0 0 0 1px rgba(210, 255, 245, 0.08), 0 0 70px rgba(80, 210, 200, 0.2); animation: stone-engrave-stage-rise 520ms cubic-bezier(.2, 1.3, .35, 1) both; }
+.stone-engrave-kicker { color: #8fe7dc; font-size: 10px; font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; }
+.stone-engrave-composition { position: relative; display: grid; grid-template-columns: minmax(112px, 1fr) 112px minmax(112px, 1fr); align-items: center; width: min(520px, 100%); margin: 16px 0 10px; }
+.stone-engrave-pickaxe,
+.stone-engrave-stone { position: relative; display: grid; place-items: center; min-height: 150px; }
+.stone-engrave-pickaxe { animation: stone-engrave-pickaxe-in 920ms ease both; }
+.stone-engrave-stone { animation: stone-engrave-stone-in 920ms ease both; }
+.stone-engrave-pickaxe-sprite { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 18px rgba(255, 211, 128, 0.65)); animation: stone-engrave-tool-charge 1.45s ease-in-out infinite; }
+.stone-engrave-pickaxe::before,
+.stone-engrave-stone::before { position: absolute; width: 118px; height: 118px; content: ''; border: 1px solid rgba(134, 236, 226, 0.42); border-radius: 50%; background: radial-gradient(circle, rgba(124, 220, 208, 0.18), transparent 64%); box-shadow: 0 0 32px rgba(112, 230, 215, 0.22); animation: stone-engrave-orbit-pulse 1.5s ease-in-out infinite; }
+.stone-engrave-link { position: relative; display: grid; place-items: center; height: 100%; }
+.stone-engrave-link span { position: absolute; width: 136px; height: 2px; border-radius: 999px; background: linear-gradient(90deg, transparent, #93f2e1, #ffd891, transparent); box-shadow: 0 0 12px rgba(124, 240, 220, 0.75); animation: stone-engrave-link-fire 1.3s ease both; }
+.stone-engrave-link span:nth-child(2) { transform: rotate(24deg); animation-delay: 140ms; }
+.stone-engrave-link span:nth-child(3) { transform: rotate(-24deg); animation-delay: 280ms; }
+.stone-engrave-stage h2 { margin-top: 3px; color: #fff5d9; font-family: Georgia, serif; font-size: clamp(24px, 4vw, 38px); text-shadow: 0 0 18px rgba(255, 201, 111, 0.35); }
+.stone-engrave-title { margin-top: 6px; color: #c6fbf2; font-size: 13px; }
+.stone-engrave-options { display: grid; gap: 6px; width: min(440px, 100%); margin: 16px 0 0; padding: 0; list-style: none; }
+.stone-engrave-options li { padding: 7px 10px; overflow: hidden; font-size: 10px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; border: 1px solid rgba(135, 160, 170, 0.34); border-radius: 4px; background: rgba(9, 13, 16, 0.52); }
+.stone-engrave-options li.is-positive { color: #bdf6d0; }
+.stone-engrave-options li.is-negative { color: #f3b9aa; }
+.stone-engrave-confirm { min-width: 160px; min-height: 44px; margin-top: 22px; color: #09201d; font-size: 13px; font-weight: 900; cursor: pointer; border: 1px solid #d2fff5; border-radius: 4px; background: linear-gradient(#b8fff0, #58c7b7); box-shadow: inset 0 1px #effffc, 0 5px 0 #1e726b, 0 0 18px rgba(102, 240, 220, 0.24); }
+.stone-engrave-confirm:disabled { cursor: wait; filter: grayscale(0.45); opacity: 0.62; }
+.stone-engrave-confirm:hover:not(:disabled) { filter: brightness(1.06); }
+
+@media (max-width: 620px) {
+  .engraved-stone-button { grid-template-columns: 54px minmax(0, 1fr); }
+  .engraved-stone-button .ability-stone-sprite--medium { width: 52px; }
+  .engraved-stone-cta { grid-column: 1 / -1; justify-self: stretch; text-align: center; }
+  .stone-modal.ability-stone-list-modal { max-height: calc(100dvh - 20px); padding: 24px 14px 18px; }
+  .ability-stone-select-item { grid-template-columns: 58px minmax(0, 1fr); padding: 8px; }
+  .ability-stone-select-item .ability-stone-sprite--medium { width: 54px; }
+  .ability-stone-select-head { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .stone-engrave-overlay { padding: 12px; }
+  .stone-engrave-stage { max-height: calc(100dvh - 24px); padding: 22px 14px 18px; }
+  .stone-engrave-composition { grid-template-columns: 1fr 48px 1fr; }
+  .stone-engrave-pickaxe,
+  .stone-engrave-stone { min-height: 118px; }
+  .stone-engrave-link span { width: 78px; }
+}
+
+@keyframes facet-line-success {
+  0% { box-shadow: 0 0 0 rgba(116, 230, 190, 0); transform: translateX(0); }
+  35% { box-shadow: 0 0 24px rgba(116, 230, 190, 0.32); transform: translateX(2px); }
+  100% { box-shadow: 0 0 0 rgba(116, 230, 190, 0); transform: translateX(0); }
+}
+@keyframes facet-line-failure {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-4px); }
+  38% { transform: translateX(4px); box-shadow: 0 0 20px rgba(220, 93, 70, 0.25); }
+  58% { transform: translateX(-2px); }
+}
+@keyframes facet-burst-out {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+  12% { opacity: 1; }
+  78% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+}
+@keyframes facet-burst-ring {
+  0% { opacity: 0; transform: scale(0.35); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.45); }
+}
+@keyframes facet-core-pop {
+  0% { transform: scale(0.48) rotate(-18deg); }
+  55% { transform: scale(1.08) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes facet-spark-flight {
+  0% { opacity: 0; scale: 0.3; translate: 0 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; scale: 0.8; translate: 0 -42px; }
+}
+@keyframes stone-engrave-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes stone-engrave-aurora-spin {
+  0% { opacity: 0; transform: scale(0.7) rotate(-35deg); }
+  35% { opacity: 1; }
+  100% { opacity: 0.78; transform: scale(1.08) rotate(85deg); }
+}
+@keyframes stone-engrave-grid-drop {
+  from { opacity: 0; transform: translateY(-26px); }
+  to { opacity: 0.28; transform: translateY(0); }
+}
+@keyframes stone-engrave-particle {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  18% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); }
+}
+@keyframes stone-engrave-stage-rise {
+  from { opacity: 0; transform: translateY(22px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes stone-engrave-pickaxe-in {
+  0% { opacity: 0; transform: translateX(-70px) rotate(-18deg) scale(0.76); }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+}
+@keyframes stone-engrave-stone-in {
+  0% { opacity: 0; transform: translateX(70px) rotate(22deg) scale(0.7); }
+  100% { opacity: 1; transform: translateX(0) rotate(0deg) scale(1); }
+}
+@keyframes stone-engrave-orbit-pulse {
+  0%, 100% { opacity: 0.52; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+@keyframes stone-engrave-link-fire {
+  0% { opacity: 0; clip-path: inset(0 50%); }
+  28% { opacity: 1; }
+  100% { opacity: 0.76; clip-path: inset(0 0); }
+}
+@keyframes stone-engrave-tool-charge {
+  0%, 100% { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 12px rgba(255, 211, 128, 0.42)); }
+  50% { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 24px rgba(112, 240, 220, 0.75)); }
+}
 
 @keyframes enchant-glow {
   0%, 100% { filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 4px rgba(120, 190, 255, 0.5)); }

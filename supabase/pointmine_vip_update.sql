@@ -472,6 +472,7 @@ begin
   perform public.send_kakao_notification(
     '[ 포인트 광산 구매 ]' || E'\n' ||
     '✅ ' || coalesce(v_nickname, '광부') || '님이 ' || to_char(v_paid, 'FM9,999,999,999') || ' P를 소모해 ' || v_chest_name || '를 구매했습니다.' || E'\n' ||
+    '⛏️ 획득 곡괭이: ' || v_pickaxe_name || E'\n' ||
     '💰 잔액: ' || to_char(v_new_balance, 'FM9,999,999,999') || ' P' || E'\n\n' ||
     '[ 포인트 분배 ]' || E'\n' ||
     '- 로또기금: ' || to_char(v_lotto_fund_share, 'FM9,999,999,999') || ' P' || E'\n' ||

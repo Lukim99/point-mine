@@ -1,10 +1,11 @@
-import { findMonster, findPickaxe, MONSTERS, type AttackResult, type MonsterId, type PickaxeInventoryItem } from '../game'
+import { abilityStoneEffectValue, findMonster, findPickaxe, MONSTERS, type AbilityStoneInventoryItem, type AttackResult, type MonsterId, type PickaxeInventoryItem } from '../game'
 import { MonsterSprite } from './MonsterSprite'
 import { OreSprite } from './OreSprite'
 import { MonsterItemSprite } from './MonsterItemSprite'
 
 interface HuntPanelProps {
   equipped?: PickaxeInventoryItem
+  abilityStone?: AbilityStoneInventoryItem | null
   floor: number
   huntMonster: MonsterId | null
   huntMonsterHp: number | null
@@ -16,9 +17,11 @@ interface HuntPanelProps {
 // 현재 층 구간에 등장할 수 있는 몬스터 목록을 반환합니다.
 const monstersForFloor = (floor: number) => MONSTERS.filter((monster) => floor >= monster.minFloor && floor <= monster.maxFloor)
 
-export function HuntPanel({ equipped, floor, huntMonster, huntMonsterHp, attacking, lastAttack, onAttack }: HuntPanelProps) {
+export function HuntPanel({ equipped, abilityStone, floor, huntMonster, huntMonsterHp, attacking, lastAttack, onAttack }: HuntPanelProps) {
   const definition = equipped ? findPickaxe(equipped.id) : null
-  const canAttack = Boolean(equipped && equipped.durability > 0)
+  const durabilityCost = 1 + (equipped?.enchants?.fragile ?? 0) + Math.max(0, abilityStoneEffectValue(abilityStone, 'durability_cost'))
+  const attack = Math.max(1, (definition?.attack ?? 0) + (equipped?.enchants?.sharp ?? 0) - (equipped?.enchants?.weaken ?? 0) + abilityStoneEffectValue(abilityStone, 'attack'))
+  const canAttack = Boolean(equipped && equipped.durability >= durabilityCost)
   const monster = huntMonster ? findMonster(huntMonster) : null
   const maxHp = monster?.maxHp ?? 0
   const currentHp = huntMonsterHp ?? maxHp
@@ -83,12 +86,12 @@ export function HuntPanel({ equipped, floor, huntMonster, huntMonsterHp, attacki
         )}
 
         <div className="hunt-controls">
-          <p>{definition ? `${definition.name} 장착 중 · 공격력 ${definition.attack}` : '인벤토리에서 곡괭이를 장착하세요'}</p>
+          <p>{definition ? `${definition.name} 장착 중 · 기본 공격력 ${attack}` : '인벤토리에서 곡괭이를 장착하세요'}</p>
           <button className="attack-button" type="button" onClick={onAttack} disabled={!canAttack || attacking}>
             <span aria-hidden="true">⚔</span>{attacking ? '공격 중...' : monster ? '공격' : '몬스터 탐색'}
           </button>
           {equipped && <small>남은 내구도 {equipped.durability} / {equipped.maxDurability}</small>}
-          {!canAttack && equipped && <small className="hunt-warn">곡괭이 내구도가 소진되었습니다.</small>}
+          {!canAttack && equipped && <small className="hunt-warn">공격에 필요한 내구도가 부족합니다. (필요 {durabilityCost})</small>}
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { BULK_CHEST_COUNT, CHESTS, discountedChestPrice, findPickaxe, VIP_BULK_CHEST_COUNT, VIP_BULK_DISCOUNT, VIP_DAILY_MANA, VIP_DAYS, VIP_PRICE, VIP_SINGLE_DISCOUNT, type ChestDefinition, type ChestId } from '../game'
+import { ABILITY_STONE_PRICE, BULK_CHEST_COUNT, CHESTS, discountedChestPrice, findPickaxe, VIP_BULK_CHEST_COUNT, VIP_BULK_DISCOUNT, VIP_DAILY_MANA, VIP_DAYS, VIP_PRICE, VIP_SINGLE_DISCOUNT, type ChestDefinition, type ChestId } from '../game'
+import { AbilityStoneSprite } from './AbilityStoneSprite'
 import { ChestSprite } from './ChestSprite'
 import { Modal } from './Modal'
 
@@ -11,6 +12,7 @@ interface ShopPanelProps {
   freeNormalAvailable: boolean
   freePremiumAvailable: boolean
   onOpenChest: (chestId: ChestId) => void
+  onPurchaseAbilityStone: () => void
   onOpenChestBulk: (chestId: ChestId, count: number) => void
   onOpenVipModal: () => void
   onOpenFreeVipChest: (chestId: ChestId) => void
@@ -27,8 +29,9 @@ const formatVipUntil = (vipExpiresAt: string | null) => {
   return new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(date)
 }
 
-export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onOpenVipModal, onOpenFreeVipChest }: ShopPanelProps) {
+export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onPurchaseAbilityStone, onOpenChestBulk, onOpenVipModal, onOpenFreeVipChest }: ShopPanelProps) {
   const [rateChest, setRateChest] = useState<ChestDefinition | null>(null)
+  const canBuyAbilityStone = balance >= ABILITY_STONE_PRICE
 
   return (
     <section className="shop-panel" aria-labelledby="shop-title">
@@ -70,6 +73,23 @@ export function ShopPanel({ balance, busy, vipActive, vipExpiresAt, freeNormalAv
           </button>
         )}
       </div>
+
+      <article className="ability-stone-shop-card">
+        <div className="ability-stone-shop-visual">
+          <span className="ability-stone-shop-ring" aria-hidden="true" />
+          <AbilityStoneSprite variant={1} size="large" />
+        </div>
+        <div className="ability-stone-shop-copy">
+          <span className="chest-tier">ABILITY SUPPLY</span>
+          <h3>어빌리티 스톤</h3>
+          <p>획득 순간 긍정 옵션 2개와 부정 옵션 1개가 결정됩니다. 곡괭이에 각인한 스톤은 언제든 교체할 수 있습니다.</p>
+          <small>백금 이상 곡괭이로 채굴해도 1% 확률로 획득</small>
+        </div>
+        <button className="buy-chest-button ability-stone-buy-button" type="button" onClick={onPurchaseAbilityStone} disabled={busy || !canBuyAbilityStone}>
+          <span>{busy ? '구매 처리 중...' : canBuyAbilityStone ? '어빌리티 스톤 구매' : '포인트 부족'}</span>
+          <strong>{ABILITY_STONE_PRICE.toLocaleString('ko-KR')} P</strong>
+        </button>
+      </article>
 
       <div className="chest-shop-grid">
         {CHESTS.map((chest) => {

@@ -5,9 +5,10 @@ interface ModalProps {
   children: ReactNode
   onClose?: () => void
   labelledBy?: string
+  className?: string
 }
 
-export function Modal({ title, children, onClose, labelledBy = 'modal-title' }: ModalProps) {
+export function Modal({ title, children, onClose, labelledBy = 'modal-title', className = '' }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -28,7 +29,7 @@ export function Modal({ title, children, onClose, labelledBy = 'modal-title' }: 
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={onClose}>
       <div
-        className="stone-modal"
+        className={`stone-modal ${className}`.trim()}
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}

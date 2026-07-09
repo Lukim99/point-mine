@@ -133,6 +133,16 @@
 .shop-balance span { color: #857968; font-size: 8px; }
 .shop-balance strong { color: #ffd070; font-family: Georgia, serif; font-size: 18px; }
 
+.ability-stone-shop-card { display: grid; grid-template-columns: 118px minmax(0, 1fr) minmax(190px, 0.55fr); align-items: center; gap: 16px; flex: 0 0 auto; margin-top: 14px; padding: 12px 14px; border: 1px solid #526878; border-radius: 5px; background: radial-gradient(circle at 9% 50%, rgba(107, 169, 204, 0.2), transparent 26%), linear-gradient(110deg, #222c32, #171614 62%); box-shadow: inset 0 0 22px rgba(70, 126, 158, 0.12); }
+.ability-stone-shop-visual { position: relative; display: grid; place-items: center; min-height: 94px; }
+.ability-stone-shop-ring { position: absolute; width: 90px; aspect-ratio: 1; border: 1px solid rgba(144, 212, 245, 0.35); border-radius: 50%; box-shadow: 0 0 22px rgba(99, 177, 215, 0.25), inset 0 0 18px rgba(99, 177, 215, 0.12); }
+.ability-stone-shop-copy { min-width: 0; }
+.ability-stone-shop-copy h3 { margin: 3px 0 5px; color: #e8f7ff; font-family: Georgia, serif; font-size: 19px; }
+.ability-stone-shop-copy p { color: #a9b3b8; font-size: 9px; line-height: 1.55; }
+.ability-stone-shop-copy small { display: block; margin-top: 5px; color: #85b9d3; font-size: 8px; }
+.ability-stone-buy-button { min-width: 0; border-color: #587f96; background: linear-gradient(#41677b, #294452); box-shadow: inset 0 1px #6d9bb2, 0 3px 0 #14242c; }
+.ability-stone-buy-button strong { color: #cbedff; }
+
 .chest-shop-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); flex: 1 0 auto; padding: clamp(15px, 2.2vh, 24px) 0 10px; }
 .chest-card { position: relative; display: grid; grid-template-rows: minmax(120px, 1fr) auto auto; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid #544a3d; border-radius: 5px; background: radial-gradient(circle at 50% 26%, rgba(176, 116, 54, 0.18), transparent 34%), linear-gradient(#27211b, #181411); box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.45), 0 10px 25px rgba(0, 0, 0, 0.32); }
 .chest-card--premium { border-color: #6c5941; background: radial-gradient(circle at 50% 25%, rgba(224, 166, 76, 0.22), transparent 36%), linear-gradient(#2d271f, #181411); }
@@ -231,6 +241,14 @@
   .shop-heading p { display: none; }
   .shop-balance { padding: 6px 9px; }
   .shop-balance strong { font-size: 14px; }
+  .ability-stone-shop-card { grid-template-columns: 76px minmax(0, 1fr); gap: 8px; margin-top: 9px; padding: 8px; }
+  .ability-stone-shop-visual { min-height: 70px; }
+  .ability-stone-shop-visual .ability-stone-sprite--large { width: 66px; }
+  .ability-stone-shop-ring { width: 62px; }
+  .ability-stone-shop-copy h3 { font-size: 14px; }
+  .ability-stone-shop-copy p { display: none; }
+  .ability-stone-shop-copy small { font-size: 7px; }
+  .ability-stone-buy-button { grid-column: 1 / -1; min-height: 34px; }
   .chest-shop-grid { gap: 8px; padding: 10px 0 7px; }
   .chest-card { grid-template-rows: minmax(100px, 1fr) auto auto; }
   .chest-sprite--card { width: clamp(105px, 34vw, 155px); height: clamp(105px, 34vw, 155px); }

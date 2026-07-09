@@ -78,6 +78,14 @@ export const ENCHANTMENTS = [
 ] as const
 
 export const ENCHANT_MANA_COST = 5
+export const ABILITY_STONE_PRICE = 100
+export const ABILITY_STONE_DROP_PICKAXE_RANK = 7
+export const ABILITY_STONE_DROP_CHANCE = 1
+export const ABILITY_STONE_FACET_ATTEMPTS = 10
+export const ABILITY_STONE_FACET_START_CHANCE = 75
+export const ABILITY_STONE_FACET_MIN_CHANCE = 25
+export const ABILITY_STONE_FACET_MAX_CHANCE = 75
+export const ABILITY_STONE_FACET_TIER_THRESHOLDS = [6, 7, 9, 10] as const
 
 export type PickaxeId = (typeof PICKAXES)[number]['id']
 export type OreId = (typeof ORES)[number]['id']
@@ -85,6 +93,56 @@ export type MonsterId = (typeof MONSTERS)[number]['id']
 export type MonsterItemId = (typeof MONSTER_ITEMS)[number]['id']
 export type EnchantId = (typeof ENCHANTMENTS)[number]['id']
 export type ChestId = 'normal' | 'premium'
+export type AbilityStoneSign = 'positive' | 'negative'
+export type AbilityStoneRarity = 'common' | 'normal' | 'rare'
+
+export interface AbilityStoneOptionDefinition {
+  id: string
+  name: string
+  sign: AbilityStoneSign
+  effectId: string
+  unit: '' | '%'
+  rarity: AbilityStoneRarity
+  values: readonly number[]
+  effectValues: readonly number[]
+}
+
+export const ABILITY_STONE_OPTIONS: readonly AbilityStoneOptionDefinition[] = [
+  { id: 'extra_mineral_chance', name: '광물 1개 더 채굴할 확률', sign: 'positive', effectId: 'extra_mineral_chance', unit: '%', rarity: 'normal', values: [1, 3, 7, 15], effectValues: [1, 3, 7, 15] },
+  { id: 'xp_gain', name: '경험치 획득', sign: 'positive', effectId: 'xp_gain', unit: '', rarity: 'common', values: [1, 2, 4, 10], effectValues: [1, 2, 4, 10] },
+  { id: 'attack_up', name: '공격력', sign: 'positive', effectId: 'attack', unit: '', rarity: 'normal', values: [1, 2, 4, 10], effectValues: [1, 2, 4, 10] },
+  { id: 'mineral_value_up', name: '이 곡괭이로 캔 광물 가치', sign: 'positive', effectId: 'mineral_value', unit: '', rarity: 'rare', values: [1, 2, 3, 4], effectValues: [1, 2, 3, 4] },
+  { id: 'daily_repair_chance', name: '매일 내구도 1 수리 확률', sign: 'positive', effectId: 'daily_repair_chance', unit: '%', rarity: 'normal', values: [5, 10, 20, 50], effectValues: [5, 10, 20, 50] },
+  { id: 'enchant_mana_cost_down', name: '마법 부여 마나 소모', sign: 'positive', effectId: 'enchant_mana_cost', unit: '', rarity: 'normal', values: [-1, -2, -3, -4], effectValues: [-1, -2, -3, -4] },
+  { id: 'monster_reward_chance_up', name: '몬스터 보상 획득 확률', sign: 'positive', effectId: 'monster_reward_chance', unit: '%', rarity: 'normal', values: [5, 8, 11, 20], effectValues: [5, 8, 11, 20] },
+  { id: 'daily_points', name: '곡괭이 보유 시 매일 포인트', sign: 'positive', effectId: 'daily_points', unit: '', rarity: 'rare', values: [5, 10, 20, 50], effectValues: [5, 10, 20, 50] },
+  { id: 'extra_two_mineral_chance', name: '광물 2개 더 채굴할 확률', sign: 'positive', effectId: 'extra_two_mineral_chance', unit: '%', rarity: 'rare', values: [0.5, 1, 2, 5], effectValues: [0.5, 1, 2, 5] },
+  { id: 'daily_mana', name: '곡괭이 보유 시 매일 마나', sign: 'positive', effectId: 'daily_mana', unit: '', rarity: 'normal', values: [1, 2, 3, 5], effectValues: [1, 2, 3, 5] },
+  { id: 'mine_fail_chance', name: '광물을 캐지 못할 확률', sign: 'negative', effectId: 'mine_fail_chance', unit: '%', rarity: 'normal', values: [3, 6, 9, 15], effectValues: [3, 6, 9, 15] },
+  { id: 'durability_cost_up', name: '내구도 추가 소모', sign: 'negative', effectId: 'durability_cost', unit: '', rarity: 'normal', values: [1, 2, 3, 5], effectValues: [1, 2, 3, 5] },
+  { id: 'attack_down', name: '공격력', sign: 'negative', effectId: 'attack', unit: '', rarity: 'normal', values: [-1, -3, -7, -10], effectValues: [-1, -3, -7, -10] },
+  { id: 'mineral_value_down', name: '이 곡괭이로 캔 광물 가치', sign: 'negative', effectId: 'mineral_value', unit: '', rarity: 'normal', values: [-1, -2, -3, -4], effectValues: [-1, -2, -3, -4] },
+  { id: 'enchant_mana_cost_up', name: '마법 부여 마나 소모', sign: 'negative', effectId: 'enchant_mana_cost', unit: '', rarity: 'normal', values: [1, 2, 3, 5], effectValues: [1, 2, 3, 5] },
+  { id: 'monster_reward_chance_down', name: '몬스터 보상 획득 확률', sign: 'negative', effectId: 'monster_reward_chance', unit: '%', rarity: 'normal', values: [-2, -4, -8, -16], effectValues: [-2, -4, -8, -16] },
+  { id: 'daily_damage_chance', name: '매일 내구도 1 손상 확률', sign: 'negative', effectId: 'daily_damage_chance', unit: '%', rarity: 'normal', values: [5, 10, 20, 50], effectValues: [5, 10, 20, 50] },
+] as const
+
+export type AbilityStoneOptionId = (typeof ABILITY_STONE_OPTIONS)[number]['id']
+
+export interface AbilityStoneOptionRoll {
+  id: AbilityStoneOptionId
+  sign: AbilityStoneSign
+  effectId: string
+  value: number
+  effectValue: number
+  unit: '' | '%'
+  tier: number
+  rarity: AbilityStoneRarity
+  name?: string
+  values?: number[]
+  effectValues?: number[]
+  facets?: boolean[]
+}
 
 export interface ChestDrop {
   pickaxeId: PickaxeId
@@ -155,6 +213,7 @@ export interface PickaxeInventoryItem {
   durability: number
   maxDurability: number
   equipped: boolean
+  abilityStoneUid?: string
   // 부여된 마법. { "<enchantId>": <level> } 형식이며 없으면 미부여 상태입니다.
   enchants?: Partial<Record<EnchantId, number>>
 }
@@ -163,6 +222,7 @@ export interface MineralInventoryItem {
   type: 'mineral'
   id: OreId
   quantity: number
+  unitPoints?: number
 }
 
 export interface MonsterItemInventoryItem {
@@ -171,7 +231,17 @@ export interface MonsterItemInventoryItem {
   quantity: number
 }
 
-export type InventoryItem = PickaxeInventoryItem | MineralInventoryItem | MonsterItemInventoryItem
+export interface AbilityStoneInventoryItem {
+  type: 'ability_stone'
+  uid: string
+  options: AbilityStoneOptionRoll[]
+  variant?: number
+  createdAt?: string
+  facetChance?: number
+  faceted?: boolean
+}
+
+export type InventoryItem = PickaxeInventoryItem | MineralInventoryItem | MonsterItemInventoryItem | AbilityStoneInventoryItem
 
 export interface UserProfile {
   nickname: string
@@ -217,6 +287,7 @@ export interface EnchantResult {
   status: 'success' | 'insufficient_mana' | 'pickaxe_not_found'
   pickaxe_id?: PickaxeId
   enchants?: Partial<Record<EnchantId, number>>
+  mana_cost?: number
   mana?: number
   inventory?: InventoryItem[]
 }
@@ -242,6 +313,7 @@ export interface MineResult {
   floor_up?: boolean
   mined?: boolean
   quantity?: number
+  ability_stone?: AbilityStoneInventoryItem | null
 }
 
 export interface OpenChestResult {
@@ -267,6 +339,39 @@ export interface BulkOpenChestResult {
   count?: number
   results?: BulkChestReward[]
   balance?: number
+  inventory?: InventoryItem[]
+}
+
+export interface PurchaseAbilityStoneResult {
+  status: 'success' | 'insufficient_balance' | 'company_not_found'
+  balance?: number
+  inventory?: InventoryItem[]
+  ability_stone?: AbilityStoneInventoryItem
+}
+
+export interface EngraveAbilityStoneResult {
+  status: 'success' | 'pickaxe_not_found' | 'stone_not_found' | 'stone_not_faceted'
+  inventory?: InventoryItem[]
+}
+
+export interface FacetAbilityStoneResult {
+  status: 'success' | 'stone_not_found' | 'invalid_option' | 'line_complete' | 'already_faceted'
+  success?: boolean
+  chance_before?: number
+  chance?: number
+  option_index?: number
+  successes?: number
+  tier?: number
+  line_complete?: boolean
+  completed?: boolean
+  inventory?: InventoryItem[]
+  ability_stone?: AbilityStoneInventoryItem
+}
+
+export interface DismantleAbilityStoneResult {
+  status: 'success' | 'stone_not_found'
+  gained_mana?: number
+  mana?: number
   inventory?: InventoryItem[]
 }
 
@@ -308,8 +413,10 @@ export const isVipActive = (vipExpiresAt: string | null) => Boolean(vipExpiresAt
 export const findPickaxe = (id: string) => PICKAXES.find((pickaxe) => pickaxe.id === id)
 export const findOre = (id: string) => ORES.find((ore) => ore.id === id)
 export const findChest = (id: string) => CHESTS.find((chest) => chest.id === id)
+export const findAbilityStoneOption = (id: string) => ABILITY_STONE_OPTIONS.find((option) => option.id === id)
 // 곡괭이에 마법 부여가 하나라도 있는지 여부
 export const isEnchanted = (item: { enchants?: Partial<Record<EnchantId, number>> }) => Boolean(item.enchants && Object.keys(item.enchants).length > 0)
+export const hasEngravedAbilityStone = (item: { abilityStoneUid?: string }) => Boolean(item.abilityStoneUid)
 
 // 정수를 로마 숫자로 변환합니다. (마법 부여 레벨 표기용)
 export const toRoman = (value: number): string => {
@@ -347,6 +454,45 @@ export const enchantDescription = (id: EnchantId, level: number): string => {
     default: return ''
   }
 }
+
+const formatSignedValue = (value: number, unit: string) => {
+  const sign = value > 0 ? '+' : ''
+  return `${sign}${Number.isInteger(value) ? value : value.toLocaleString('ko-KR')}${unit}`
+}
+
+export const abilityStoneOptionText = (option: AbilityStoneOptionRoll): string => {
+  const definition = findAbilityStoneOption(option.id)
+  const name = definition?.name ?? option.name ?? option.id
+  const unit = definition?.unit ?? option.unit ?? ''
+  if (Number(option.tier ?? 0) <= 0) return `${name} · 미활성`
+  return `${name} ${formatSignedValue(Number(option.value ?? option.effectValue ?? 0), unit)}`
+}
+
+export const abilityStoneOptionFacets = (option: AbilityStoneOptionRoll): boolean[] =>
+  Array.isArray(option.facets) ? option.facets.slice(0, ABILITY_STONE_FACET_ATTEMPTS) : []
+
+export const abilityStoneOptionSuccesses = (option: AbilityStoneOptionRoll): number => {
+  const facets = abilityStoneOptionFacets(option)
+  if (facets.length > 0) return facets.filter(Boolean).length
+  const tier = Math.max(0, Math.min(4, Number(option.tier ?? 0)))
+  return tier > 0 ? ABILITY_STONE_FACET_TIER_THRESHOLDS[tier - 1] : 0
+}
+
+export const abilityStoneFacetProgress = (stone: AbilityStoneInventoryItem): number =>
+  stone.options.reduce((total, option) => total + abilityStoneOptionFacets(option).length, 0)
+
+export const isAbilityStoneFaceted = (stone: AbilityStoneInventoryItem): boolean =>
+  stone.faceted === true || stone.options.every((option) => abilityStoneOptionFacets(option).length >= ABILITY_STONE_FACET_ATTEMPTS)
+
+export const abilityStoneTitle = (stone: AbilityStoneInventoryItem): string => {
+  const progress = abilityStoneFacetProgress(stone)
+  if (progress === 0) return '미세공 어빌리티 스톤'
+  return `어빌리티 스톤 ${stone.options.map(abilityStoneOptionSuccesses).join('/')}`
+}
+
+export const abilityStoneEffectValue = (stone: AbilityStoneInventoryItem | null | undefined, effectId: string): number =>
+  stone?.options.reduce((total, option) => option.effectId === effectId && Number(option.tier ?? 0) > 0 ? total + Number(option.effectValue ?? 0) : total, 0) ?? 0
+
 export const findMonster = (id: string) => MONSTERS.find((monster) => monster.id === id)
 export const findMonsterItem = (id: string) => MONSTER_ITEMS.find((item) => item.id === id)
 export const findEnchantment = (id: string) => ENCHANTMENTS.find((enchant) => enchant.id === id)

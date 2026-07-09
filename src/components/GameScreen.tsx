@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import '../FloorProgress.css'
-import { findPickaxe, isEnchanted, isVipActive, kstToday, type AttackResult, type ChestId, type MineResult, type MonsterItemId, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
+import { abilityStoneEffectValue, findPickaxe, hasEngravedAbilityStone, isEnchanted, isVipActive, kstToday, type AbilityStoneInventoryItem, type AttackResult, type ChestId, type FacetAbilityStoneResult, type MineResult, type MonsterItemId, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
+import { AbilityStoneSprite } from './AbilityStoneSprite'
 import { Durability } from './Durability'
 import { HuntPanel } from './HuntPanel'
 import { InventoryPanel } from './InventoryPanel'
@@ -26,7 +27,11 @@ interface GameScreenProps {
   onRepair: (id: string, amount: number) => void
   onSellMonsterItems: (itemIds: MonsterItemId[]) => void
   onEnchant: (id: string) => void
+  onFacetAbilityStone: (stoneUid: string, optionIndex: number) => Promise<FacetAbilityStoneResult | null>
+  onEngraveAbilityStone: (stoneUid: string, pickaxeId: string) => void
+  onDismantleAbilityStone: (stoneUid: string) => void
   onOpenChest: (chestId: ChestId) => void
+  onPurchaseAbilityStone: () => void
   onOpenChestBulk: (chestId: ChestId, count: number) => void
   onPurchaseVip: () => void
   onOpenFreeVipChest: (chestId: ChestId) => void
@@ -53,8 +58,9 @@ const formatExperience = (experience: bigint) => {
   return `${value[0]}.${value.slice(1, 3)}e${value.length - 1}`
 }
 
-function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
+function MineArea({ equipped, abilityStone, mining, lastMine, floor, experience, onMine }: {
   equipped?: PickaxeInventoryItem
+  abilityStone?: AbilityStoneInventoryItem | null
   mining: boolean
   lastMine: MineResult | null
   floor: number
@@ -63,7 +69,7 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
 }) {
   const definition = equipped ? findPickaxe(equipped.id) : null
   // 취약(+레벨)·더블 채굴(2배)로 늘어난 내구도 소모량. 이보다 내구도가 적으면 채굴 불가.
-  const mineDurCost = (1 + (equipped?.enchants?.fragile ?? 0)) * ((equipped?.enchants?.double_mine ?? 0) > 0 ? 2 : 1)
+  const mineDurCost = (1 + (equipped?.enchants?.fragile ?? 0) + Math.max(0, abilityStoneEffectValue(abilityStone, 'durability_cost'))) * ((equipped?.enchants?.double_mine ?? 0) > 0 ? 2 : 1)
   const canMine = Boolean(equipped && equipped.durability >= mineDurCost)
   const isMaxFloor = floor >= 100
   const currentExperience = parseExperience(experience)
@@ -89,19 +95,21 @@ function MineArea({ equipped, mining, lastMine, floor, experience, onMine }: {
           <span className="ore-vein vein-two" />
           <span className="ore-vein vein-three" />
         </div>
-        {equipped && <PickaxeSprite pickaxeId={equipped.id} size="large" className="active-pickaxe" enchanted={isEnchanted(equipped)} />}
+        {equipped && <PickaxeSprite pickaxeId={equipped.id} size="large" className="active-pickaxe" enchanted={isEnchanted(equipped) || hasEngravedAbilityStone(equipped)} />}
         {lastMine?.status === 'success' && (
           lastMine.mined === false ? (
             <div className="mine-result" key={`miss-${lastMine.remaining_durability}`}>
               <span aria-hidden="true">✕</span>
               <strong>허탕</strong>
               <small>불운으로 채굴에 실패했습니다</small>
+              {lastMine.ability_stone && <em className="stone-drop-line"><AbilityStoneSprite variant={lastMine.ability_stone.variant} size="small" /> 어빌리티 스톤 획득!</em>}
             </div>
           ) : (
             <div className="mine-result" key={`${lastMine.ore_id}-${lastMine.remaining_durability}`}>
               <OreSprite oreId={lastMine.ore_id ?? ''} size="medium" />
               <strong>{lastMine.ore_name}{(lastMine.quantity ?? 1) > 1 ? ` ×${lastMine.quantity}` : ''}</strong>
               <small>+{lastMine.points}P 가치 · +{lastMine.xp_gained} EXP</small>
+              {lastMine.ability_stone && <em className="stone-drop-line"><AbilityStoneSprite variant={lastMine.ability_stone.variant} size="small" /> 어빌리티 스톤 획득!</em>}
               {lastMine.floor_up && <em>지하 {lastMine.mine_floor}층 도달!</em>}
             </div>
           )
@@ -132,7 +140,7 @@ function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: 
       <div className="equipped-card">
         <span className="inventory-label">현재 장비</span>
         {equipped ? (
-          <div><PickaxeSprite pickaxeId={equipped.id} size="medium" enchanted={isEnchanted(equipped)} /><strong>{findPickaxe(equipped.id)?.name}</strong><Durability item={equipped} /></div>
+          <div><PickaxeSprite pickaxeId={equipped.id} size="medium" enchanted={isEnchanted(equipped) || hasEngravedAbilityStone(equipped)} /><strong>{findPickaxe(equipped.id)?.name}</strong><Durability item={equipped} /></div>
         ) : <p>장착된 곡괭이 없음</p>}
       </div>
       <div className="profile-actions">
@@ -143,19 +151,22 @@ function ProfilePanel({ profile, equipped, onOpenCoupon, onLogout }: { profile: 
   )
 }
 
-export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onOpenChest, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest, onOpenCoupon, onLogout }: GameScreenProps) {
+export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, lastAttack, onMine, onAttack, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onFacetAbilityStone, onEngraveAbilityStone, onDismantleAbilityStone, onOpenChest, onPurchaseAbilityStone, onOpenChestBulk, onPurchaseVip, onOpenFreeVipChest, onOpenCoupon, onLogout }: GameScreenProps) {
   const [desktopView, setDesktopView] = useState<GameView>('mine')
   const [mobileTab, setMobileTab] = useState<MobileTab>('mine')
   const [vipModalOpen, setVipModalOpen] = useState(false)
   const equipped = profile.inventory.find((item): item is PickaxeInventoryItem => item.type === 'pickaxe' && item.equipped)
+  const equippedAbilityStone = equipped?.abilityStoneUid
+    ? profile.inventory.find((item): item is AbilityStoneInventoryItem => item.type === 'ability_stone' && item.uid === equipped.abilityStoneUid) ?? null
+    : null
   const vipActive = isVipActive(profile.vipExpiresAt)
   const today = kstToday()
   const freeNormalAvailable = vipActive && profile.vipLastNormalFree !== today
   const freePremiumAvailable = vipActive && profile.vipLastPremiumFree !== today
-  const inventoryProps = { inventory: profile.inventory, mana: profile.mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant }
-  const mineAreaProps = { equipped, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
-  const huntAreaProps = { equipped, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, lastAttack, onAttack }
-  const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onOpenChestBulk, onOpenVipModal: () => setVipModalOpen(true), onOpenFreeVipChest }
+  const inventoryProps = { inventory: profile.inventory, mana: profile.mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onFacetAbilityStone, onEngraveAbilityStone, onDismantleAbilityStone }
+  const mineAreaProps = { equipped, abilityStone: equippedAbilityStone, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
+  const huntAreaProps = { equipped, abilityStone: equippedAbilityStone, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, lastAttack, onAttack }
+  const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onPurchaseAbilityStone, onOpenChestBulk, onOpenVipModal: () => setVipModalOpen(true), onOpenFreeVipChest }
 
   return (
     <main className="game-screen">
