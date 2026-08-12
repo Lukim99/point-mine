@@ -367,6 +367,7 @@ declare
   v_inventory jsonb;
   v_new_inventory jsonb;
   v_stone jsonb;
+  v_today text := to_char((now() at time zone 'Asia/Seoul'), 'YYYY-MM-DD');
 begin
   if v_uid is null then
     raise exception '인증이 필요합니다.' using errcode = '42501';
@@ -404,7 +405,11 @@ begin
   select coalesce(jsonb_agg(
     case
       when item->>'type' = 'pickaxe' and item->>'id' = p_pickaxe_id
-        then item || jsonb_build_object('abilityStoneUid', p_stone_uid)
+        then item || jsonb_build_object(
+          'abilityStoneUid', p_stone_uid,
+          'lastDailyPointsUpkeep', v_today,
+          'lastAbilityStoneUpkeep', v_today
+        )
       when item->>'type' = 'pickaxe' and item->>'abilityStoneUid' = p_stone_uid
         then item - 'abilityStoneUid'
       else item

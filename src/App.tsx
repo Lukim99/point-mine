@@ -19,7 +19,7 @@ type Screen = 'loading' | 'login' | 'nickname' | 'game'
 interface LinkResult { status: 'success' | 'already_linked' | 'not_found' | 'already_taken' }
 interface SellResult { status: 'success' | 'empty' | 'empty_selection' | 'minimum_sale' | 'company_not_found' | 'company_insufficient' | 'fee_account_not_found'; sold_points?: number; received_points?: number; iktebot_fee?: number; lotto_fee?: number; balance?: number; inventory?: InventoryItem[] }
 interface RepairResult { status: 'success' | 'repair_failed' | 'not_repairable' | 'no_damage' | 'invalid_amount' | 'insufficient_materials' | 'insufficient_balance' | 'pickaxe_not_found'; inventory?: InventoryItem[]; repaired_amount?: number; balance?: number; repair_cost_points?: number; ore_id?: OreId; required?: number; available?: number; required_points?: number }
-interface CouponResult { status: 'success' | 'invalid' | 'already_redeemed' | 'exhausted' | 'nickname_mismatch'; reward_type?: 'mana' | 'mineral' | 'monster_item' | 'pickaxe' | 'chest'; reward_id?: string; reward_amount?: number; chest_id?: ChestId; count?: number; results?: BulkOpenChestResult['results']; mana?: number; inventory?: InventoryItem[] }
+interface CouponResult { status: 'success' | 'invalid' | 'already_redeemed' | 'exhausted' | 'nickname_mismatch'; reward_type?: 'mana' | 'mineral' | 'monster_item' | 'pickaxe' | 'chest' | 'vip'; reward_id?: string; reward_amount?: number; chest_id?: ChestId; count?: number; results?: BulkOpenChestResult['results']; mana?: number; inventory?: InventoryItem[]; vip_expires_at?: string }
 
 const getCouponRewardLabel = (result: CouponResult) => {
   const amount = Number(result.reward_amount ?? 0)
@@ -28,6 +28,7 @@ const getCouponRewardLabel = (result: CouponResult) => {
   if (result.reward_type === 'monster_item') return `${findMonsterItem(result.reward_id ?? '')?.name ?? '몬스터 아이템'} ×${amount}`
   if (result.reward_type === 'pickaxe') return `${findPickaxe(result.reward_id ?? '')?.name ?? '곡괭이'} ×${amount}`
   if (result.reward_type === 'chest') return `${result.reward_id === 'premium' ? '고급' : '일반'} 상자 ${amount}회 뽑기권`
+  if (result.reward_type === 'vip') return `VIP 패스 ${amount}일`
   return '쿠폰 보상'
 }
 
@@ -76,7 +77,12 @@ function App() {
 
     const result = data as unknown as CouponResult
     if (result.status === 'success' && result.inventory) {
-      setProfile({ ...profile, inventory: result.inventory, mana: Number(result.mana ?? profile.mana) })
+      let vipExpiresAt = result.vip_expires_at ?? profile.vipExpiresAt
+      if (result.reward_type === 'vip' && !result.vip_expires_at && currentUser) {
+        const { data: vipProfile } = await supabase.from('users').select('vip_expires_at').eq('auth_user_id', currentUser.id).maybeSingle()
+        vipExpiresAt = (vipProfile?.vip_expires_at ?? vipExpiresAt) as string | null
+      }
+      setProfile({ ...profile, inventory: result.inventory, mana: Number(result.mana ?? profile.mana), vipExpiresAt })
       setCouponOpen(false)
       if (result.reward_type === 'chest' && result.chest_id && result.results?.length) {
         const count = Number(result.count ?? result.results.length)
@@ -86,6 +92,8 @@ function App() {
         } else {
           setBulkOpening({ status: 'success', chest_id: result.chest_id, count, results: result.results, inventory: result.inventory, balance: profile.balance })
         }
+      } else if (result.reward_type === 'vip') {
+        setVipReveal({ expiresAt: vipExpiresAt })
       } else {
         setNotice({ title: '쿠폰 사용 완료', message: `${getCouponRewardLabel(result)} 보상을 받았습니다.` })
       }
