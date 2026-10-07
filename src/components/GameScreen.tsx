@@ -60,10 +60,11 @@ const formatExperience = (experience: bigint) => {
   return `${value[0]}.${value.slice(1, 3)}e${value.length - 1}`
 }
 
-function MineArea({ equipped, abilityStone, mining, lastMine, floor, experience, onMine }: {
+function MineArea({ equipped, abilityStone, mining, actionBusy, lastMine, floor, experience, onMine }: {
   equipped?: PickaxeInventoryItem
   abilityStone?: AbilityStoneInventoryItem | null
   mining: boolean
+  actionBusy: boolean
   lastMine: MineResult | null
   floor: number
   experience: string
@@ -117,7 +118,7 @@ function MineArea({ equipped, abilityStone, mining, lastMine, floor, experience,
         <div className="mine-controls">
           <p>{definition ? `${definition.name} 장착 중 · 채굴당 ${definition.rank + 1} EXP` : '인벤토리에서 곡괭이를 장착하세요'}</p>
           {equipped && <Durability item={equipped} />}
-          <button className="mine-button" type="button" onClick={onMine} disabled={!canMine || mining}>
+          <button className="mine-button" type="button" onClick={onMine} disabled={!canMine || mining || actionBusy}>
             <span aria-hidden="true">⛏</span>{mining ? '채굴 중...' : '광맥 채굴'}
           </button>
           {equipped && <small>남은 내구도 {equipped.durability} / {equipped.maxDurability}</small>}
@@ -164,8 +165,8 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
   const freeNormalAvailable = vipActive && profile.vipLastNormalFree !== today
   const freePremiumAvailable = vipActive && profile.vipLastPremiumFree !== today
   const inventoryProps = { inventory: profile.inventory, mana: profile.mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onFacetAbilityStone, onEngraveAbilityStone, onDismantleAbilityStone }
-  const mineAreaProps = { equipped, abilityStone: equippedAbilityStone, mining, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
-  const huntAreaProps = { equipped, abilityStone: equippedAbilityStone, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, lastAttack, onAttack }
+  const mineAreaProps = { equipped, abilityStone: equippedAbilityStone, mining, actionBusy, lastMine, floor: profile.mineFloor, experience: profile.mineExperience, onMine }
+  const huntAreaProps = { equipped, abilityStone: equippedAbilityStone, floor: profile.mineFloor, huntMonster: profile.huntMonster, huntMonsterHp: profile.huntMonsterHp, attacking, actionBusy, lastAttack, onAttack }
   const shopProps = { balance: profile.balance, busy: actionBusy, vipActive, vipExpiresAt: profile.vipExpiresAt, freeNormalAvailable, freePremiumAvailable, onOpenChest, onPurchaseAbilityStone, onOpenChestBulk, onOpenVipModal: () => setVipModalOpen(true), onOpenFreeVipChest }
 
   return (

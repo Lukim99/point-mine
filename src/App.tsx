@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
 import './App.css'
 import './Shop.css'
@@ -16,6 +16,7 @@ import { BulkChestOpeningEffect } from './components/BulkChestOpeningEffect'
 import { VipTicketEffect } from './components/VipTicketEffect'
 import { isSupabaseConfigured, supabase } from './lib/supabase'
 import { playSound } from './lib/sound'
+import { nextDailyUpkeepDelay, requestDailyUpkeep } from './lib/dailyUpkeep'
 
 type Screen = 'loading' | 'login' | 'nickname' | 'game'
 interface LinkResult { status: 'success' | 'already_linked' | 'not_found' | 'already_taken' }
@@ -54,7 +55,14 @@ function App() {
     }
   }, [])
   const [screen, setScreen] = useState<Screen>('loading'), [currentUser, setCurrentUser] = useState<User | null>(null), [profile, setProfile] = useState<UserProfile | null>(null)
-  const [loginBusy, setLoginBusy] = useState(false), [actionBusy, setActionBusy] = useState(false), [mining, setMining] = useState(false), [attacking, setAttacking] = useState(false)
+  const [loginBusy, setLoginBusy] = useState(false), [actionInFlight, setActionBusy] = useState(false), [mining, setMining] = useState(false), [attacking, setAttacking] = useState(false)
+  const [upkeepBusy, setUpkeepBusy] = useState(false)
+  const actionBusy = actionInFlight || upkeepBusy
+  const upkeepDayRef = useRef('')
+  const upkeepAttemptDayRef = useRef('')
+  const upkeepPendingRef = useRef(false)
+  const activityBusyRef = useRef(false)
+  const checkUpkeepRef = useRef<(retry?: boolean) => void>(() => undefined)
   const [lastMine, setLastMine] = useState<MineResult | null>(null), [lastAttack, setLastAttack] = useState<AttackResult | null>(null), [openingReward, setOpeningReward] = useState<OpenChestResult | null>(null)
   const [enchantReveal, setEnchantReveal] = useState<{ pickaxeId: string; enchants: Partial<Record<EnchantId, number>> } | null>(null)
   const [engraveReveal, setEngraveReveal] = useState<{ pickaxeId: string; stone: AbilityStoneInventoryItem } | null>(null)
@@ -62,15 +70,92 @@ function App() {
   const [vipReveal, setVipReveal] = useState<{ expiresAt: string | null } | null>(null)
   const [couponOpen, setCouponOpen] = useState(false), [couponError, setCouponError] = useState('')
   const [nicknameError, setNicknameError] = useState(''), [notice, setNotice] = useState<{ title: string; message: string } | null>(null)
-  const loadProfile = useCallback(async (user: User) => { if (!supabase) return; const { data, error } = await supabase.from('users').select('nickname, balance, mana, inventory, mine_floor, mine_experience, hunt_monster, hunt_monster_hp, vip_expires_at, vip_last_normal_free, vip_last_premium_free').eq('auth_user_id', user.id).maybeSingle(); if (error) { setNotice({ title: '광산 연결 오류', message: '광부 정보를 불러오지 못했습니다.' }); setScreen('login'); return } if (!data) { setProfile(null); setScreen('nickname'); return } let inventory = Array.isArray(data.inventory) ? data.inventory as unknown as InventoryItem[] : []; let mana = Number(data.mana ?? 0); let balance = Number(data.balance ?? 0); const upkeep = await supabase.rpc('apply_daily_upkeep'); if (!upkeep.error) { const result = upkeep.data as unknown as { status?: string; inventory?: InventoryItem[]; mana?: number; balance?: number }; if (result?.status === 'success') { if (result.inventory) inventory = result.inventory; if (result.mana !== undefined && result.mana !== null) mana = Number(result.mana); if (result.balance !== undefined && result.balance !== null) balance = Number(result.balance) } } setProfile({ nickname: String(data.nickname), balance, mana, inventory, mineFloor: Number(data.mine_floor ?? 1), mineExperience: String(data.mine_experience ?? '0'), huntMonster: (data.hunt_monster ?? null) as MonsterId | null, huntMonsterHp: data.hunt_monster_hp === null || data.hunt_monster_hp === undefined ? null : Number(data.hunt_monster_hp), vipExpiresAt: (data.vip_expires_at ?? null) as string | null, vipLastNormalFree: (data.vip_last_normal_free ?? null) as string | null, vipLastPremiumFree: (data.vip_last_premium_free ?? null) as string | null }); setScreen('game') }, [])
+  const loadProfile = useCallback(async (user: User) => {
+    if (!supabase) return
+    const { data, error } = await supabase.from('users').select('nickname, balance, mana, inventory, mine_floor, mine_experience, hunt_monster, hunt_monster_hp, vip_expires_at, vip_last_normal_free, vip_last_premium_free').eq('auth_user_id', user.id).maybeSingle()
+    if (error) { setNotice({ title: '광산 연결 오류', message: '광부 정보를 불러오지 못했습니다.' }); setScreen('login'); return }
+    if (!data) { setProfile(null); setScreen('nickname'); return }
+    let inventory = Array.isArray(data.inventory) ? data.inventory as unknown as InventoryItem[] : []
+    let mana = Number(data.mana ?? 0)
+    let balance = Number(data.balance ?? 0)
+    const today = kstToday()
+    upkeepAttemptDayRef.current = today
+    const { result, message } = await requestDailyUpkeep()
+    if (result) {
+      upkeepDayRef.current = today
+      setNotice((previous) => previous?.title === '일일 정비 실패' ? null : previous)
+      if (result.inventory) inventory = result.inventory
+      if (result.mana !== undefined && result.mana !== null) mana = Number(result.mana)
+      if (result.balance !== undefined && result.balance !== null) balance = Number(result.balance)
+    } else {
+      upkeepDayRef.current = ''
+      setNotice({ title: '일일 정비 실패', message: message ?? '일일 정비를 완료하지 못했습니다.' })
+    }
+    setProfile({ nickname: String(data.nickname), balance, mana, inventory, mineFloor: Number(data.mine_floor ?? 1), mineExperience: String(data.mine_experience ?? '0'), huntMonster: (data.hunt_monster ?? null) as MonsterId | null, huntMonsterHp: data.hunt_monster_hp === null || data.hunt_monster_hp === undefined ? null : Number(data.hunt_monster_hp), vipExpiresAt: (data.vip_expires_at ?? null) as string | null, vipLastNormalFree: (data.vip_last_normal_free ?? null) as string | null, vipLastPremiumFree: (data.vip_last_premium_free ?? null) as string | null })
+    setScreen('game')
+  }, [])
   useEffect(() => { if (!supabase) { setScreen('login'); return } let active = true; supabase.auth.getSession().then(({ data }) => { if (!active) return; const user = data.session?.user ?? null; setCurrentUser(user); if (user) void loadProfile(user); else setScreen('login') }); const { data: listener } = supabase.auth.onAuthStateChange((event, session) => { if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') return; const user = session?.user ?? null; setCurrentUser(user); if (user) void loadProfile(user); else { setProfile(null); setScreen('login') } }); return () => { active = false; listener.subscription.unsubscribe() } }, [loadProfile])
+  useEffect(() => {
+    activityBusyRef.current = actionBusy || mining || attacking
+    if (!activityBusyRef.current) checkUpkeepRef.current()
+  }, [actionBusy, mining, attacking])
+  useEffect(() => {
+    if (screen !== 'game' || !currentUser) return
+    let active = true
+    let timer: number
+    const refresh = async (retry = false) => {
+      const today = kstToday()
+      if (!active || document.visibilityState === 'hidden' || activityBusyRef.current || upkeepPendingRef.current || upkeepDayRef.current === today || (!retry && upkeepAttemptDayRef.current === today)) return
+      upkeepPendingRef.current = true
+      upkeepAttemptDayRef.current = today
+      setUpkeepBusy(true)
+      try {
+        const { result, message } = await requestDailyUpkeep()
+        if (!active) return
+        if (result) {
+          upkeepDayRef.current = today
+          setNotice((previous) => previous?.title === '일일 정비 실패' ? null : previous)
+          setProfile((previous) => previous ? {
+            ...previous,
+            inventory: result.inventory ?? previous.inventory,
+            mana: result.mana ?? previous.mana,
+            balance: result.balance ?? previous.balance,
+          } : null)
+        } else {
+          setNotice({ title: '일일 정비 실패', message: message ?? '일일 정비를 완료하지 못했습니다.' })
+        }
+      } finally {
+        upkeepPendingRef.current = false
+        setUpkeepBusy(false)
+      }
+    }
+    // 실패를 매 프레임 반복하지 않고, 복귀나 네트워크 재연결 때 다시 시도합니다.
+    const resume = () => { void refresh(true) }
+    const schedule = () => {
+      timer = window.setTimeout(() => { void refresh(); schedule() }, nextDailyUpkeepDelay())
+    }
+    checkUpkeepRef.current = (retry) => { void refresh(retry) }
+    void refresh()
+    schedule()
+    window.addEventListener('focus', resume)
+    window.addEventListener('online', resume)
+    document.addEventListener('visibilitychange', resume)
+    return () => {
+      active = false
+      checkUpkeepRef.current = () => undefined
+      window.clearTimeout(timer)
+      window.removeEventListener('focus', resume)
+      window.removeEventListener('online', resume)
+      document.removeEventListener('visibilitychange', resume)
+    }
+  }, [screen, currentUser])
   useEffect(() => { if (!lastMine) return; const id = window.setTimeout(() => setLastMine(null), 900); return () => window.clearTimeout(id) }, [lastMine])
   useEffect(() => { if (!lastAttack) return; const id = window.setTimeout(() => setLastAttack(null), lastAttack.defeated ? 2200 : 900); return () => window.clearTimeout(id) }, [lastAttack])
   const handleLogin = async () => { if (!supabase) { setNotice({ title: '환경변수 설정 필요', message: 'Supabase 환경변수를 설정해 주세요.' }); return } setLoginBusy(true); const { error } = await supabase.auth.signInWithOAuth({ provider: 'kakao', options: { redirectTo: window.location.origin } }); if (error) { setNotice({ title: '로그인 실패', message: '카카오 로그인을 시작하지 못했습니다.' }); setLoginBusy(false) } }
   const handleLogout = async () => { if (!supabase) return; await supabase.auth.signOut(); setCurrentUser(null); setProfile(null); setLastMine(null); setScreen('login') }
   const handleNickname = async (nickname: string) => { if (!supabase || !currentUser) return; setNicknameError(''); const { data, error } = await supabase.rpc('link_pointmine_account', { p_nickname: nickname }); if (error) { setNicknameError('계정을 확인하지 못했습니다.'); return } const result = data as unknown as LinkResult; if (result.status === 'not_found') { setNicknameError('포인트 상점 계정이 존재하지 않습니다.'); return } if (result.status === 'already_taken') { setNicknameError('이미 연동된 다른 카카오 계정이 있습니다.'); return } await loadProfile(currentUser) }
-  const handleMine = async () => { if (!supabase || mining) return; playSound('mineHit'); setMining(true); const { data, error } = await supabase.rpc('mine_ore'); if (error) { setNotice({ title: '채굴 실패', message: '최신 SQL 적용 여부를 확인해 주세요.' }); setMining(false); return } const result = data as unknown as MineResult; if (result.status === 'success' && result.inventory && profile) { setProfile({ ...profile, inventory: result.inventory, mineFloor: Number(result.mine_floor ?? profile.mineFloor), mineExperience: String(result.mine_experience ?? profile.mineExperience) }); setLastMine(result); if (result.mined !== false) playSound('reward') } else if (result.status === 'broken_pickaxe') setNotice({ title: '곡괭이 파손', message: '곡괭이 내구도가 소진되었습니다.' }); else if (result.status === 'no_pickaxe') setNotice({ title: '장비 필요', message: '곡괭이를 장착해 주세요.' }); setMining(false) }
-  const handleAttack = async () => { if (!supabase || attacking || !profile) return; playSound('attack'); setAttacking(true); const { data, error } = await supabase.rpc('attack_monster'); if (error) { setNotice({ title: '사냥 실패', message: '최신 SQL 적용 여부를 확인해 주세요.' }); setAttacking(false); return } const result = data as unknown as AttackResult; if (result.status === 'spawned') { setProfile({ ...profile, huntMonster: result.monster_id ?? null, huntMonsterHp: Number(result.monster_hp ?? 0) }) } else if (result.status === 'success' && result.inventory) { setProfile({ ...profile, inventory: result.inventory, mana: Number(result.mana ?? profile.mana), mineFloor: Number(result.mine_floor ?? profile.mineFloor), mineExperience: String(result.mine_experience ?? profile.mineExperience), huntMonster: (result.defeated ? null : result.monster_id ?? null), huntMonsterHp: result.defeated ? null : Number(result.monster_hp ?? 0) }); setLastAttack(result) } else if (result.status === 'broken_pickaxe') setNotice({ title: '곡괭이 파손', message: '곡괭이 내구도가 소진되었습니다.' }); else if (result.status === 'no_pickaxe') setNotice({ title: '장비 필요', message: '곡괭이를 장착해 주세요.' }); setAttacking(false) }
+  const handleMine = async () => { if (!supabase || mining || actionBusy) return; playSound('mineHit'); setMining(true); const { data, error } = await supabase.rpc('mine_ore'); if (error) { setNotice({ title: '채굴 실패', message: '최신 SQL 적용 여부를 확인해 주세요.' }); setMining(false); return } const result = data as unknown as MineResult; if (result.status === 'success' && result.inventory && profile) { setProfile({ ...profile, inventory: result.inventory, mineFloor: Number(result.mine_floor ?? profile.mineFloor), mineExperience: String(result.mine_experience ?? profile.mineExperience) }); setLastMine(result); if (result.mined !== false) playSound('reward') } else if (result.status === 'broken_pickaxe') setNotice({ title: '곡괭이 파손', message: '곡괭이 내구도가 소진되었습니다.' }); else if (result.status === 'no_pickaxe') setNotice({ title: '장비 필요', message: '곡괭이를 장착해 주세요.' }); setMining(false) }
+  const handleAttack = async () => { if (!supabase || attacking || actionBusy || !profile) return; playSound('attack'); setAttacking(true); const { data, error } = await supabase.rpc('attack_monster'); if (error) { setNotice({ title: '사냥 실패', message: '최신 SQL 적용 여부를 확인해 주세요.' }); setAttacking(false); return } const result = data as unknown as AttackResult; if (result.status === 'spawned') { setProfile({ ...profile, huntMonster: result.monster_id ?? null, huntMonsterHp: Number(result.monster_hp ?? 0) }) } else if (result.status === 'success' && result.inventory) { setProfile({ ...profile, inventory: result.inventory, mana: Number(result.mana ?? profile.mana), mineFloor: Number(result.mine_floor ?? profile.mineFloor), mineExperience: String(result.mine_experience ?? profile.mineExperience), huntMonster: (result.defeated ? null : result.monster_id ?? null), huntMonsterHp: result.defeated ? null : Number(result.monster_hp ?? 0) }); setLastAttack(result) } else if (result.status === 'broken_pickaxe') setNotice({ title: '곡괭이 파손', message: '곡괭이 내구도가 소진되었습니다.' }); else if (result.status === 'no_pickaxe') setNotice({ title: '장비 필요', message: '곡괭이를 장착해 주세요.' }); setAttacking(false) }
   const handleSellMonsterItems = async (ids: MonsterItemId[]) => { if (!supabase || actionBusy || !profile) return; setActionBusy(true); const { data, error } = await supabase.rpc('sell_monster_items', { p_item_ids: ids }); if (error) setNotice({ title: '분해 실패', message: '사냥 SQL 적용 여부를 확인해 주세요.' }); else { const result = data as unknown as SellMonsterItemsResult; if (result.status === 'success' && result.inventory && result.mana !== undefined) { setProfile({ ...profile, inventory: result.inventory, mana: result.mana }); setNotice({ title: '분해 완료', message: `마나를 ${result.gained_mana}✦ 획득했습니다.` }) } } setActionBusy(false) }
   const handleEnchant = async (id: string) => { if (!supabase || actionBusy || !profile) return; setActionBusy(true); const { data, error } = await supabase.rpc('enchant_pickaxe', { p_pickaxe_id: id }); if (error) setNotice({ title: '마법 부여 실패', message: '어빌리티 스톤 SQL 적용 여부를 확인해 주세요.' }); else { const result = data as unknown as EnchantResult; if (result.status === 'success' && result.inventory && result.mana !== undefined) { setProfile({ ...profile, inventory: result.inventory, mana: result.mana }); setEnchantReveal({ pickaxeId: id, enchants: result.enchants ?? {} }) } else if (result.status === 'insufficient_mana') setNotice({ title: '마나 부족', message: `마법 부여에 마나 ${Number(result.mana_cost ?? 5)}가 필요합니다.` }) } setActionBusy(false) }
   const handlePurchaseAbilityStone = async () => { if (!supabase || actionBusy || !profile) return; setActionBusy(true); const { data, error } = await supabase.rpc('purchase_ability_stone'); if (error) setNotice({ title: '구매 실패', message: '어빌리티 스톤 SQL 적용 여부를 확인해 주세요.' }); else { const result = data as unknown as PurchaseAbilityStoneResult; if (result.status === 'success' && result.inventory && result.balance !== undefined && result.ability_stone) { setProfile({ ...profile, inventory: result.inventory, balance: result.balance }); setNotice({ title: '어빌리티 스톤 획득', message: `${abilityStoneTitle(result.ability_stone)}을 획득했습니다. 인벤토리에서 옵션을 확인할 수 있습니다.` }) } else if (result.status === 'insufficient_balance') setNotice({ title: '포인트 부족', message: '어빌리티 스톤 구매에 100P가 필요합니다.' }); else setNotice({ title: '구매 실패', message: '정산 계정을 확인해 주세요.' }) } setActionBusy(false) }

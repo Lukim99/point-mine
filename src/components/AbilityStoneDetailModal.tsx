@@ -16,9 +16,12 @@ import {
   type FacetAbilityStoneResult,
   type PickaxeInventoryItem,
 } from '../game'
+import type { ForgeSnapshot, ForgeTone } from '../lib/stoneForgeScene'
 import { playSound } from '../lib/sound'
-import { ArcaneGlyph, FacetTrack, StoneScore, StoneSocket } from './ArcaneParts'
+import { ArcaneGlyph } from './ArcaneParts'
 import { Modal } from './Modal'
+import { StoneForgeStage } from './StoneForgeStage'
+import '../StoneForge.css'
 
 interface AbilityStoneDetailModalProps {
   stone: AbilityStoneInventoryItem
@@ -31,10 +34,10 @@ interface AbilityStoneDetailModalProps {
   onClose: () => void
 }
 
-// 방금 끝난 세공 한 번의 결과입니다. 줄·확률판·스톤이 이 값으로 동시에 반응합니다.
+// 방금 끝난 세공 한 번의 결과입니다. 장면·줄·확률판이 이 값으로 함께 반응합니다.
 interface FacetImpact {
   id: number
-  optionIndex: number
+  line: number
   slot: number
   success: boolean
   sign: AbilityStoneSign
@@ -44,41 +47,81 @@ interface FacetImpact {
   tierReached: number | null
   tierValue: string | null
   completed: boolean
+  tone: ForgeTone
+  tier: boolean
 }
 
-type ImpactTone = 'boon' | 'ash' | 'bane' | 'relief'
-
+const ROMAN = ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ']
 const formatValue = (value: number, unit: string) => `${value > 0 ? '+' : ''}${Number.isInteger(value) ? value : value.toLocaleString('ko-KR')}${unit}`
-const sparkIndexes = Array.from({ length: 10 }, (_, index) => index)
-const DIAL_RADIUS = 52
+const isThreshold = (position: number) => ABILITY_STONE_FACET_TIER_THRESHOLDS.some((threshold) => threshold === position)
+const toneOf = (sign: AbilityStoneSign, success: boolean): ForgeTone => sign === 'negative' ? (success ? 'bane' : 'relief') : (success ? 'boon' : 'ash')
 
-// 성공/실패와 효과 방향을 합쳐 판정 도장의 색과 문구를 정합니다. 불리한 줄의 성공은 손해로 표시합니다.
-const verdictOf = (impact: FacetImpact): { tone: ImpactTone; title: string; note: string } => {
-  if (impact.sign === 'negative') {
-    if (impact.success) return { tone: 'bane', title: '성공', note: impact.tierReached ? `불리 효과 ${impact.tierValue} 발동` : '불리한 효과 누적' }
-    return { tone: 'relief', title: '실패', note: '불리한 효과 회피' }
-  }
-  if (impact.success) return { tone: 'boon', title: '성공', note: impact.tierReached ? `${impact.tierReached}회 달성! ${impact.tierValue}` : `${impact.successes}번째 성공` }
-  return { tone: 'ash', title: '실패', note: '균열이 남았습니다' }
+// 이로운 줄의 성공/실패, 불리한 줄의 성공/회피를 색과 함께 서로 다른 말로 알립니다.
+const VERDICT_TITLE: Record<ForgeTone, string> = { boon: '성공', ash: '실패', bane: '불리 성공', relief: '회피' }
+const verdictNote = (impact: FacetImpact) => {
+  if (impact.tone === 'boon') return impact.tierReached ? `${impact.tierReached}회 달성 · ${impact.tierValue}` : `${impact.successes}번째 성공`
+  if (impact.tone === 'ash') return '균열이 남았습니다'
+  if (impact.tone === 'bane') return impact.tierReached ? `불리 효과 ${impact.tierValue} 발동` : '불리한 효과가 쌓였습니다'
+  return '불리한 효과를 피했습니다'
 }
 
 const chanceBand = (chance: number) => chance >= 65 ? 'is-high' : chance <= 35 ? 'is-low' : 'is-mid'
+
+// 망치 아이콘
+function HammerGlyph() {
+  return (
+    <svg className="sf-hammer-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path className="is-fill" d="M11.4 4.7 14.2 1.9 20.6 8.3 17.8 11.1Z" />
+      <path d="M14.6 7.9 4.4 18.1" />
+    </svg>
+  )
+}
 
 export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetPickaxe, actionBusy, onFacet, onOpenEngraveList, onDismantle, onClose }: AbilityStoneDetailModalProps) {
   const lineId = useId()
   const [impact, setImpact] = useState<FacetImpact | null>(null)
   const [pendingLine, setPendingLine] = useState<number | null>(null)
+  const [aimLine, setAimLine] = useState<number | null>(null)
+  const [tapEvent, setTapEvent] = useState<{ id: number; line: number } | null>(null)
   // 응답이 오기 전 연타로 같은 요청이 겹치지 않도록 막습니다.
   const pendingRef = useRef(false)
   // 같은 줄에서 연속으로 같은 판정이 나와도 연출이 다시 시작되도록 결과마다 번호를 매깁니다.
   const impactSeqRef = useRef(0)
+  const tapSeqRef = useRef(0)
   const faceted = isAbilityStoneFaceted(stone)
   const progress = abilityStoneFacetProgress(stone)
   const totalAttempts = stone.options.length * ABILITY_STONE_FACET_ATTEMPTS
   const chance = Math.max(ABILITY_STONE_FACET_MIN_CHANCE, Math.min(ABILITY_STONE_FACET_MAX_CHANCE, Number(stone.facetChance ?? ABILITY_STONE_FACET_MAX_CHANCE)))
   const variant = Math.abs(Math.floor(stone.variant ?? 0)) % 4
-  const verdict = impact ? verdictOf(impact) : null
   const chanceShift = impact ? impact.chanceAfter - impact.chanceBefore : 0
+
+  const lines = stone.options.map((option, index) => {
+    const facets = abilityStoneOptionFacets(option)
+    const successes = abilityStoneOptionSuccesses(option)
+    const definition = findAbilityStoneOption(option.id)
+    const attempts = facets.length
+    return {
+      option,
+      index,
+      definition,
+      successes,
+      failures: Math.max(0, attempts - facets.filter(Boolean).length),
+      remaining: Math.max(0, ABILITY_STONE_FACET_ATTEMPTS - attempts),
+      done: attempts >= ABILITY_STONE_FACET_ATTEMPTS,
+      negative: option.sign === 'negative',
+      name: definition?.name ?? option.name ?? option.id,
+      unit: definition?.unit ?? option.unit ?? '',
+    }
+  })
+
+  const snapshot: ForgeSnapshot = {
+    lines: lines.map((line) => ({ sign: line.option.sign, successes: line.successes, failures: line.failures })),
+    chance,
+    progress: faceted ? 1 : progress / Math.max(1, totalAttempts),
+    faceted,
+    aim: aimLine,
+    pending: pendingLine,
+  }
 
   const facet = async (optionIndex: number) => {
     const option = stone.options[optionIndex]
@@ -86,6 +129,8 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
     const facetsBefore = abilityStoneOptionFacets(option)
     pendingRef.current = true
     setPendingLine(optionIndex)
+    tapSeqRef.current += 1
+    setTapEvent({ id: tapSeqRef.current, line: optionIndex })
     playSound('facetHit')
     try {
       const result = await onFacet(stone.uid, optionIndex)
@@ -98,7 +143,7 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
         impactSeqRef.current += 1
         setImpact({
           id: impactSeqRef.current,
-          optionIndex,
+          line: optionIndex,
           slot: facetsBefore.length,
           success,
           sign: option.sign,
@@ -108,6 +153,8 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
           tierReached: tierIndex >= 0 ? ABILITY_STONE_FACET_TIER_THRESHOLDS[tierIndex] : null,
           tierValue: tierIndex >= 0 && definition ? formatValue(Number(definition.values[tierIndex] ?? 0), definition.unit) : null,
           completed: result.completed === true,
+          tone: toneOf(option.sign, success),
+          tier: tierIndex >= 0,
         })
       }
     } finally {
@@ -121,123 +168,117 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
     onClose()
   }
 
-  const impactLineName = impact ? findAbilityStoneOption(stone.options[impact.optionIndex]?.id ?? '')?.name ?? '' : ''
-  const announcement = impact && verdict ? `${impactLineName} 세공 ${verdict.title}. ${verdict.note}. 성공 확률 ${impact.chanceBefore}%에서 ${impact.chanceAfter}%로 바뀌었습니다.${impact.completed ? ' 모든 세공을 마쳤습니다.' : ''}` : ''
+  const impactLine = impact ? lines[impact.line] : null
+  const announcement = impact && impactLine
+    ? `${impactLine.name} 세공 ${VERDICT_TITLE[impact.tone]}. ${verdictNote(impact)}. 성공 확률 ${impact.chanceBefore}%에서 ${impact.chanceAfter}%로 바뀌었습니다.${impact.completed ? ' 모든 세공을 마쳤습니다.' : ''}`
+    : ''
 
   return (
-    <Modal title={abilityStoneTitle(stone)} onClose={onClose} labelledBy="ability-stone-detail-title" className="aw-modal aw-bench-modal">
-      <div className={`aw-bench aw-variant-${variant} ${faceted ? 'is-complete' : ''}`}>
-        <div className="aw-bench-head">
-          <div className={`aw-dial ${chanceBand(chance)} ${pendingLine !== null ? 'is-pending' : ''}`}>
-            <svg className="aw-dial-svg" viewBox="0 0 120 120" aria-hidden="true">
-              <circle className="aw-dial-track" cx="60" cy="60" r={DIAL_RADIUS} />
-              <circle className="aw-dial-range" cx="60" cy="60" r={DIAL_RADIUS} pathLength={100} transform="rotate(-90 60 60)" strokeDasharray={`${ABILITY_STONE_FACET_MAX_CHANCE - ABILITY_STONE_FACET_MIN_CHANCE} 100`} strokeDashoffset={-ABILITY_STONE_FACET_MIN_CHANCE} />
-              <circle className="aw-dial-fill" cx="60" cy="60" r={DIAL_RADIUS} pathLength={100} transform="rotate(-90 60 60)" strokeDasharray={`${chance} 100`} />
-              {[ABILITY_STONE_FACET_MIN_CHANCE, 50, ABILITY_STONE_FACET_MAX_CHANCE].map((tick) => (
-                <line className="aw-dial-tick" key={tick} x1="60" y1="1.5" x2="60" y2="7" transform={`rotate(${tick * 3.6} 60 60)`} />
-              ))}
-              <g className="aw-dial-needle" style={{ transform: `rotate(${chance * 3.6}deg)` }}>
-                <circle cx="60" cy={60 - DIAL_RADIUS} r="4.2" />
-              </g>
-            </svg>
-            <span className={`aw-dial-core ${impact && verdict ? `is-${verdict.tone}` : ''}`} key={impact?.id ?? 'idle'}>
-              <StoneSocket stone={stone} size="large" />
-            </span>
-            {impact && verdict && (
-              <span className={`aw-dial-burst is-${verdict.tone} ${impact.completed ? 'is-complete' : ''}`} key={`burst-${impact.id}`} aria-hidden="true">
-                {sparkIndexes.map((index) => <i key={index} />)}
-              </span>
-            )}
-          </div>
-
-          <div className="aw-readout">
-            <div className="aw-chance">
-              <span className="aw-chance-label">성공 확률</span>
-              <strong className={`aw-chance-value ${chanceBand(chance)}`}>{chance}<small>%</small></strong>
-              {impact && chanceShift !== 0 && (
-                <span className={`aw-chance-delta ${chanceShift > 0 ? 'is-up' : 'is-down'}`} key={`delta-${impact.id}`}>
-                  {chanceShift > 0 ? '▲' : '▼'} {Math.abs(chanceShift)}%p
+    <Modal title={abilityStoneTitle(stone)} onClose={onClose} labelledBy="ability-stone-detail-title" className="sf-modal sf-forge-modal">
+      <div className={`sf-forge aw-variant-${variant} ${faceted ? 'is-complete' : ''}`}>
+        <div className="sf-stage-wrap">
+          <StoneForgeStage variant={variant} snapshot={snapshot} tap={tapEvent} strike={impact}>
+            <div className="sf-hud">
+              <div className={`sf-plaque sf-plaque--chance ${chanceBand(chance)}`}>
+                <span className="sf-plaque-label">성공 확률</span>
+                <span className="sf-chance-row">
+                  <strong className="sf-chance">{chance}<small>%</small></strong>
+                  {impact && chanceShift !== 0 && (
+                    <span className={`sf-delta ${chanceShift > 0 ? 'is-up' : 'is-down'}`} key={`delta-${impact.id}`}>
+                      {chanceShift > 0 ? '▲' : '▼'}{Math.abs(chanceShift)}%p
+                    </span>
+                  )}
                 </span>
+                <span className="sf-plaque-rule">성공 −10%p · 실패 +10%p · {ABILITY_STONE_FACET_MIN_CHANCE}~{ABILITY_STONE_FACET_MAX_CHANCE}%</span>
+              </div>
+              <div className="sf-plaque sf-plaque--progress">
+                {faceted
+                  ? <span className="sf-done-chip"><ArcaneGlyph name="spark" />세공 완료</span>
+                  : <><span className="sf-plaque-label">세공</span><strong className="sf-progress"><b>{progress}</b>/{totalAttempts}</strong></>}
+                {attachedPickaxe && <span className="sf-host"><ArcaneGlyph name="gem" />{findPickaxe(attachedPickaxe.id)?.name ?? attachedPickaxe.id}에 각인 중</span>}
+              </div>
+              {impact && impactLine && (
+                <div className={`sf-verdict is-${impact.tone} ${impact.tier ? 'is-tier' : ''}`} key={`verdict-${impact.id}`} aria-hidden="true">
+                  <span className="sf-verdict-line">{ROMAN[impact.line] ?? impact.line + 1} {impactLine.name}</span>
+                  <strong>{VERDICT_TITLE[impact.tone]}</strong>
+                  <span className="sf-verdict-note">{verdictNote(impact)}</span>
+                  <span className="sf-verdict-chance">확률 {impact.chanceBefore}% → {impact.chanceAfter}%</span>
+                </div>
+              )}
+              {impact?.completed && (
+                <p className="sf-complete" key={`complete-${impact.id}`} aria-hidden="true"><ArcaneGlyph name="spark" />세공 완료<ArcaneGlyph name="spark" /></p>
               )}
             </div>
-            <ul className="aw-rules" aria-label="확률 규칙">
-              <li><i className="is-boon" aria-hidden="true" />성공하면 <b>−10%p</b></li>
-              <li><i className="is-ash" aria-hidden="true" />실패하면 <b>+10%p</b></li>
-              <li>범위 <b>{ABILITY_STONE_FACET_MIN_CHANCE}~{ABILITY_STONE_FACET_MAX_CHANCE}%</b></li>
-            </ul>
-            <div className="aw-bench-status">
-              <span className={`aw-state-chip ${faceted ? 'is-done' : ''}`}>
-                {faceted ? <><ArcaneGlyph name="spark" />세공 완료</> : <>세공 <b>{progress}</b>/{totalAttempts}</>}
-              </span>
-              {progress > 0 && <StoneScore stone={stone} size="lg" />}
-            </div>
-            {!faceted && <span className="aw-bench-progress" aria-hidden="true"><i style={{ width: `${(progress / totalAttempts) * 100}%` }} /></span>}
-            {attachedPickaxe && <p className="aw-bench-host"><ArcaneGlyph name="gem" />{findPickaxe(attachedPickaxe.id)?.name ?? attachedPickaxe.id}에 각인 중</p>}
-          </div>
-          {impact?.completed && (
-            <p className="aw-complete-banner" key={`done-${impact.id}`} aria-hidden="true"><ArcaneGlyph name="spark" />세공 완료<ArcaneGlyph name="spark" /></p>
-          )}
+          </StoneForgeStage>
         </div>
 
         <p className="aw-sr-only" aria-live="polite">{announcement}</p>
 
-        <div className="aw-lines">
-          {stone.options.map((option, optionIndex) => {
-            const facets = abilityStoneOptionFacets(option)
-            const successes = abilityStoneOptionSuccesses(option)
-            const remaining = Math.max(0, ABILITY_STONE_FACET_ATTEMPTS - facets.length)
-            const definition = findAbilityStoneOption(option.id)
-            const name = definition?.name ?? option.name ?? option.id
-            const unit = definition?.unit ?? option.unit ?? ''
-            const negative = option.sign === 'negative'
-            const lineComplete = facets.length >= ABILITY_STONE_FACET_ATTEMPTS
-            const activeTier = Number(option.tier ?? 0)
+        <div className="sf-console" onPointerLeave={() => setAimLine(null)}>
+          {lines.map((line) => {
+            const { option, index, definition, successes, failures, remaining, done, negative, name, unit } = line
+            const active = Number(option.tier ?? 0) > 0
+            const lineImpact = impact?.line === index ? impact : null
+            const pending = pendingLine === index
+            const titleId = `${lineId}-line-${index}`
+            const freshGem = lineImpact?.success ? lineImpact.successes : null
+            const freshCrack = lineImpact && !lineImpact.success ? ABILITY_STONE_FACET_ATTEMPTS + 1 - (lineImpact.slot + 1 - lineImpact.successes) : null
             const reachedTiers = ABILITY_STONE_FACET_TIER_THRESHOLDS.filter((threshold) => successes >= threshold).length
-            const lineImpact = impact?.optionIndex === optionIndex ? impact : null
-            const lineVerdict = lineImpact ? verdictOf(lineImpact) : null
-            const pending = pendingLine === optionIndex
-            const titleId = `${lineId}-line-${optionIndex}`
 
             return (
               <section
-                className={`aw-line aw-line--${option.sign} ${lineComplete ? 'is-complete' : ''} ${pending ? 'is-pending' : ''} ${lineImpact && lineVerdict ? `is-hit-${lineVerdict.tone} is-beat-${lineImpact.id % 2}` : ''}`}
-                key={option.id}
+                className={`sf-line ${negative ? 'is-negative' : 'is-positive'} ${done ? 'is-done' : ''} ${pending ? 'is-pending' : ''} ${aimLine === index ? 'is-aimed' : ''} ${lineImpact ? `is-hit-${lineImpact.tone} is-beat-${lineImpact.id % 2}` : ''}`}
+                key={`${option.id}-${index}`}
                 aria-labelledby={titleId}
               >
-                <header className="aw-line-head">
-                  <span className="aw-line-sign">
+                <header className="sf-line-head">
+                  <span className="sf-medal" aria-hidden="true">{ROMAN[index] ?? index + 1}</span>
+                  <span className="sf-line-sign">
                     <ArcaneGlyph name={negative ? 'warn' : 'spark'} />
                     {negative ? '불리한 효과' : '이로운 효과'}
                   </span>
                   <strong id={titleId}>{name}</strong>
-                  <span className={`aw-line-value ${activeTier > 0 ? 'is-active' : ''}`}>
-                    {activeTier > 0 ? formatValue(Number(option.value ?? option.effectValue ?? 0), unit) : '미활성'}
+                  <span className={`sf-line-value ${active ? 'is-active' : ''}`}>
+                    {active ? formatValue(Number(option.value ?? option.effectValue ?? 0), unit) : '미활성'}
                   </span>
                 </header>
 
-                <div className="aw-line-work">
-                  <FacetTrack facets={facets} sign={option.sign} pending={pending} impactSlot={lineImpact?.slot ?? null} impactKey={lineImpact?.id} />
-                  <span className="aw-line-count">
-                    <span><b>{successes}</b>성공</span>
-                    <span>남은 시도 <b>{remaining}</b></span>
-                  </span>
-                </div>
+                <span
+                  className="sf-rail"
+                  role="img"
+                  aria-label={`${ABILITY_STONE_FACET_ATTEMPTS}번 중 성공 ${successes}번, 실패 ${failures}번, 남은 시도 ${remaining}번`}
+                >
+                  {Array.from({ length: ABILITY_STONE_FACET_ATTEMPTS }, (_, slot) => {
+                    const position = slot + 1
+                    const gem = position <= successes
+                    const crack = !gem && position > ABILITY_STONE_FACET_ATTEMPTS - failures
+                    const fresh = (gem && position === freshGem) || (crack && position === freshCrack)
+                    const nextHit = !done && position === successes + 1
+                    const nextMiss = !done && position === ABILITY_STONE_FACET_ATTEMPTS - failures
+                    return (
+                      <span
+                        className={`sf-socket ${gem ? 'is-gem' : crack ? 'is-crack' : 'is-open'} ${isThreshold(position) ? 'is-mark' : ''} ${nextHit ? 'is-next-hit' : ''} ${nextMiss ? 'is-next-miss' : ''} ${fresh ? 'is-fresh' : ''}`}
+                        key={fresh && lineImpact ? `${slot}-${lineImpact.id}` : slot}
+                      />
+                    )
+                  })}
+                </span>
 
-                <ol className="aw-tiers" aria-label={negative ? '불리한 효과 발동 단계' : '효과 활성 단계'}>
+                <ol className="sf-tiers" aria-label={negative ? '불리한 효과 발동 단계' : '효과 활성 단계'}>
                   {ABILITY_STONE_FACET_TIER_THRESHOLDS.map((threshold, tierIndex) => {
                     const reached = successes >= threshold
-                    const current = reachedTiers === tierIndex + 1
                     const unreachable = !reached && successes + remaining < threshold
+                    const current = reachedTiers === tierIndex + 1
                     const fresh = lineImpact?.tierReached === threshold
                     const stateText = reached ? (negative ? '발동' : '활성') : unreachable ? (negative ? '회피 확정' : '도달 불가') : '대기'
                     return (
                       <li
-                        className={`aw-tier ${reached ? 'is-reached' : ''} ${current ? 'is-current' : ''} ${unreachable ? (negative ? 'is-safe' : 'is-lost') : ''} ${fresh ? 'is-fresh' : ''}`}
+                        className={`sf-tier ${reached ? 'is-reached' : ''} ${current ? 'is-current' : ''} ${unreachable ? (negative ? 'is-safe' : 'is-lost') : ''} ${fresh ? 'is-fresh' : ''}`}
                         key={threshold}
+                        style={{ gridColumn: String(threshold) }}
                       >
                         <small>{threshold}회</small>
                         <strong>{formatValue(Number(definition?.values[tierIndex] ?? 0), unit)}</strong>
-                        {unreachable && <ArcaneGlyph name={negative ? 'check' : 'lock'} className="aw-tier-mark" />}
                         <span className="aw-sr-only">{stateText}</span>
                       </li>
                     )
@@ -245,38 +286,33 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
                 </ol>
 
                 <button
-                  className="aw-chisel"
+                  className="sf-hammer"
                   type="button"
-                  onClick={() => void facet(optionIndex)}
-                  disabled={actionBusy || faceted || lineComplete || pendingLine !== null}
+                  onClick={() => void facet(index)}
+                  onPointerEnter={() => setAimLine(index)}
+                  onFocus={() => setAimLine(index)}
+                  onBlur={() => setAimLine((current) => (current === index ? null : current))}
+                  disabled={actionBusy || faceted || done || pendingLine !== null}
                   aria-describedby={titleId}
                 >
-                  <ArcaneGlyph name={lineComplete ? 'check' : 'chisel'} />
-                  <span>{lineComplete ? '완료' : pending ? '세공 중' : '세공'}</span>
-                  {!lineComplete && <small>{negative ? '성공하면 불리' : '성공하면 강화'}</small>}
+                  {done ? <ArcaneGlyph name="check" /> : <HammerGlyph />}
+                  <span>{done ? '완료' : pending ? '세공 중' : '세공'}</span>
+                  {!done && <small>{negative ? '성공 시 불리' : '성공 시 강화'}</small>}
                 </button>
-
-                {lineImpact && lineVerdict && (
-                  <span className={`aw-stamp is-${lineVerdict.tone}`} key={`stamp-${lineImpact.id}`} aria-hidden="true">
-                    <strong>{lineVerdict.tone === 'bane' && <ArcaneGlyph name="warn" />}{lineVerdict.title}</strong>
-                    <small>{lineVerdict.note}</small>
-                    <em>{lineImpact.chanceBefore}% → {lineImpact.chanceAfter}%</em>
-                  </span>
-                )}
               </section>
             )
           })}
         </div>
 
-        <footer className="aw-bench-foot">
-          <p className="aw-bench-note">
+        <footer className="sf-foot">
+          <p className="sf-foot-note">
             {engraveTargetPickaxe
               ? <><ArcaneGlyph name="gem" />{findPickaxe(engraveTargetPickaxe.id)?.name ?? engraveTargetPickaxe.id} 각인 관리</>
               : faceted ? '곡괭이 상세에서 이 스톤을 각인할 수 있습니다.' : '세 줄을 모두 세공하면 곡괭이에 각인할 수 있습니다.'}
           </p>
-          <div className="aw-bench-actions">
-            {engraveTargetPickaxe && <button type="button" className="aw-btn aw-btn--vein" onClick={onOpenEngraveList} disabled={actionBusy}>각인 변경</button>}
-            <button type="button" className="aw-btn aw-btn--danger" onClick={dismantle} disabled={actionBusy}>분해</button>
+          <div className="sf-foot-actions">
+            {engraveTargetPickaxe && <button type="button" className="sf-btn sf-btn--vein" onClick={onOpenEngraveList} disabled={actionBusy}>각인 변경</button>}
+            <button type="button" className="sf-btn sf-btn--danger" onClick={dismantle} disabled={actionBusy}>분해</button>
           </div>
         </footer>
       </div>

@@ -10,6 +10,7 @@ interface HuntPanelProps {
   huntMonster: MonsterId | null
   huntMonsterHp: number | null
   attacking: boolean
+  actionBusy: boolean
   lastAttack: AttackResult | null
   onAttack: () => void
 }
@@ -17,7 +18,7 @@ interface HuntPanelProps {
 // 현재 층 구간에 등장할 수 있는 몬스터 목록을 반환합니다.
 const monstersForFloor = (floor: number) => MONSTERS.filter((monster) => floor >= monster.minFloor && floor <= monster.maxFloor)
 
-export function HuntPanel({ equipped, abilityStone, floor, huntMonster, huntMonsterHp, attacking, lastAttack, onAttack }: HuntPanelProps) {
+export function HuntPanel({ equipped, abilityStone, floor, huntMonster, huntMonsterHp, attacking, actionBusy, lastAttack, onAttack }: HuntPanelProps) {
   const definition = equipped ? findPickaxe(equipped.id) : null
   const durabilityCost = 1 + (equipped?.enchants?.fragile ?? 0) + Math.max(0, abilityStoneEffectValue(abilityStone, 'durability_cost'))
   const attack = Math.max(1, (definition?.attack ?? 0) + (equipped?.enchants?.sharp ?? 0) - (equipped?.enchants?.weaken ?? 0) + abilityStoneEffectValue(abilityStone, 'attack'))
@@ -87,7 +88,7 @@ export function HuntPanel({ equipped, abilityStone, floor, huntMonster, huntMons
 
         <div className="hunt-controls">
           <p>{definition ? `${definition.name} 장착 중 · 기본 공격력 ${attack}` : '인벤토리에서 곡괭이를 장착하세요'}</p>
-          <button className="attack-button" type="button" onClick={onAttack} disabled={!canAttack || attacking}>
+          <button className="attack-button" type="button" onClick={onAttack} disabled={!canAttack || attacking || actionBusy}>
             <span aria-hidden="true">⚔</span>{attacking ? '공격 중...' : monster ? '공격' : '몬스터 탐색'}
           </button>
           {equipped && <small>남은 내구도 {equipped.durability} / {equipped.maxDurability}</small>}
