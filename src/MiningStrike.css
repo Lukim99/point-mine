@@ -1,0 +1,67 @@
+/* 갱도 타격: 손잡이 끝을 축으로 들어 올리고, 광맥에 닿는 순간 짧게 멎었다가 반동합니다. */
+.mine-strike-scene { position: absolute; z-index: 2; top: 8%; left: 50%; width: min(88%, 520px); aspect-ratio: 1.4; transform: translateX(-50%); pointer-events: none; }
+.mine-strike-frame { position: relative; width: 100%; height: 100%; }
+.mine-ground-shadow { position: absolute; top: 80%; left: 0; width: 94%; height: 15%; border-radius: 50%; background: radial-gradient(ellipse, rgba(0, 0, 0, 0.85), transparent 70%); }
+.mine-strike-rock { position: absolute; top: 26%; left: 3%; width: 84%; }
+.mine-strike-rock img { display: block; width: 100%; height: auto; filter: drop-shadow(0 18px 13px rgba(0, 0, 0, 0.65)); }
+.mine-vein-glow { position: absolute; inset: 4% 12%; opacity: 0; background: radial-gradient(ellipse at 52% 38%, rgba(255, 198, 102, 0.5), transparent 56%); mix-blend-mode: screen; }
+.mine-strike-tool { position: absolute; z-index: 3; top: -10%; left: 44%; width: 46%; aspect-ratio: 1; transform: rotate(18deg); transform-origin: 80% 85%; }
+.mine-strike-tool .pickaxe-sprite { width: 100%; height: 100%; transform: scaleX(-1); filter: drop-shadow(4px 8px 6px rgba(0, 0, 0, 0.7)); }
+.mine-swing-trail { position: absolute; z-index: 2; inset: -10% 0 0; width: 100%; height: 100%; overflow: visible; opacity: 0; fill: none; stroke-linecap: round; }
+.mine-trail-wide { stroke: rgba(255, 212, 138, 0.15); stroke-width: 26; }
+.mine-trail-edge { stroke: rgba(255, 239, 197, 0.7); stroke-width: 2; }
+.mine-impact { position: absolute; z-index: 4; top: 60%; left: 46%; width: 1px; height: 1px; }
+.mine-impact-flash { position: absolute; top: -32px; left: -32px; width: 64px; height: 64px; opacity: 0; border-radius: 50%; background: radial-gradient(circle, #fff9df, rgba(255, 192, 79, 0.88) 14%, rgba(229, 119, 36, 0.35) 35%, transparent 70%); }
+.mine-impact-ring { position: absolute; top: -26px; left: -42px; width: 84px; height: 52px; opacity: 0; border: 1px solid rgba(255, 208, 130, 0.85); border-radius: 50%; box-shadow: 0 0 12px rgba(255, 180, 74, 0.35); }
+.mine-impact-dust { position: absolute; top: -25px; left: -65px; width: 130px; height: 60px; opacity: 0; border-radius: 50%; background: radial-gradient(ellipse, rgba(187, 148, 103, 0.32), rgba(89, 65, 44, 0.16) 40%, transparent 70%); }
+.mine-chip { position: absolute; width: var(--chip-size); height: var(--chip-size); opacity: 0; border-radius: 1px; background: linear-gradient(135deg, #d4b182, #5b4737); box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.6); }
+.mine-chip.is-spark { height: calc(var(--chip-size) * 0.5); background: #ffdc93; box-shadow: 0 0 6px #f1ae4c; }
+
+.has-struck .mine-strike-tool { animation: mine-tool-strike var(--mine-strike-duration) both; }
+.has-struck .mine-swing-trail { animation: mine-trail var(--mine-strike-duration) both; }
+.has-struck .mine-strike-rock { animation: mine-rock-recoil var(--mine-strike-duration) both; }
+.has-struck .mine-vein-glow { animation: mine-vein-flash 360ms 280ms both; }
+.mine-impact-flash { animation: mine-contact-flash 220ms 280ms both; }
+.mine-impact-ring { animation: mine-contact-ring 380ms 280ms both; }
+.mine-impact-dust { animation: mine-contact-dust 520ms 280ms both; }
+.mine-chip { animation: mine-fragment 500ms 280ms both; }
+
+@keyframes mine-tool-strike {
+  0% { transform: translate(0, 0) rotate(18deg); animation-timing-function: cubic-bezier(0.2, 0.6, 0.3, 1); }
+  28% { transform: translate(6%, -3%) rotate(68deg); animation-timing-function: cubic-bezier(0.6, 0, 0.95, 0.6); }
+  44%, 51% { transform: translate(-3%, 7%) rotate(-30deg); animation-timing-function: ease-out; }
+  69% { transform: translate(1%, -2%) rotate(-4deg); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0, 0) rotate(18deg); }
+}
+@keyframes mine-trail { 0%, 28% { opacity: 0; } 38% { opacity: 0.72; } 47% { opacity: 0.3; } 60%, 100% { opacity: 0; } }
+@keyframes mine-rock-recoil { 0%, 43% { transform: none; } 45%, 51% { transform: translate(-2px, 3px) rotate(-0.5deg); } 57% { transform: translate(2px, -1px); } 69%, 100% { transform: none; } }
+@keyframes mine-vein-flash { 0%, 100% { opacity: 0; } 18% { opacity: 0.9; } }
+@keyframes mine-contact-flash { 0% { opacity: 0; transform: scale(0.3); } 12% { opacity: 0.95; transform: scale(1); } 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes mine-contact-ring { 0% { opacity: 0.7; transform: scale(0.25); } 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes mine-contact-dust { 0% { opacity: 0; transform: scale(0.5); } 24% { opacity: 0.85; } 100% { opacity: 0; transform: translateY(20px) scale(1.55); } }
+@keyframes mine-fragment { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 8% { opacity: 1; } 68% { opacity: 0.85; } 100% { opacity: 0; transform: translate(var(--chip-x), calc(var(--chip-y) + 52px)) rotate(var(--chip-spin)) scale(0.4); } }
+
+@media (max-width: 767px) {
+  .mine-strike-scene { top: 7%; width: min(92%, 440px); }
+}
+
+/* 짧은 화면에서는 작업대와 조작 버튼 사이에 타격 공간을 확보합니다. */
+@media (max-height: 560px) {
+  .mine-strike-scene { top: 3%; width: min(76%, 36vh); }
+}
+
+/* 가로로 짧은 화면은 타격 장면과 조작부를 나란히 둡니다. */
+@media (orientation: landscape) and (max-height: 560px) and (min-width: 600px) and (max-width: 767px) {
+  .mine-strike-scene { top: 8%; left: 26%; width: min(42%, 48vh); }
+  .mine-controls { left: auto; width: 46%; padding-inline: 8px; background: linear-gradient(90deg, transparent, rgba(8, 7, 6, 0.85)); }
+  .mine-controls > p { text-align: center; }
+  .mine-result { bottom: 8px; left: 26%; min-width: 156px; max-width: 44%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .has-struck .mine-strike-tool,
+  .has-struck .mine-strike-rock,
+  .has-struck .mine-vein-glow,
+  .has-struck .mine-swing-trail,
+  .mine-impact > * { animation: none; }
+}

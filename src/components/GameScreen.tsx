@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import '../FloorProgress.css'
 import { abilityStoneEffectValue, findPickaxe, hasEngravedAbilityStone, isEnchanted, isVipActive, kstToday, type AbilityStoneInventoryItem, type AttackResult, type ChestId, type FacetAbilityStoneResult, type MineResult, type MonsterItemId, type OreId, type PickaxeInventoryItem, type UserProfile } from '../game'
 import { AbilityStoneSprite } from './AbilityStoneSprite'
@@ -10,7 +10,7 @@ import { PickaxeSprite } from './PickaxeSprite'
 import { ShopPanel } from './ShopPanel'
 import { VipModal } from './VipModal'
 import { SoundToggle } from './SoundToggle'
-import mineRockUrl from '../assets/mine-rock.webp'
+import { MINE_STRIKE_DURATION, MiningStrike } from './MiningStrike'
 
 type GameView = 'mine' | 'hunt' | 'shop'
 type MobileTab = 'mine' | 'hunt' | 'shop' | 'inventory' | 'profile'
@@ -70,6 +70,14 @@ function MineArea({ equipped, abilityStone, mining, actionBusy, lastMine, floor,
   experience: string
   onMine: () => void
 }) {
+  const [strikeSequence, setStrikeSequence] = useState(0)
+  const [swinging, setSwinging] = useState(false)
+  // 서버 응답 속도와 관계없이 한 번의 타격이 끝난 뒤 다음 타격을 받습니다.
+  useEffect(() => {
+    if (!strikeSequence) return
+    const timer = window.setTimeout(() => setSwinging(false), MINE_STRIKE_DURATION)
+    return () => window.clearTimeout(timer)
+  }, [strikeSequence])
   const definition = equipped ? findPickaxe(equipped.id) : null
   // 취약(+레벨)·더블 채굴(2배)로 늘어난 내구도 소모량. 이보다 내구도가 적으면 채굴 불가.
   const mineDurCost = (1 + (equipped?.enchants?.fragile ?? 0) + Math.max(0, abilityStoneEffectValue(abilityStone, 'durability_cost'))) * ((equipped?.enchants?.double_mine ?? 0) > 0 ? 2 : 1)
@@ -79,6 +87,12 @@ function MineArea({ equipped, abilityStone, mining, actionBusy, lastMine, floor,
   const requiredExperience = isMaxFloor ? 0n : getRequiredExperience(floor)
   const progress = isMaxFloor ? 100 : Number((currentExperience * 10_000n) / requiredExperience) / 100
   const experienceLabel = isMaxFloor ? 'MAX' : `${formatExperience(currentExperience)} / ${formatExperience(requiredExperience)} EXP`
+  const strike = () => {
+    if (!canMine || mining || actionBusy || swinging) return
+    setStrikeSequence((sequence) => sequence + 1)
+    setSwinging(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    onMine()
+  }
 
   return (
     <section className="mine-area" aria-labelledby="mine-title">
@@ -93,10 +107,7 @@ function MineArea({ equipped, abilityStone, mining, actionBusy, lastMine, floor,
         <div className="cave-light" />
         <span className="hanging-chain hanging-chain--left" aria-hidden="true" />
         <span className="hanging-chain hanging-chain--right" aria-hidden="true" />
-        <div className="rock-face" aria-hidden="true">
-          <img className="mine-rock-image" src={mineRockUrl} width={960} height={640} alt="" draggable={false} />
-        </div>
-        {equipped && <PickaxeSprite pickaxeId={equipped.id} size="large" className="active-pickaxe" enchanted={isEnchanted(equipped) || hasEngravedAbilityStone(equipped)} />}
+        <MiningStrike pickaxe={equipped} sequence={strikeSequence} />
         {lastMine?.status === 'success' && (
           lastMine.mined === false ? (
             <div className="mine-result" key={`miss-${lastMine.remaining_durability}`}>
@@ -118,7 +129,7 @@ function MineArea({ equipped, abilityStone, mining, actionBusy, lastMine, floor,
         <div className="mine-controls">
           <p>{definition ? `${definition.name} 장착 중 · 채굴당 ${definition.rank + 1} EXP` : '인벤토리에서 곡괭이를 장착하세요'}</p>
           {equipped && <Durability item={equipped} />}
-          <button className="mine-button" type="button" onClick={onMine} disabled={!canMine || mining || actionBusy}>
+          <button className="mine-button" type="button" onClick={strike} disabled={!canMine || mining || actionBusy || swinging}>
             <span aria-hidden="true">⛏</span>{mining ? '채굴 중...' : '광맥 채굴'}
           </button>
           {equipped && <small>남은 내구도 {equipped.durability} / {equipped.maxDurability}</small>}

@@ -37,8 +37,6 @@ export function PickaxeDetailModal({ item, abilityStone, mana, actionBusy, miner
   // 수리는 한 번에 내구도 1씩만 진행합니다.
   const canRepair = missingDurability > 0 && (isPointRepair ? true : materialLimit >= 1)
   const entries = enchantEntries(item.enchants)
-  const blessings = entries.filter((entry) => entry.def.sign === 'positive').length
-  const curses = entries.length - blessings
   const enchantManaCost = Math.max(1, ENCHANT_MANA_COST + abilityStoneEffectValue(abilityStone, 'enchant_mana_cost'))
   const manaShort = mana < enchantManaCost
   const enchanted = isEnchanted(item)
@@ -80,12 +78,6 @@ export function PickaxeDetailModal({ item, abilityStone, mana, actionBusy, miner
             <ArcaneGlyph name="sigil" />
             <h3 id="aw-pickaxe-enchant-title">마법 부여</h3>
             <span className="aw-rule" aria-hidden="true" />
-            {entries.length > 0 && (
-              <span className="aw-tally">
-                <span className="aw-tally-chip is-boon">축복 <b>{blessings}</b></span>
-                <span className="aw-tally-chip is-bane">저주 <b>{curses}</b></span>
-              </span>
-            )}
           </header>
           {entries.length > 0 ? (
             <ul className="aw-seal-list">
@@ -106,7 +98,7 @@ export function PickaxeDetailModal({ item, abilityStone, mana, actionBusy, miner
           <button type="button" className={`aw-socket-plate ${abilityStone ? 'has-stone' : 'is-empty'}`} onClick={() => onOpenAbilityStone(item.id)} disabled={actionBusy}>
             {abilityStone ? (
               <>
-                <StoneSocket stone={abilityStone} size="medium" />
+                <StoneSocket stone={abilityStone} hostPickaxeId={item.id} size="medium" />
                 <span className="aw-socket-plate-body">
                   <span className="aw-socket-plate-head">
                     <StoneScore stone={abilityStone} />
@@ -136,23 +128,24 @@ export function PickaxeDetailModal({ item, abilityStone, mana, actionBusy, miner
             <span className="aw-repair-label"><ArcaneGlyph name="check" />내구도가 가득 찼습니다</span>
           ) : isPointRepair ? (
             <>
-              <span className="aw-repair-label">내구도 최대 {recipe.restoreAmount} 회복</span>
-              <span className="aw-cost"><b>{recipe.pointCost}P</b></span>
+              <div className="aw-repair-head"><span className="aw-repair-label">수리 비용</span><small>내구도 최대 +{recipe.restoreAmount}</small></div>
+              <strong className="aw-repair-price">{recipe.pointCost?.toLocaleString('ko-KR')}<small>P</small></strong>
             </>
           ) : (
             <>
-              <span className="aw-repair-label">내구도 1당</span>
-              {recipe.costs.map((cost) => {
-                const owned = mineralQuantity(cost.oreId)
-                return (
-                  <span className={`aw-cost ${owned < cost.quantity ? 'is-short' : ''}`} key={cost.oreId}>
-                    <span aria-hidden="true"><OreSprite oreId={cost.oreId} /></span>
-                    {findOre(cost.oreId)?.name}
-                    <b>×{cost.quantity}</b>
-                    <em>보유 {owned.toLocaleString('ko-KR')}</em>
-                  </span>
-                )
-              })}
+              <div className="aw-repair-head"><span className="aw-repair-label">수리 재료 <small>내구도 +1</small></span><small>보유 / 필요</small></div>
+              <ul className="aw-repair-materials">
+                {recipe.costs.map((cost) => {
+                  const owned = mineralQuantity(cost.oreId)
+                  return (
+                    <li className={`aw-repair-material ${owned < cost.quantity ? 'is-short' : 'is-ready'}`} key={cost.oreId}>
+                      <span className="aw-repair-ore" aria-hidden="true"><OreSprite oreId={cost.oreId} /></span>
+                      <span className="aw-repair-name">{findOre(cost.oreId)?.name ?? cost.oreId}</span>
+                      <span className="aw-repair-quantity" aria-label={`보유 ${owned}개, 필요 ${cost.quantity}개${owned < cost.quantity ? ', 재료 부족' : ''}`}><b>{owned.toLocaleString('ko-KR')}</b><span aria-hidden="true">/</span><strong>{cost.quantity}</strong></span>
+                    </li>
+                  )
+                })}
+              </ul>
             </>
           )}
         </div>
@@ -166,7 +159,7 @@ export function PickaxeDetailModal({ item, abilityStone, mana, actionBusy, miner
           </button>
           <button type="button" className="aw-btn aw-btn--astral" onClick={() => onEnchant(item.id)} disabled={actionBusy || manaShort}>
             <span><ArcaneGlyph name="sigil" />마법 부여</span>
-            <small className={manaShort ? 'is-short' : ''}>✦ {enchantManaCost} 소모 <i>보유 {mana.toLocaleString('ko-KR')}</i></small>
+            <small className={`aw-mana-fraction ${manaShort ? 'is-short' : ''}`} aria-label={`보유 마나 ${mana}, 필요 마나 ${enchantManaCost}`}><span aria-hidden="true">✦</span><b>{mana.toLocaleString('ko-KR')}</b><span aria-hidden="true">/</span>{enchantManaCost}</small>
           </button>
         </div>
       </div>

@@ -111,9 +111,6 @@ export function EnchantEffect({ pickaxeId, enchants, onClose }: EnchantEffectPro
 
   if (!pickaxe) return null
 
-  const shown = entries.slice(0, revealed)
-  const blessings = shown.filter((entry) => entry.def.sign === 'positive').length
-  const curses = shown.length - blessings
   const phase = complete ? 'is-complete' : revealed === 0 ? 'is-casting' : 'is-revealing'
   const announcement = complete
     ? `${pickaxe.name}에 마법이 깃들었습니다. ${entries.map((entry) => `${entry.def.sign === 'positive' ? '축복' : '저주'} ${entry.def.name}${entry.def.maxLevel > 1 ? ` ${entry.level}단계` : ''}`).join(', ')}`
@@ -154,12 +151,7 @@ export function EnchantEffect({ pickaxeId, enchants, onClose }: EnchantEffectPro
 
           <h2 className="aw-enchant-title" id="aw-enchant-title">{pickaxe.name}</h2>
           <p className="aw-enchant-status" aria-hidden="true">
-            {complete ? (
-              <>
-                <span className="aw-tally-chip is-boon">축복 <b>{blessings}</b></span>
-                <span className="aw-tally-chip is-bane">저주 <b>{curses}</b></span>
-              </>
-            ) : revealed === 0 ? '마력을 불어넣는 중' : `봉인 해제 ${revealed} / ${entries.length}`}
+            {complete ? '마법이 깃들었습니다' : revealed === 0 ? '마력을 불어넣는 중' : `봉인 해제 ${revealed} / ${entries.length}`}
           </p>
 
           {entries.length > 0 ? (

@@ -385,14 +385,12 @@
 .hanging-chain { position: absolute; top: 0; width: 4px; height: 30%; opacity: 0.55; background: repeating-linear-gradient(#5a4d3d 0 5px, #211d18 5px 9px); }
 .hanging-chain--left { left: 12%; transform: rotate(-4deg); }
 .hanging-chain--right { right: 10%; height: 22%; transform: rotate(5deg); }
-.rock-face { position: absolute; top: 10%; left: 50%; width: min(68%, 390px); aspect-ratio: 1.5 / 1; transform: translateX(-50%); }
-.mine-rock-image { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 18px 13px rgba(0, 0, 0, 0.6)); }
-.active-pickaxe { position: absolute; z-index: 3; top: 23%; left: 50%; transform: translate(-50%, -50%) rotate(-17deg); transform-origin: 62% 70%; }
-.mine-stage.is-mining .active-pickaxe { animation: mine-swing 430ms ease-in-out; }
-.mine-result { position: absolute; z-index: 5; top: 22%; left: 50%; display: flex; align-items: center; flex-direction: column; min-width: 126px; padding: 9px 14px; border: 1px solid #7d623d; border-radius: 4px; background: rgba(20, 16, 12, 0.94); box-shadow: 0 10px 25px #000; transform: translateX(-50%); animation: result-pop 900ms ease both; }
+.mine-result { position: absolute; z-index: 5; bottom: clamp(142px, 18vh, 168px); left: 50%; display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: center; gap: 2px 8px; min-width: 176px; max-width: calc(100% - 24px); padding: 8px 12px; border: 1px solid #7d623d; border-radius: 5px; background: rgba(20, 16, 12, 0.94); box-shadow: 0 6px 18px #000; transform: translateX(-50%); animation: result-pop 1100ms 220ms ease both; }
 .mine-result > span { color: #ed9e3b; font-size: 24px; text-shadow: 0 0 8px #cf5f26; }
-.mine-result strong { margin-top: 2px; color: #ffedc8; font-size: 12px; }
-.mine-result small { color: #d29d51; font-size: 9px; }
+.mine-result > .ore-sprite, .mine-result > span[aria-hidden] { grid-row: span 2; width: 36px; height: 36px; text-align: center; }
+.mine-result strong { align-self: end; grid-column: 2; color: #ffedc8; font-size: 12px; }
+.mine-result small { align-self: start; grid-column: 2; color: #d29d51; font-size: 9px; }
+.mine-result > em { grid-column: 1 / -1; }
 .mine-result .stone-drop-line { display: flex; align-items: center; gap: 4px; margin-top: 5px; color: #aee4ff; font-size: 9px; font-style: normal; font-weight: 800; }
 .mine-result .stone-drop-line .ability-stone-sprite { width: 24px; }
 .mine-controls { position: absolute; right: 0; bottom: 0; left: 0; z-index: 4; display: flex; align-items: center; flex-direction: column; padding: 20px 20px clamp(17px, 2.5vh, 26px); background: linear-gradient(transparent, rgba(8, 7, 6, 0.93) 24%); }
@@ -444,7 +442,6 @@
 @keyframes fade-in { from { opacity: 0; } }
 @keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
 @keyframes pick-swing { 0%, 100% { transform: rotate(-18deg); } 50% { transform: rotate(28deg); } }
-@keyframes mine-swing { 0% { transform: translate(-50%, -50%) rotate(-25deg); } 45% { transform: translate(-50%, -50%) rotate(38deg); } 100% { transform: translate(-50%, -50%) rotate(-17deg); } }
 @keyframes result-pop { 0% { opacity: 0; transform: translate(-50%, 15px) scale(0.8); } 20%, 72% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -12px) scale(0.96); } }
 
 @media (max-width: 1050px) and (min-width: 768px) {
@@ -504,8 +501,6 @@
   .mine-title-row { flex-basis: 45px; padding-bottom: 8px; }
   .mine-title-row h2 { font-size: 18px; }
   .mine-stage { border-radius: 3px; }
-  .rock-face { top: 12%; width: min(72%, 290px); }
-  .active-pickaxe { top: 25%; }
   .pickaxe-sprite--large { width: clamp(115px, 38vw, 160px); height: clamp(115px, 38vw, 160px); }
   .mine-controls { padding-bottom: clamp(16px, 3.6vh, 27px); }
   .mine-button { width: min(280px, 85%); min-height: 50px; font-size: 14px; }
@@ -529,8 +524,6 @@
   .login-divider { margin-top: 20px; }
   .login-footer { display: none; }
   .mine-title-row { flex-basis: 40px; }
-  .rock-face { width: 64%; }
-  .active-pickaxe { top: 22%; }
   .mine-controls { padding-bottom: 12px; }
   .mine-controls > p { margin-bottom: 5px; }
   .mine-controls > .durability { margin-bottom: 7px; }

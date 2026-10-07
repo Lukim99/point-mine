@@ -15,6 +15,7 @@ import {
 } from '../game'
 import '../ArcaneWorkshop.css'
 import { AbilityStoneSprite } from './AbilityStoneSprite'
+import { PickaxeSprite } from './PickaxeSprite'
 
 // 「심층 세공소」 화면들이 함께 쓰는 문양·스톤·마법 표시 부품입니다.
 
@@ -50,12 +51,12 @@ export function ArcaneGlyph({ name, className = '' }: { name: ArcaneGlyphName; c
 
 const stoneVariant = (stone: AbilityStoneInventoryItem) => Math.abs(Math.floor(stone.variant ?? 0)) % 4
 
-// 스톤 원석 상태(미세공·세공 중·완료)에 따라 소켓의 빛과 채도가 달라집니다.
-export function StoneSocket({ stone, size = 'small', className = '' }: { stone: AbilityStoneInventoryItem; size?: 'small' | 'medium' | 'large'; className?: string }) {
+// 각인된 스톤은 해당 곡괭이 그림을, 원석은 세공 상태에 맞춘 보석 그림을 보여 줍니다.
+export function StoneSocket({ stone, hostPickaxeId, size = 'small', className = '' }: { stone: AbilityStoneInventoryItem; hostPickaxeId?: string; size?: 'small' | 'medium' | 'large'; className?: string }) {
   const state = isAbilityStoneFaceted(stone) ? 'is-cut' : abilityStoneFacetProgress(stone) === 0 ? 'is-raw' : 'is-cutting'
   return (
-    <span className={`aw-stone-socket aw-stone-socket--${size} aw-variant-${stoneVariant(stone)} ${state} ${className}`} aria-hidden="true">
-      <AbilityStoneSprite variant={stone.variant} size={size} />
+    <span className={`aw-stone-socket aw-stone-socket--${size} aw-variant-${stoneVariant(stone)} ${state} ${hostPickaxeId ? 'is-engraved' : ''} ${className}`} aria-hidden="true">
+      {hostPickaxeId ? <PickaxeSprite pickaxeId={hostPickaxeId} size={size} /> : <AbilityStoneSprite variant={stone.variant} size={size} />}
     </span>
   )
 }
@@ -135,7 +136,7 @@ export function StoneFacetMap({ stone }: { stone: AbilityStoneInventoryItem }) {
 
 const signedValue = (value: number, unit: string) => `${value > 0 ? '+' : ''}${Number.isInteger(value) ? value : value.toLocaleString('ko-KR')}${unit}`
 
-// 스톤의 세 줄 효과를 이로움/불리 표식과 현재 수치로 나열합니다.
+// 효과의 종류는 색으로 구분하고, 화면 읽기에는 종류를 함께 제공합니다.
 export function StoneOptionRows({ stone }: { stone: AbilityStoneInventoryItem }) {
   return (
     <span className="aw-option-rows">
@@ -145,11 +146,7 @@ export function StoneOptionRows({ stone }: { stone: AbilityStoneInventoryItem })
         const unit = definition?.unit ?? option.unit ?? ''
         return (
           <span className={`aw-option-row is-${option.sign} ${active ? 'is-active' : 'is-dormant'}`} key={`${option.id}-${index}`}>
-            <span className="aw-option-sign">
-              <ArcaneGlyph name={option.sign === 'positive' ? 'spark' : 'warn'} />
-              {option.sign === 'positive' ? '이로움' : '불리'}
-            </span>
-            <span className="aw-option-name">{definition?.name ?? option.name ?? option.id}</span>
+            <span className="aw-option-name"><span className="aw-sr-only">{option.sign === 'positive' ? '이로운 효과 ' : '불리한 효과 '}</span>{definition?.name ?? option.name ?? option.id}</span>
             <strong className="aw-option-value">{active ? signedValue(Number(option.value ?? option.effectValue ?? 0), unit) : '미활성'}</strong>
           </span>
         )
@@ -158,7 +155,7 @@ export function StoneOptionRows({ stone }: { stone: AbilityStoneInventoryItem })
   )
 }
 
-// 마법 부여 한 건을 축복/저주 인장으로 표시합니다. 곡괭이 상세와 부여 연출이 함께 사용합니다.
+// 마법은 인장의 빛깔과 이름으로 표시합니다. 곡괭이 상세와 부여 연출이 함께 사용합니다.
 export function EnchantSeal({ id, level }: { id: EnchantId; level: number }) {
   const definition = findEnchantment(id)
   if (!definition) return null
@@ -172,7 +169,7 @@ export function EnchantSeal({ id, level }: { id: EnchantId; level: number }) {
       </span>
       <span className="aw-seal-body">
         <span className="aw-seal-head">
-          <span className="aw-seal-sign">{positive ? '축복' : '저주'}</span>
+          <span className="aw-sr-only">{positive ? '축복 ' : '저주 '}</span>
           <strong>{definition.name}</strong>
           {leveled && <em className="aw-seal-level">{toRoman(level)}</em>}
         </span>

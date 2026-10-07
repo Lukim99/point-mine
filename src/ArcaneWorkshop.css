@@ -44,11 +44,6 @@
 .aw-tag--broken { color: #ffd6cb; background: rgba(110, 30, 18, 0.7); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.6); }
 .aw-tag--idle { color: var(--aw-text-2); background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px #3f362c; }
 
-.aw-tally { display: inline-flex; flex: 0 0 auto; gap: 4px; }
-.aw-tally-chip { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 8px; font-size: 10px; font-weight: 800; border-radius: 999px; }
-.aw-tally-chip b { font-family: var(--aw-serif); font-size: 13px; }
-.aw-tally-chip.is-boon { color: #c9f7d5; background: rgba(36, 96, 58, 0.5); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.4); }
-.aw-tally-chip.is-bane { color: #ffd0c4; background: rgba(120, 36, 22, 0.52); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
 
 /* ---------- 인벤토리 선반 ---------- */
 .aw-inventory .panel-heading { border-bottom: 0; background: linear-gradient(90deg, rgba(176, 131, 71, 0.6), rgba(176, 131, 71, 0.08)) bottom / 100% 1px no-repeat; }
@@ -63,8 +58,8 @@
 .aw-select-all:disabled { cursor: default; opacity: 0.4; }
 
 /* ---------- 장비 카드 ---------- */
-.aw-gear-list,
-.aw-stone-list { display: grid; gap: 8px; }
+.aw-gear-list { display: grid; gap: 8px; }
+.aw-stone-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 124px), 1fr)); gap: 6px; }
 
 .aw-gear {
   --aw-equip-bar: 0 0 0 0 transparent;
@@ -184,10 +179,6 @@
 .aw-mark--enchant > .aw-glyph { color: #d4c7ff; filter: drop-shadow(0 0 3px rgba(177, 155, 255, 0.9)); }
 .aw-mark--stone { padding-right: 3px; color: var(--aw-vein-hi); background: linear-gradient(90deg, rgba(40, 140, 128, 0.38), rgba(20, 70, 64, 0.22)); box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.42); }
 .aw-mark--stone > .aw-glyph { color: var(--aw-vein); filter: drop-shadow(0 0 3px rgba(95, 224, 204, 0.9)); }
-.aw-pips { display: inline-flex; gap: 2px; margin-left: 2px; }
-.aw-pips i { width: 5px; height: 5px; border-radius: 50%; }
-.aw-pips i.is-boon { background: var(--aw-boon); box-shadow: 0 0 4px rgba(134, 227, 155, 0.9); }
-.aw-pips i.is-bane { background: var(--aw-bane); box-shadow: 0 0 4px rgba(255, 132, 102, 0.9); }
 
 .aw-gear-durability { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .aw-gear-durability .durability { flex: 1 1 auto; width: auto; height: 5px; border: 0; background: #0b0908; box-shadow: inset 0 0 0 1px #2e261e; }
@@ -247,6 +238,7 @@
   box-shadow: inset 0 3px 9px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(var(--aw-stone-tint), 0.35), 0 0 0 3px #0e0b09, 0 0 0 4px rgba(176, 131, 71, 0.38);
 }
 .aw-stone-socket .ability-stone-sprite { width: 82%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 7px rgba(var(--aw-stone-tint), 0.45)); }
+.aw-stone-socket .pickaxe-sprite { width: 86%; height: 86%; }
 .aw-stone-socket--medium { width: 66px; height: 66px; }
 .aw-stone-socket--large { width: 100%; height: 100%; }
 /* 세공 전 원석은 흐리게, 세공을 마칠수록 본래의 빛을 되찾습니다. */
@@ -259,12 +251,13 @@
   --aw-corner: rgba(95, 224, 204, 0.35);
   position: relative;
   display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
+  gap: 8px;
   width: 100%;
   min-width: 0;
-  padding: 9px 10px 9px 9px;
+  min-height: 62px;
+  padding: 8px;
   color: var(--aw-text);
   font: inherit;
   text-align: left;
@@ -279,19 +272,25 @@
 }
 .aw-stone-card.is-raw,
 .aw-stone-card.is-cutting { --aw-corner: rgba(176, 131, 71, 0.35); border-color: #352e27; background: linear-gradient(110deg, #1d1915, #13100d 72%); }
-.aw-stone-card.is-set { border-color: rgba(95, 224, 204, 0.55); box-shadow: 0 0 0 1px rgba(95, 224, 204, 0.12), 0 0 16px rgba(95, 224, 204, 0.12), 0 2px 7px rgba(0, 0, 0, 0.35); }
+.aw-stone-card.is-set { border-color: rgba(95, 224, 204, 0.45); box-shadow: inset 0 1px rgba(95, 224, 204, 0.08), 0 2px 7px rgba(0, 0, 0, 0.35); }
 .aw-stone-card:active { transform: translateY(1px); }
+.aw-stone-card .aw-stone-socket { width: 36px; height: 36px; box-shadow: inset 0 2px 6px #000, 0 0 0 1px rgba(var(--aw-stone-tint), 0.32), 0 0 0 3px #0e0b09; }
+.aw-stone-card .aw-score-gem { min-width: 18px; height: 21px; padding: 0 3px; font-size: 13px; box-shadow: none; }
 .aw-stone-body { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
 .aw-stone-title { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 7px; min-width: 0; }
-.aw-stone-kicker { color: #8fbdb5; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; white-space: nowrap; }
-.aw-stone-card.is-raw .aw-stone-kicker,
-.aw-stone-card.is-cutting .aw-stone-kicker { color: var(--aw-text-3); }
 .aw-stone-name { color: #ddd2bd; font-size: 12px; font-weight: 800; }
-.aw-stone-progress { margin-left: auto; color: var(--aw-text-3); font-family: var(--aw-serif); font-size: 11px; font-variant-numeric: tabular-nums; }
-.aw-stone-progress b { color: var(--aw-text-2); }
-.aw-stone-foot { display: inline-flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: #75695c; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.aw-stone-foot { display: block; min-width: 0; overflow: hidden; color: #998975; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
 .aw-stone-foot.is-set { color: #9ff0e2; }
-.aw-stone-foot .aw-glyph { color: var(--aw-vein); }
+.aw-stone-foot b { color: #ddc9a7; font-weight: 800; }
+
+/* 스톤이 많아져도 필요한 상태만 빠르게 골라 봅니다. */
+.aw-stone-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; margin-bottom: 8px; padding: 3px; border: 1px solid #373127; border-radius: 6px; background: #100e0b; }
+.aw-stone-filters button { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 30px; padding: 3px 1px; color: #998c79; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; border: 0; border-radius: 3px; background: transparent; }
+.aw-stone-filters button span { color: #6f675a; font-size: 10px; font-variant-numeric: tabular-nums; }
+.aw-stone-filters button[aria-pressed='true'] { color: #f7dfb1; background: #2c241a; box-shadow: inset 0 -2px #c18c48; }
+.aw-stone-filters button[aria-pressed='true'] span { color: #c0a472; }
+.aw-stone-filters button:hover { color: #f7dfb1; }
+.aw-stone-filters button:focus-visible { outline: 2px solid #e9b968; outline-offset: -2px; }
 
 /* ---------- 광물 · 아이템 타일 ---------- */
 .aw-ore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
@@ -449,10 +448,10 @@
 .aw-seal {
   position: relative;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-columns: 32px minmax(0, 1fr);
   align-items: center;
-  gap: 12px;
-  padding: 10px 13px 11px 10px;
+  gap: 11px;
+  padding: 10px 12px;
   overflow: hidden;
   text-align: left;
   border: 1px solid rgba(177, 155, 255, 0.32);
@@ -468,15 +467,12 @@
     radial-gradient(60% 120% at 0% 50%, rgba(255, 90, 60, 0.18), transparent 70%),
     linear-gradient(120deg, rgba(66, 22, 20, 0.95), rgba(23, 12, 13, 0.96) 72%);
 }
-.aw-seal-medal { position: relative; display: grid; place-items: center; width: 42px; height: 42px; color: #dcd0ff; font-size: 23px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4d3d9a, #16112e 76%); box-shadow: 0 0 0 1px rgba(226, 216, 255, 0.4), 0 0 0 3px rgba(12, 10, 24, 0.9), 0 0 0 4px rgba(176, 131, 71, 0.6), 0 0 14px rgba(150, 120, 255, 0.45); }
+.aw-seal-medal { position: relative; display: grid; place-items: center; width: 32px; height: 32px; color: #dcd0ff; font-size: 18px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4d3d9a, #16112e 76%); box-shadow: 0 0 0 1px rgba(226, 216, 255, 0.4), 0 0 0 3px rgba(12, 10, 24, 0.9), 0 0 0 4px rgba(176, 131, 71, 0.6), 0 0 10px rgba(150, 120, 255, 0.3); }
 .aw-seal-medal .aw-glyph { stroke-width: 1.3; filter: drop-shadow(0 0 3px rgba(200, 185, 255, 0.9)); }
 .aw-seal--negative .aw-seal-medal { color: #ffc4b4; background: radial-gradient(circle at 40% 35%, #7c2a1e, #200e0b 76%); box-shadow: 0 0 0 1px rgba(255, 196, 180, 0.4), 0 0 0 3px rgba(22, 9, 8, 0.9), 0 0 0 4px rgba(176, 131, 71, 0.6), 0 0 14px rgba(255, 90, 60, 0.42); }
 .aw-seal--negative .aw-seal-medal .aw-glyph { filter: drop-shadow(0 0 3px rgba(255, 120, 90, 0.9)); }
-.aw-seal-body { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.aw-seal-body { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
 .aw-seal-head { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; min-width: 0; }
-.aw-seal-sign { padding: 2px 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.12em; border-radius: 4px; }
-.aw-seal--positive .aw-seal-sign { color: #c9f7d5; background: rgba(36, 96, 58, 0.6); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.35); }
-.aw-seal--negative .aw-seal-sign { color: #ffd0c4; background: rgba(120, 36, 22, 0.65); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
 .aw-seal-head strong { color: #f4efff; font-size: 15px; font-weight: 800; }
 .aw-seal--negative .aw-seal-head strong { color: #ffe7df; }
 .aw-seal-level { color: #ffd98d; font-family: var(--aw-serif); font-size: 16px; font-style: normal; font-weight: 700; text-shadow: 0 0 8px rgba(255, 200, 110, 0.35); }
@@ -519,10 +515,8 @@
 .aw-empty-socket { display: grid; place-items: center; width: 60px; height: 60px; color: #5f8f88; font-size: 24px; border: 1px dashed rgba(95, 224, 204, 0.4); border-radius: 50%; background: radial-gradient(circle, rgba(95, 224, 204, 0.08), #0b0f0e 70%); }
 
 .aw-option-rows { display: grid; gap: 4px; min-width: 0; }
-.aw-option-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 7px; min-width: 0; font-size: 11px; }
-.aw-option-sign { display: inline-flex; align-items: center; gap: 3px; padding: 1px 5px; font-size: 9px; font-weight: 900; border-radius: 3px; }
-.aw-option-row.is-positive .aw-option-sign { color: #bdf3cb; background: rgba(36, 96, 58, 0.5); }
-.aw-option-row.is-negative .aw-option-sign { color: #ffcdbf; background: rgba(120, 36, 22, 0.55); }
+.aw-option-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 7px; min-width: 0; padding: 3px 0 3px 8px; font-size: 11px; box-shadow: inset 2px 0 rgba(134, 227, 155, 0.6); }
+.aw-option-row.is-negative { box-shadow: inset 2px 0 rgba(255, 132, 102, 0.65); }
 .aw-option-name { min-width: 0; overflow: hidden; color: #d8cfbf; text-overflow: ellipsis; white-space: nowrap; }
 .aw-option-value { font-family: var(--aw-serif); font-size: 13px; white-space: nowrap; }
 .aw-option-row.is-positive.is-active .aw-option-value { color: #a8f0bb; }
@@ -530,16 +524,26 @@
 .aw-option-row.is-dormant .aw-option-value { color: #6e6458; font-family: inherit; font-size: 10px; font-weight: 700; }
 
 /* 수리 · 행동 버튼 */
-.aw-repair { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 7px; padding: 9px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.22); box-shadow: inset 0 0 0 1px #2f2720; }
+.aw-repair { padding: 11px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.24); box-shadow: inset 0 0 0 1px #3b3024; }
 .aw-repair-label { display: inline-flex; align-items: center; gap: 5px; color: var(--aw-text-3); font-size: 11px; font-weight: 800; }
 .aw-repair.is-idle .aw-repair-label { color: #9a8b75; }
-.aw-cost { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 3px; color: var(--aw-text-2); font-size: 11px; font-weight: 700; border-radius: 999px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px #3b3128; }
-.aw-cost > span[aria-hidden] { display: grid; }
-.aw-cost .ore-sprite { width: 22px; }
-.aw-cost b { color: var(--aw-text); font-family: var(--aw-serif); }
-.aw-cost em { color: var(--aw-text-3); font-size: 10px; font-style: normal; }
-.aw-cost.is-short { box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
-.aw-cost.is-short em { color: var(--aw-bane); }
+.aw-repair-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
+.aw-repair-head .aw-repair-label { color: #d0bd9d; }
+.aw-repair-head small { color: #84745e; font-size: 10px; font-weight: 600; }
+.aw-repair-label small { margin-left: 4px; }
+.aw-repair-materials { display: grid; margin: 0; padding: 0; list-style: none; }
+.aw-repair-material { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 35px; padding: 3px 1px; border-bottom: 1px solid rgba(176, 131, 71, 0.14); }
+.aw-repair-material:last-child { border-bottom: 0; }
+.aw-repair-ore { display: grid; place-items: center; }
+.aw-repair-ore .ore-sprite { width: 25px; }
+.aw-repair-name { color: #d8cbb6; font-size: 12px; }
+.aw-repair-quantity { display: inline-flex; align-items: baseline; justify-content: end; gap: 7px; min-width: 52px; font-variant-numeric: tabular-nums; }
+.aw-repair-quantity b { color: #afd4ab; font-size: 13px; }
+.aw-repair-quantity span { color: #665949; font-size: 11px; }
+.aw-repair-quantity strong { color: #b2a28b; font-size: 11px; font-weight: 600; }
+.aw-repair-material.is-short .aw-repair-quantity b { color: #f28b72; }
+.aw-repair-price { display: block; padding-top: 3px; color: #f5cf87; font-family: var(--aw-serif); font-size: 21px; }
+.aw-repair-price small { margin-left: 3px; font-size: 12px; }
 
 .aw-actions { display: grid; grid-template-columns: 1fr 1fr 1.35fr; gap: 8px; }
 .aw-btn { display: inline-flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; min-width: 0; min-height: 48px; padding: 6px 10px; color: var(--aw-text); font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; border: 1px solid #6b5232; border-radius: 8px; background: linear-gradient(#3d3022, #261d15); box-shadow: inset 0 1px rgba(255, 220, 160, 0.14), 0 3px 0 #110c08, 0 6px 12px rgba(0, 0, 0, 0.3); transition: filter 140ms ease, transform 120ms ease; }
@@ -547,6 +551,9 @@
 .aw-btn small { max-width: 100%; overflow: hidden; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; opacity: 0.9; }
 .aw-btn small i { font-style: normal; opacity: 0.75; }
 .aw-btn small.is-short { color: #ffb19c; opacity: 1; }
+.aw-btn .aw-mana-fraction { display: inline-flex; align-items: baseline; gap: 4px; color: #d3c7f7; font-variant-numeric: tabular-nums; }
+.aw-btn .aw-mana-fraction b { color: #f0eaff; font-size: 12px; }
+.aw-btn .aw-mana-fraction.is-short b { color: #ffa48e; }
 .aw-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px rgba(255, 220, 160, 0.14), 0 1px 0 #110c08; }
 .aw-btn:disabled { cursor: not-allowed; filter: grayscale(0.4); opacity: 0.45; }
 .aw-btn--gold { color: #2b1a07; border-color: #f3c879; background: linear-gradient(#f2c672, #c08033); box-shadow: inset 0 1px rgba(255, 240, 200, 0.7), 0 3px 0 #6e4519, 0 6px 12px rgba(0, 0, 0, 0.3); }
@@ -948,8 +955,7 @@
 
 /* ---------- 반응형 ---------- */
 @media (max-width: 767px) {
-  .mobile-panel .aw-gear-list,
-  .mobile-panel .aw-stone-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+  .mobile-panel .aw-gear-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
   .aw-ore-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
 }
 
@@ -1023,8 +1029,6 @@
 .inventory-content--compact .aw-gear { grid-template-columns: 50px minmax(0, 1fr); gap: 10px; }
 .inventory-content--compact .aw-gear-socket { width: 50px; height: 50px; }
 .inventory-content--compact .aw-gear-socket .pickaxe-sprite { width: 42px; height: 42px; }
-.inventory-content--compact .aw-stone-card { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
-.inventory-content--compact .aw-stone-socket--small { width: 48px; height: 48px; }
 
 /* ---------- 움직임 줄이기 ---------- */
 @media (prefers-reduced-motion: reduce) {

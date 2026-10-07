@@ -214,8 +214,7 @@ export function AbilityStoneEngraveEffect({ pickaxeId, stone, onClose }: Ability
                 key={option.key}
                 style={{ animationDelay: `${260 + index * 150}ms` }}
               >
-                <span className="sf-rite-option-sign"><ArcaneGlyph name={option.positive ? 'spark' : 'warn'} />{option.positive ? '이로움' : '불리'}</span>
-                <span className="sf-rite-option-name">{option.name}</span>
+                <span className="sf-rite-option-name"><span className="aw-sr-only">{option.positive ? '이로운 효과 ' : '불리한 효과 '}</span>{option.name}</span>
                 <strong>{option.value}</strong>
               </li>
             ))}

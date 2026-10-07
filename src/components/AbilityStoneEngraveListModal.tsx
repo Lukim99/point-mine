@@ -32,10 +32,7 @@ export function AbilityStoneEngraveListModal({ pickaxe, abilityStones, pickaxes 
     onClose()
   }
 
-  const hostOf = (stone: AbilityStoneInventoryItem) => {
-    const host = pickaxes.find((item) => item.abilityStoneUid === stone.uid && item.id !== pickaxe.id)
-    return host ? findPickaxe(host.id)?.name ?? host.id : null
-  }
+  const hostOf = (stone: AbilityStoneInventoryItem) => pickaxes.find((item) => item.abilityStoneUid === stone.uid) ?? null
 
   return (
     <Modal title="어빌리티 스톤 각인" onClose={onClose} labelledBy="ability-stone-engrave-list-title" className="sf-modal sf-rack-modal">
@@ -67,7 +64,8 @@ export function AbilityStoneEngraveListModal({ pickaxe, abilityStones, pickaxes 
               const current = stone.uid === pickaxe.abilityStoneUid
               const progress = abilityStoneFacetProgress(stone)
               const total = stone.options.length * ABILITY_STONE_FACET_ATTEMPTS
-              const hostName = hostOf(stone)
+              const host = current ? pickaxe : hostOf(stone)
+              const hostName = host ? findPickaxe(host.id)?.name ?? host.id : null
               return (
                 <button
                   className={`sf-niche aw-variant-${variantOf(stone)} ${faceted ? 'is-ready' : 'is-locked'} ${current ? 'is-current' : ''}`}
@@ -77,7 +75,7 @@ export function AbilityStoneEngraveListModal({ pickaxe, abilityStones, pickaxes 
                   disabled={actionBusy || !faceted || current}
                 >
                   <span className="sf-niche-alcove" aria-hidden="true">
-                    <AbilityStoneSprite variant={stone.variant} size="medium" />
+                    {host ? <PickaxeSprite pickaxeId={host.id} size="medium" /> : <AbilityStoneSprite variant={stone.variant} size="medium" />}
                     {current && <span className="sf-niche-ribbon">현재 각인</span>}
                   </span>
                   <span className="sf-niche-body">

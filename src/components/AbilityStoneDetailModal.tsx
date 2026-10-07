@@ -21,6 +21,7 @@ import { playSound } from '../lib/sound'
 import { ArcaneGlyph } from './ArcaneParts'
 import { Modal } from './Modal'
 import { StoneForgeStage } from './StoneForgeStage'
+import { PickaxeSprite } from './PickaxeSprite'
 import '../StoneForge.css'
 
 interface AbilityStoneDetailModalProps {
@@ -57,12 +58,12 @@ const isThreshold = (position: number) => ABILITY_STONE_FACET_TIER_THRESHOLDS.so
 const toneOf = (sign: AbilityStoneSign, success: boolean): ForgeTone => sign === 'negative' ? (success ? 'bane' : 'relief') : (success ? 'boon' : 'ash')
 
 // 이로운 줄의 성공/실패, 불리한 줄의 성공/회피를 색과 함께 서로 다른 말로 알립니다.
-const VERDICT_TITLE: Record<ForgeTone, string> = { boon: '성공', ash: '실패', bane: '불리 성공', relief: '회피' }
+const VERDICT_TITLE: Record<ForgeTone, string> = { boon: '성공', ash: '실패', bane: '성공', relief: '회피' }
 const verdictNote = (impact: FacetImpact) => {
   if (impact.tone === 'boon') return impact.tierReached ? `${impact.tierReached}회 달성 · ${impact.tierValue}` : `${impact.successes}번째 성공`
   if (impact.tone === 'ash') return '균열이 남았습니다'
-  if (impact.tone === 'bane') return impact.tierReached ? `불리 효과 ${impact.tierValue} 발동` : '불리한 효과가 쌓였습니다'
-  return '불리한 효과를 피했습니다'
+  if (impact.tone === 'bane') return impact.tierReached ? `${impact.tierValue} 발동` : `${impact.successes}번째 성공`
+  return '효과 발동을 피했습니다'
 }
 
 const chanceBand = (chance: number) => chance >= 65 ? 'is-high' : chance <= 35 ? 'is-low' : 'is-mid'
@@ -177,9 +178,9 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
     <Modal title={abilityStoneTitle(stone)} onClose={onClose} labelledBy="ability-stone-detail-title" className="sf-modal sf-forge-modal">
       <div className={`sf-forge aw-variant-${variant} ${faceted ? 'is-complete' : ''}`}>
         <div className="sf-stage-wrap">
-          <StoneForgeStage variant={variant} snapshot={snapshot} tap={tapEvent} strike={impact}>
+          <StoneForgeStage variant={variant} hostPickaxeId={attachedPickaxe?.id} snapshot={snapshot} tap={tapEvent} strike={impact}>
             <div className="sf-hud">
-              <div className={`sf-plaque sf-plaque--chance ${chanceBand(chance)}`}>
+              {!faceted && <div className={`sf-plaque sf-plaque--chance ${chanceBand(chance)}`}>
                 <span className="sf-plaque-label">성공 확률</span>
                 <span className="sf-chance-row">
                   <strong className="sf-chance">{chance}<small>%</small></strong>
@@ -189,20 +190,19 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
                     </span>
                   )}
                 </span>
-                <span className="sf-plaque-rule">성공 −10%p · 실패 +10%p · {ABILITY_STONE_FACET_MIN_CHANCE}~{ABILITY_STONE_FACET_MAX_CHANCE}%</span>
-              </div>
-              <div className="sf-plaque sf-plaque--progress">
+              </div>}
+              <div className={`sf-plaque sf-plaque--progress ${attachedPickaxe ? 'has-host' : ''}`}>
                 {faceted
                   ? <span className="sf-done-chip"><ArcaneGlyph name="spark" />세공 완료</span>
                   : <><span className="sf-plaque-label">세공</span><strong className="sf-progress"><b>{progress}</b>/{totalAttempts}</strong></>}
-                {attachedPickaxe && <span className="sf-host"><ArcaneGlyph name="gem" />{findPickaxe(attachedPickaxe.id)?.name ?? attachedPickaxe.id}에 각인 중</span>}
+                {attachedPickaxe && <span className="sf-host"><span aria-hidden="true"><PickaxeSprite pickaxeId={attachedPickaxe.id} size="small" /></span><span>{findPickaxe(attachedPickaxe.id)?.name ?? attachedPickaxe.id}<small>각인 중</small></span></span>}
               </div>
               {impact && impactLine && (
                 <div className={`sf-verdict is-${impact.tone} ${impact.tier ? 'is-tier' : ''}`} key={`verdict-${impact.id}`} aria-hidden="true">
                   <span className="sf-verdict-line">{ROMAN[impact.line] ?? impact.line + 1} {impactLine.name}</span>
                   <strong>{VERDICT_TITLE[impact.tone]}</strong>
                   <span className="sf-verdict-note">{verdictNote(impact)}</span>
-                  <span className="sf-verdict-chance">확률 {impact.chanceBefore}% → {impact.chanceAfter}%</span>
+                  {!faceted && <span className="sf-verdict-chance">확률 {impact.chanceBefore}% → {impact.chanceAfter}%</span>}
                 </div>
               )}
               {impact?.completed && (
@@ -233,11 +233,7 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
               >
                 <header className="sf-line-head">
                   <span className="sf-medal" aria-hidden="true">{ROMAN[index] ?? index + 1}</span>
-                  <span className="sf-line-sign">
-                    <ArcaneGlyph name={negative ? 'warn' : 'spark'} />
-                    {negative ? '불리한 효과' : '이로운 효과'}
-                  </span>
-                  <strong id={titleId}>{name}</strong>
+                  <strong id={titleId}><span className="aw-sr-only">{negative ? '불리한 효과 ' : '이로운 효과 '}</span>{name}</strong>
                   <span className={`sf-line-value ${active ? 'is-active' : ''}`}>
                     {active ? formatValue(Number(option.value ?? option.effectValue ?? 0), unit) : '미활성'}
                   </span>
@@ -297,7 +293,6 @@ export function AbilityStoneDetailModal({ stone, attachedPickaxe, engraveTargetP
                 >
                   {done ? <ArcaneGlyph name="check" /> : <HammerGlyph />}
                   <span>{done ? '완료' : pending ? '세공 중' : '세공'}</span>
-                  {!done && <small>{negative ? '성공 시 불리' : '성공 시 강화'}</small>}
                 </button>
               </section>
             )
