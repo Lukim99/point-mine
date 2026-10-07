@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef } from 'react'
+import '../ModalViewport.css'
 
 interface ModalProps {
   title: string

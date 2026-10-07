@@ -1,5 +1,6 @@
 import pickaxesUrl from '../assets/pickaxes.png'
 import { findPickaxe } from '../game'
+import { atlasSpriteStyle, spriteBounds } from '../lib/sprites'
 
 interface PickaxeSpriteProps {
   pickaxeId: string
@@ -11,18 +12,14 @@ interface PickaxeSpriteProps {
 export function PickaxeSprite({ pickaxeId, size = 'medium', className = '', enchanted = false }: PickaxeSpriteProps) {
   const pickaxe = findPickaxe(pickaxeId)
   const spriteIndex = pickaxe?.spriteIndex ?? 0
-  const column = spriteIndex % 4
-  const row = Math.floor(spriteIndex / 4)
 
   return (
     <span
-      className={`pickaxe-sprite pickaxe-sprite--${size} ${enchanted ? 'pickaxe-sprite--enchanted' : ''} ${className}`}
-      style={{
-        backgroundImage: `url(${pickaxesUrl})`,
-        backgroundPosition: `${column * (100 / 3)}% ${row * (100 / 3)}%`,
-      }}
+      className={`atlas-sprite pickaxe-sprite pickaxe-sprite--${size} ${enchanted ? 'pickaxe-sprite--enchanted' : ''} ${className}`}
       role="img"
       aria-label={pickaxe?.name ?? '곡괭이'}
-    />
+    >
+      <span className="sprite-art" style={atlasSpriteStyle(pickaxesUrl, 1254, 1254, spriteBounds.pickaxes[spriteIndex])} />
+    </span>
   )
 }

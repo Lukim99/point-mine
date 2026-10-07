@@ -1,0 +1,10 @@
+/* 실제 그림만 잘라 가운데 배치해 이웃 칸의 그림이 비치지 않도록 합니다. */
+span.atlas-sprite {
+  display: inline-grid;
+  place-items: center;
+}
+
+.sprite-art {
+  display: block;
+  background-repeat: no-repeat;
+}

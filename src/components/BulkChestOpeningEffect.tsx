@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { findChest, findPickaxe, type BulkOpenChestResult } from '../game'
 import { PickaxeSprite } from './PickaxeSprite'
+import { playSound } from '../lib/sound'
 
 interface BulkChestOpeningEffectProps {
   result: BulkOpenChestResult
@@ -22,6 +23,7 @@ export function BulkChestOpeningEffect({ result, onClose }: BulkChestOpeningEffe
     stageRef.current?.focus()
     const total = BASE_DELAY + rewards.length * CARD_STAGGER + 300
     const timer = window.setTimeout(() => {
+      playSound('reward')
       setRevealComplete(true)
       window.requestAnimationFrame(() => confirmRef.current?.focus())
     }, total)

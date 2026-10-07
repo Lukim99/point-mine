@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { abilityStoneFacetProgress, abilityStoneOptionSuccesses, abilityStoneTitle, findMonsterItem, findOre, findPickaxe, hasEngravedAbilityStone, isAbilityStoneFaceted, isEnchanted, type AbilityStoneInventoryItem, type FacetAbilityStoneResult, type InventoryItem, type MineralInventoryItem, type MonsterItemInventoryItem, type MonsterItemId, type OreId, type PickaxeInventoryItem } from '../game'
+import { useId, useState } from 'react'
+import { ABILITY_STONE_FACET_ATTEMPTS, abilityStoneFacetProgress, findEnchantment, findMonsterItem, findOre, findPickaxe, hasEngravedAbilityStone, isAbilityStoneFaceted, isEnchanted, type AbilityStoneInventoryItem, type EnchantId, type FacetAbilityStoneResult, type InventoryItem, type MineralInventoryItem, type MonsterItemInventoryItem, type MonsterItemId, type OreId, type PickaxeInventoryItem } from '../game'
 import '../InventoryControls.css'
+import '../ArcaneWorkshop.css'
 import { AbilityStoneDetailModal } from './AbilityStoneDetailModal'
 import { AbilityStoneEngraveListModal } from './AbilityStoneEngraveListModal'
-import { AbilityStoneSprite } from './AbilityStoneSprite'
+import { ArcaneGlyph, StoneFacetMap, StoneInlay, StoneScore, StoneSocket } from './ArcaneParts'
 import { Durability } from './Durability'
 import { OreSprite } from './OreSprite'
 import { PickaxeSprite } from './PickaxeSprite'
@@ -12,7 +13,87 @@ import { MonsterItemSprite } from './MonsterItemSprite'
 
 interface InventoryPanelProps { inventory: InventoryItem[]; mana: number; actionBusy: boolean; onEquip: (id: string) => void; onSell: (oreIds: OreId[]) => void; onRepair: (id: string, amount: number) => void; onSellMonsterItems: (itemIds: MonsterItemId[]) => void; onEnchant: (id: string) => void; onFacetAbilityStone: (stoneUid: string, optionIndex: number) => Promise<FacetAbilityStoneResult | null>; onEngraveAbilityStone: (stoneUid: string, pickaxeId: string) => void; onDismantleAbilityStone: (stoneUid: string) => void; compact?: boolean }
 
+// 광물 기본 가치로 희귀도 단계를 정해 타일의 광채 세기를 달리합니다.
+const oreRarity = (points: number) => points >= 1000 ? 'legendary' : points >= 150 ? 'epic' : points >= 25 ? 'rare' : points >= 10 ? 'uncommon' : 'common'
+
+// 장비 카드: 장착·파손은 꼬리표, 마법 부여와 스톤 각인은 각자의 빛깔을 가진 표식으로 구분합니다.
+function GearCard({ item, stone, onOpen }: { item: PickaxeInventoryItem; stone: AbilityStoneInventoryItem | null; onOpen: (id: string) => void }) {
+  const definition = findPickaxe(item.id)
+  const enchanted = isEnchanted(item)
+  const engraved = hasEngravedAbilityStone(item)
+  const broken = item.durability <= 0
+  const signs = (Object.keys(item.enchants ?? {}) as EnchantId[]).map((id) => findEnchantment(id)?.sign ?? 'positive')
+  const blessings = signs.filter((sign) => sign === 'positive').length
+  const curses = signs.length - blessings
+
+  return (
+    <button className={`aw-gear ${item.equipped ? 'is-equipped' : ''} ${broken ? 'is-broken' : ''} ${enchanted ? 'is-enchanted' : ''} ${engraved ? 'is-engraved' : ''}`} type="button" onClick={() => onOpen(item.id)}>
+      <span className="aw-gear-socket" aria-hidden="true">
+        {enchanted && <span className="aw-orbit" />}
+        <PickaxeSprite pickaxeId={item.id} size="small" enchanted={enchanted || engraved} />
+        {engraved && <StoneInlay stone={stone} />}
+      </span>
+      <span className="aw-gear-body">
+        <span className="aw-gear-title">
+          <strong>{definition?.name ?? item.id}</strong>
+          {item.equipped && <span className="aw-tag aw-tag--equip"><ArcaneGlyph name="equip" />장착</span>}
+          {broken && <span className="aw-tag aw-tag--broken"><ArcaneGlyph name="crack" />파손</span>}
+        </span>
+        {(enchanted || engraved) && (
+          <span className="aw-gear-marks">
+            {enchanted && (
+              <span className="aw-mark aw-mark--enchant">
+                <ArcaneGlyph name="sigil" />마법
+                <span className="aw-pips" aria-hidden="true">
+                  {Array.from({ length: blessings }, (_, index) => <i className="is-boon" key={`b${index}`} />)}
+                  {Array.from({ length: curses }, (_, index) => <i className="is-bane" key={`c${index}`} />)}
+                </span>
+                <span className="aw-sr-only">축복 {blessings}개 저주 {curses}개</span>
+              </span>
+            )}
+            {engraved && (
+              <span className="aw-mark aw-mark--stone">
+                <ArcaneGlyph name="gem" />
+                {stone ? <><span className="aw-sr-only">스톤 각인</span><StoneScore stone={stone} size="sm" /></> : '스톤 각인'}
+              </span>
+            )}
+          </span>
+        )}
+        <span className="aw-gear-durability">
+          <Durability item={item} />
+          <small><span className="aw-sr-only">내구도 </span><b>{item.durability}</b>/{item.maxDurability}</small>
+        </span>
+      </span>
+    </button>
+  )
+}
+
+// 스톤 카드: 세공 점수와 30칸 세공 지도를 한눈에 보여 줍니다.
+function StoneCard({ stone, hostName, onOpen }: { stone: AbilityStoneInventoryItem; hostName: string | null; onOpen: (uid: string) => void }) {
+  const faceted = isAbilityStoneFaceted(stone)
+  const progress = abilityStoneFacetProgress(stone)
+  const total = stone.options.length * ABILITY_STONE_FACET_ATTEMPTS
+
+  return (
+    <button className={`aw-stone-card ${faceted ? 'is-cut' : progress === 0 ? 'is-raw' : 'is-cutting'} ${hostName ? 'is-set' : ''}`} type="button" onClick={() => onOpen(stone.uid)}>
+      <StoneSocket stone={stone} />
+      <span className="aw-stone-body">
+        <span className="aw-stone-title">
+          <span className="aw-stone-kicker">{faceted ? '세공 완료' : progress === 0 ? '미세공 원석' : '세공 중'}</span>
+          {progress > 0 ? <StoneScore stone={stone} /> : <strong className="aw-stone-name">어빌리티 스톤</strong>}
+          {!faceted && <span className="aw-stone-progress"><b>{progress}</b>/{total}</span>}
+        </span>
+        <StoneFacetMap stone={stone} />
+        <span className={`aw-stone-foot ${hostName ? 'is-set' : ''}`}>
+          {hostName ? <><ArcaneGlyph name="gem" />{hostName}에 각인</> : faceted ? '각인 대기' : '세공을 마치면 각인 가능'}
+        </span>
+      </span>
+    </button>
+  )
+}
+
 export function InventoryPanel({ inventory, mana, actionBusy, onEquip, onSell, onRepair, onSellMonsterItems, onEnchant, onFacetAbilityStone, onEngraveAbilityStone, onDismantleAbilityStone, compact = false }: InventoryPanelProps) {
+  const headingId = useId()
   const [selectedOreIds, setSelectedOreIds] = useState<OreId[]>([])
   const [selectedItemIds, setSelectedItemIds] = useState<MonsterItemId[]>([])
   const [detailPickaxeId, setDetailPickaxeId] = useState<string | null>(null)
@@ -74,46 +155,92 @@ export function InventoryPanel({ inventory, mana, actionBusy, onEquip, onSell, o
     onEngraveAbilityStone(stoneUid, pickaxeId)
     setStoneListPickaxeId(null)
   }
-  const stoneTargetLabel = (stoneUid: string) => {
-    const target = pickaxes.find((pickaxe) => pickaxe.abilityStoneUid === stoneUid)
-    return target ? `${findPickaxe(target.id)?.name ?? target.id} 각인 중` : '미각인'
+  const stoneHostName = (stoneUid: string) => {
+    const host = pickaxes.find((pickaxe) => pickaxe.abilityStoneUid === stoneUid)
+    return host ? findPickaxe(host.id)?.name ?? host.id : null
   }
+  const findStone = (stoneUid?: string) => stoneUid ? abilityStones.find((stone) => stone.uid === stoneUid) ?? null : null
 
-  return <div className={`inventory-content ${compact ? 'inventory-content--compact' : ''}`}>
+  return <div className={`inventory-content aw-inventory ${compact ? 'inventory-content--compact' : ''}`}>
     <div className="panel-heading"><div><span className="section-kicker">보관함</span><h2>인벤토리</h2></div><span className="slot-count">{inventory.length}칸</span></div>
     <div className="inventory-scroll">
-      <p className="inventory-label">곡괭이 <small className="inventory-hint">(클릭하여 상세 보기)</small></p>
-      <div className="pickaxe-list">{pickaxes.map((item) => {
-        const definition = findPickaxe(item.id)
-        const enchanted = isEnchanted(item) || hasEngravedAbilityStone(item)
-        return <button className={`pickaxe-item pickaxe-item--button ${item.equipped ? 'is-equipped' : ''} ${enchanted ? 'is-enchanted' : ''}`} key={item.id} type="button" onClick={() => setDetailPickaxeId(item.id)}>
-          <PickaxeSprite pickaxeId={item.id} size="small" enchanted={enchanted} />
-          <span className="pickaxe-meta"><strong>{definition?.name ?? item.id}</strong><span>{item.durability <= 0 ? '파손됨' : item.equipped ? '장착 중' : '대기 중'}{isEnchanted(item) ? ' · 마법 부여' : ''}{hasEngravedAbilityStone(item) ? ' · 스톤 각인' : ''}</span><Durability item={item} /></span>
-        </button>
-      })}</div>
-      <div className="inventory-selection-row"><p className="inventory-label mineral-label">어빌리티 스톤</p></div>
-      {abilityStones.length > 0 ? <div className="ability-stone-list">{abilityStones.map((stone) => {
-        const progress = abilityStoneFacetProgress(stone)
-        const scores = stone.options.map(abilityStoneOptionSuccesses)
-        return <button className="ability-stone-item" key={stone.uid} type="button" onClick={() => openStoneFromInventory(stone.uid)}>
-          <AbilityStoneSprite variant={stone.variant} size="small" />
-          <span className="ability-stone-meta">
-            <strong>{abilityStoneTitle(stone)}</strong>
-            <small>{stoneTargetLabel(stone.uid)}</small>
-            <em>{isAbilityStoneFaceted(stone) ? `세공 완료 · ${scores.join(' / ')}` : `세공 진행 ${progress} / 30`}</em>
-            <span className="ability-stone-mini-progress"><i style={{ width: `${(progress / 30) * 100}%` }} /></span>
-          </span>
-        </button>
-      })}</div> : <p className="empty-inventory">보유한 어빌리티 스톤이 없습니다.</p>}
-      <div className="inventory-selection-row"><p className="inventory-label mineral-label">광물 선택</p><button className="inventory-select-button" type="button" onClick={toggleAll} disabled={minerals.length === 0}>{allSelected ? '선택 해제' : '전체 선택'}</button></div>
-      {minerals.length > 0 ? <div className="mineral-grid">{minerals.map((item, index) => { const ore = findOre(item.id); const selected = selectedOreIds.includes(item.id); const unitPoints = item.unitPoints ?? ore?.points ?? 0; return <button className={`mineral-item mineral--${item.id} ${selected ? 'is-selected' : ''}`} key={`${item.id}-${unitPoints}-${index}`} type="button" aria-pressed={selected} title={`${unitPoints}P`} onClick={() => toggleOre(item.id)}><OreSprite oreId={item.id} /><span><strong>{ore?.name ?? item.id}</strong><small>× {item.quantity} · {unitPoints}P</small></span></button> })}</div> : <p className="empty-inventory">아직 채굴한 광물이 없습니다.</p>}
-      <div className="inventory-selection-row"><p className="inventory-label mineral-label">몬스터 아이템</p><button className="inventory-select-button" type="button" onClick={toggleAllItems} disabled={monsterItems.length === 0}>{allItemsSelected ? '선택 해제' : '전체 선택'}</button></div>
-      {monsterItems.length > 0 ? <div className="mineral-grid">{monsterItems.map((item) => { const def = findMonsterItem(item.id); const selected = selectedItemIds.includes(item.id); return <button className={`mineral-item monster-item--${item.id} ${selected ? 'is-selected' : ''}`} key={item.id} type="button" aria-pressed={selected} title={`마나 ${def?.mana ?? 0}`} onClick={() => toggleItem(item.id)}><MonsterItemSprite itemId={item.id} /><span><strong>{def?.name ?? item.id}</strong><small>× {item.quantity}</small></span></button> })}</div> : <p className="empty-inventory">사냥으로 얻은 아이템이 없습니다.</p>}
+      <section className="aw-shelf" aria-labelledby={`${headingId}-gear`}>
+        <header className="aw-shelf-head">
+          <h3 id={`${headingId}-gear`}>곡괭이</h3><span className="aw-count">{pickaxes.length}</span>
+          <span className="aw-rule" aria-hidden="true" /><span className="aw-shelf-hint">눌러서 상세</span>
+        </header>
+        {pickaxes.length > 0
+          ? <div className="aw-gear-list">{pickaxes.map((item) => <GearCard key={item.id} item={item} stone={findStone(item.abilityStoneUid)} onOpen={setDetailPickaxeId} />)}</div>
+          : <p className="aw-empty">보유한 곡괭이가 없습니다.</p>}
+      </section>
+
+      <section className="aw-shelf" aria-labelledby={`${headingId}-stone`}>
+        <header className="aw-shelf-head aw-shelf-head--vein">
+          <h3 id={`${headingId}-stone`}>어빌리티 스톤</h3><span className="aw-count">{abilityStones.length}</span>
+          <span className="aw-rule" aria-hidden="true" />
+        </header>
+        {abilityStones.length > 0
+          ? <div className="aw-stone-list">{abilityStones.map((stone) => <StoneCard key={stone.uid} stone={stone} hostName={stoneHostName(stone.uid)} onOpen={openStoneFromInventory} />)}</div>
+          : <p className="aw-empty">보유한 어빌리티 스톤이 없습니다.</p>}
+      </section>
+
+      <section className="aw-shelf" aria-labelledby={`${headingId}-ore`}>
+        <header className="aw-shelf-head">
+          <h3 id={`${headingId}-ore`}>광물</h3><span className="aw-count">{minerals.length}</span>
+          <span className="aw-rule" aria-hidden="true" />
+          <button className="aw-select-all" type="button" onClick={toggleAll} disabled={minerals.length === 0}>{allSelected ? '선택 해제' : '전체 선택'}</button>
+        </header>
+        {minerals.length > 0 ? <div className="aw-ore-grid">{minerals.map((item, index) => {
+          const ore = findOre(item.id)
+          const selected = selectedOreIds.includes(item.id)
+          const basePoints = ore?.points ?? 0
+          const unitPoints = item.unitPoints ?? basePoints
+          const priceShift = unitPoints > basePoints ? 'is-boosted' : unitPoints < basePoints ? 'is-reduced' : ''
+          return <button className={`aw-ore aw-tint--${item.id} aw-rarity--${oreRarity(basePoints)} ${selected ? 'is-selected' : ''}`} key={`${item.id}-${unitPoints}-${index}`} type="button" aria-pressed={selected} title={`${ore?.name ?? item.id} ${item.quantity}개, 개당 ${unitPoints}P`} onClick={() => toggleOre(item.id)}>
+            <span className="aw-ore-art">
+              <span aria-hidden="true"><OreSprite oreId={item.id} /></span>
+              <span className="aw-stack"><small aria-hidden="true">×</small>{item.quantity.toLocaleString('ko-KR')}<span className="aw-sr-only">개</span></span>
+            </span>
+            <strong className="aw-ore-name">{ore?.name ?? item.id}</strong>
+            <span className={`aw-price ${priceShift}`}><small>개당</small>{unitPoints.toLocaleString('ko-KR')}<i>P</i>{priceShift && <span className="aw-sr-only">{priceShift === 'is-boosted' ? '(스톤 효과로 가치 상승)' : '(스톤 효과로 가치 하락)'}</span>}</span>
+            <span className="aw-check" aria-hidden="true"><ArcaneGlyph name="check" /></span>
+          </button>
+        })}</div> : <p className="aw-empty">아직 채굴한 광물이 없습니다.</p>}
+      </section>
+
+      <section className="aw-shelf" aria-labelledby={`${headingId}-loot`}>
+        <header className="aw-shelf-head">
+          <h3 id={`${headingId}-loot`}>몬스터 아이템</h3><span className="aw-count">{monsterItems.length}</span>
+          <span className="aw-rule" aria-hidden="true" />
+          <button className="aw-select-all" type="button" onClick={toggleAllItems} disabled={monsterItems.length === 0}>{allItemsSelected ? '선택 해제' : '전체 선택'}</button>
+        </header>
+        {monsterItems.length > 0 ? <div className="aw-ore-grid">{monsterItems.map((item) => {
+          const definition = findMonsterItem(item.id)
+          const selected = selectedItemIds.includes(item.id)
+          return <button className={`aw-ore aw-ore--loot aw-tint--${item.id} ${selected ? 'is-selected' : ''}`} key={item.id} type="button" aria-pressed={selected} title={`${definition?.name ?? item.id} ${item.quantity}개, 개당 마나 ${definition?.mana ?? 0}`} onClick={() => toggleItem(item.id)}>
+            <span className="aw-ore-art">
+              <span aria-hidden="true"><MonsterItemSprite itemId={item.id} /></span>
+              <span className="aw-stack"><small aria-hidden="true">×</small>{item.quantity.toLocaleString('ko-KR')}<span className="aw-sr-only">개</span></span>
+            </span>
+            <strong className="aw-ore-name">{definition?.name ?? item.id}</strong>
+            <span className="aw-price aw-price--mana"><small>개당</small>{definition?.mana ?? 0}<i>✦</i><span className="aw-sr-only">마나</span></span>
+            <span className="aw-check" aria-hidden="true"><ArcaneGlyph name="check" /></span>
+          </button>
+        })}</div> : <p className="aw-empty">사냥으로 얻은 아이템이 없습니다.</p>}
+      </section>
     </div>
-    <button className="ore-button sell-button" type="button" onClick={sellSelected} disabled={actionBusy || selectedValue < 10}><span>{selectedValue > 0 && selectedValue < 10 ? '최소 10P 필요' : '선택 광물 판매'}</span><strong>{selectedValue.toLocaleString('ko-KR')} P</strong></button>
-    <button className="ore-button sell-button mana-sell-button" type="button" onClick={sellMonsterItems} disabled={actionBusy || selectedMana <= 0}><span>선택 아이템 분해</span><strong>{selectedMana.toLocaleString('ko-KR')} ✦</strong></button>
+    <div className="aw-dock">
+      <button className="aw-dock-button aw-dock-button--points" type="button" onClick={sellSelected} disabled={actionBusy || selectedValue < 10}>
+        <span>{selectedValue > 0 && selectedValue < 10 ? '최소 10P 필요' : '광물 판매'}</span>
+        <strong>{selectedValue.toLocaleString('ko-KR')}<small>P</small></strong>
+      </button>
+      <button className="aw-dock-button aw-dock-button--mana" type="button" onClick={sellMonsterItems} disabled={actionBusy || selectedMana <= 0}>
+        <span>아이템 분해</span>
+        <strong>{selectedMana.toLocaleString('ko-KR')}<small>✦</small></strong>
+      </button>
+    </div>
     {detailPickaxe && <PickaxeDetailModal item={detailPickaxe} abilityStone={detailPickaxeStone} mana={mana} actionBusy={actionBusy} mineralQuantity={mineralQuantity} onEquip={onEquip} onRepair={onRepair} onEnchant={onEnchant} onOpenAbilityStone={openAbilityStoneFromPickaxe} onClose={() => setDetailPickaxeId(null)} />}
     {detailStone && <AbilityStoneDetailModal stone={detailStone} attachedPickaxe={detailStoneAttachedPickaxe} engraveTargetPickaxe={engraveContextPickaxe} actionBusy={actionBusy} onFacet={onFacetAbilityStone} onOpenEngraveList={openEngraveListFromStoneDetail} onDismantle={onDismantleAbilityStone} onClose={closeStoneDetail} />}
-    {stoneListPickaxe && <AbilityStoneEngraveListModal pickaxe={stoneListPickaxe} abilityStones={abilityStones} actionBusy={actionBusy} onSelect={selectAbilityStoneForPickaxe} onClose={() => setStoneListPickaxeId(null)} />}
+    {stoneListPickaxe && <AbilityStoneEngraveListModal pickaxe={stoneListPickaxe} abilityStones={abilityStones} pickaxes={pickaxes} actionBusy={actionBusy} onSelect={selectAbilityStoneForPickaxe} onClose={() => setStoneListPickaxeId(null)} />}
   </div>
 }

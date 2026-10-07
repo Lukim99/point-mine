@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { abilityStoneOptionText, abilityStoneTitle, findPickaxe, type AbilityStoneInventoryItem } from '../game'
 import { AbilityStoneSprite } from './AbilityStoneSprite'
 import { PickaxeSprite } from './PickaxeSprite'
+import { playSound } from '../lib/sound'
 
 interface AbilityStoneEngraveEffectProps {
   pickaxeId: string
@@ -18,9 +19,11 @@ export function AbilityStoneEngraveEffect({ pickaxeId, stone, onClose }: Ability
   const pickaxe = findPickaxe(pickaxeId)
 
   useEffect(() => {
+    playSound('enchantCast')
     const previouslyFocused = document.activeElement as HTMLElement | null
     stageRef.current?.focus()
     const timer = window.setTimeout(() => {
+      playSound('enchantReveal')
       setRevealComplete(true)
       window.requestAnimationFrame(() => confirmRef.current?.focus())
     }, 2600)

@@ -9,6 +9,8 @@ import { OreSprite } from './OreSprite'
 import { PickaxeSprite } from './PickaxeSprite'
 import { ShopPanel } from './ShopPanel'
 import { VipModal } from './VipModal'
+import { SoundToggle } from './SoundToggle'
+import mineRockUrl from '../assets/mine-rock.webp'
 
 type GameView = 'mine' | 'hunt' | 'shop'
 type MobileTab = 'mine' | 'hunt' | 'shop' | 'inventory' | 'profile'
@@ -91,9 +93,7 @@ function MineArea({ equipped, abilityStone, mining, lastMine, floor, experience,
         <span className="hanging-chain hanging-chain--left" aria-hidden="true" />
         <span className="hanging-chain hanging-chain--right" aria-hidden="true" />
         <div className="rock-face" aria-hidden="true">
-          <span className="ore-vein vein-one" />
-          <span className="ore-vein vein-two" />
-          <span className="ore-vein vein-three" />
+          <img className="mine-rock-image" src={mineRockUrl} width={960} height={640} alt="" draggable={false} />
         </div>
         {equipped && <PickaxeSprite pickaxeId={equipped.id} size="large" className="active-pickaxe" enchanted={isEnchanted(equipped) || hasEngravedAbilityStone(equipped)} />}
         {lastMine?.status === 'success' && (
@@ -178,6 +178,7 @@ export function GameScreen({ profile, mining, attacking, actionBusy, lastMine, l
           <button type="button" className={desktopView === 'shop' ? 'is-active' : ''} onClick={() => setDesktopView('shop')}>상점</button>
         </nav>
         <div className="header-right">
+          <SoundToggle />
           <button type="button" className={`header-vip-ticket ${vipActive ? 'is-active' : ''}`} onClick={() => setVipModalOpen(true)} title={vipActive ? 'VIP 이용 중' : 'VIP 티켓 구매'}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4 2 2 0 0 1-2 2H5a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 1 0-4Z" />

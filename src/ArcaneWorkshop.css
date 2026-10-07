@@ -1,0 +1,1068 @@
+/* ==========================================================================
+   심층 세공소 (Deepvein Lapidary)
+   랜턴 황동과 호두나무의 따뜻한 틀이 심층의 차가운 마력을 붙잡는 디자인 언어입니다.
+   마법 부여 = 성좌 보라, 스톤 각인 = 광맥 청록, 이로움 = 비취, 불리 = 진사, 가치 = 금빛
+   ========================================================================== */
+
+:root {
+  --aw-soot: #0e0c0a;
+  --aw-brass: #b08347;
+  --aw-brass-hi: #efcb85;
+  --aw-text: #f3e8d2;
+  --aw-text-2: #c7b79c;
+  --aw-text-3: #8f816c;
+  --aw-gold: #ffcf6e;
+  --aw-mana: #8fd0ff;
+  --aw-astral: #b19bff;
+  --aw-astral-hi: #e2d8ff;
+  --aw-vein: #5fe0cc;
+  --aw-vein-hi: #c3fff4;
+  --aw-boon: #86e39b;
+  --aw-bane: #ff8466;
+  --aw-serif: Georgia, 'Times New Roman', serif;
+  --aw-stone-tint: 95, 224, 204;
+}
+
+/* 스톤 변형별 빛깔: 0 심해 청석, 1 성야 남석, 2 고목 비취, 3 황혼 자정석 */
+.aw-variant-0 { --aw-stone-tint: 64, 200, 214; }
+.aw-variant-1 { --aw-stone-tint: 104, 124, 244; }
+.aw-variant-2 { --aw-stone-tint: 64, 198, 132; }
+.aw-variant-3 { --aw-stone-tint: 182, 112, 234; }
+
+/* ---------- 공통 ---------- */
+.aw-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.aw-glyph { flex: 0 0 auto; width: 1em; height: 1em; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.aw-glyph .is-fill { fill: currentColor; stroke: none; }
+.aw-rule { flex: 1 1 auto; min-width: 12px; height: 1px; background: linear-gradient(90deg, rgba(176, 131, 71, 0.55), rgba(176, 131, 71, 0)); }
+.aw-kicker { color: var(--aw-text-3); font-size: 10px; font-weight: 800; letter-spacing: 0.16em; }
+.aw-empty { margin: 0; padding: 14px 10px; color: #7f7466; font-size: 11px; line-height: 1.5; text-align: center; border: 1px dashed #3a3229; border-radius: 8px; background: rgba(0, 0, 0, 0.16); }
+.aw-empty--astral { color: #9d93c4; border-color: rgba(177, 155, 255, 0.28); background: rgba(40, 32, 90, 0.16); }
+
+.aw-tag { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; height: 19px; padding: 0 6px 0 5px; font-size: 10px; font-weight: 900; letter-spacing: 0.03em; line-height: 1; white-space: nowrap; border-radius: 4px; }
+.aw-tag .aw-glyph { font-size: 11px; stroke-width: 2; }
+.aw-tag--equip { color: #2b1a07; background: linear-gradient(#ffdd96, #d39b45); box-shadow: inset 0 1px rgba(255, 255, 255, 0.5), 0 1px 0 #6b4519, 0 0 10px rgba(255, 196, 100, 0.25); }
+.aw-tag--broken { color: #ffd6cb; background: rgba(110, 30, 18, 0.7); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.6); }
+.aw-tag--idle { color: var(--aw-text-2); background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px #3f362c; }
+
+.aw-tally { display: inline-flex; flex: 0 0 auto; gap: 4px; }
+.aw-tally-chip { display: inline-flex; align-items: center; gap: 3px; height: 20px; padding: 0 8px; font-size: 10px; font-weight: 800; border-radius: 999px; }
+.aw-tally-chip b { font-family: var(--aw-serif); font-size: 13px; }
+.aw-tally-chip.is-boon { color: #c9f7d5; background: rgba(36, 96, 58, 0.5); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.4); }
+.aw-tally-chip.is-bane { color: #ffd0c4; background: rgba(120, 36, 22, 0.52); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
+
+/* ---------- 인벤토리 선반 ---------- */
+.aw-inventory .panel-heading { border-bottom: 0; background: linear-gradient(90deg, rgba(176, 131, 71, 0.6), rgba(176, 131, 71, 0.08)) bottom / 100% 1px no-repeat; }
+.aw-shelf + .aw-shelf { margin-top: 18px; }
+.aw-shelf-head { display: flex; align-items: center; gap: 7px; min-height: 30px; margin-bottom: 7px; }
+.aw-shelf-head h3 { margin: 0; color: #e2d2b4; font-size: 12px; font-weight: 900; letter-spacing: 0.1em; white-space: nowrap; }
+.aw-shelf-head--vein h3 { color: #b6f2e8; }
+.aw-count { flex: 0 0 auto; min-width: 20px; padding: 1px 6px; color: var(--aw-text-3); font-family: var(--aw-serif); font-size: 11px; text-align: center; border-radius: 999px; box-shadow: inset 0 0 0 1px #3d342a; }
+.aw-shelf-hint { flex: 0 0 auto; color: #77695a; font-size: 10px; }
+.aw-select-all { flex: 0 0 auto; min-height: 28px; padding: 0 10px; color: #e3c48c; font: inherit; font-size: 10px; font-weight: 800; cursor: pointer; border: 1px solid #5d4729; border-radius: 999px; background: rgba(176, 131, 71, 0.1); }
+.aw-select-all:hover:not(:disabled) { color: #ffe2a6; border-color: #9a7340; }
+.aw-select-all:disabled { cursor: default; opacity: 0.4; }
+
+/* ---------- 장비 카드 ---------- */
+.aw-gear-list,
+.aw-stone-list { display: grid; gap: 8px; }
+
+.aw-gear {
+  --aw-equip-bar: 0 0 0 0 transparent;
+  --aw-aura: 0 0 0 0 transparent;
+  --aw-corner: rgba(176, 131, 71, 0.4);
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+  min-height: 72px;
+  padding: 8px 10px 8px 8px;
+  color: var(--aw-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid #3a3129;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 240, 210, 0.035), transparent 45%),
+    linear-gradient(110deg, #221c16, #16120e 72%);
+  box-shadow: inset var(--aw-equip-bar), var(--aw-aura), 0 2px 7px rgba(0, 0, 0, 0.35);
+  transition: border-color 160ms ease, transform 160ms ease, filter 160ms ease;
+}
+/* 황동 모서리 장식 */
+.aw-gear::before,
+.aw-stone-card::before,
+.aw-pick-stone::before,
+.aw-socket-plate::before {
+  position: absolute;
+  inset: 3px;
+  content: '';
+  pointer-events: none;
+  border-radius: 5px;
+  background:
+    linear-gradient(var(--aw-corner) 0 0) top left / 9px 1px no-repeat,
+    linear-gradient(var(--aw-corner) 0 0) top left / 1px 9px no-repeat,
+    linear-gradient(var(--aw-corner) 0 0) bottom right / 9px 1px no-repeat,
+    linear-gradient(var(--aw-corner) 0 0) bottom right / 1px 9px no-repeat;
+}
+.aw-gear:active { transform: translateY(1px); }
+.aw-gear.is-equipped {
+  --aw-equip-bar: 3px 0 0 #e7ae5c;
+  --aw-corner: rgba(255, 214, 140, 0.75);
+  border-color: #8a6634;
+  background:
+    radial-gradient(120% 150% at 0% 50%, rgba(233, 172, 82, 0.22), transparent 58%),
+    linear-gradient(110deg, #2a2117, #17120d 72%);
+}
+.aw-gear.is-enchanted { --aw-aura: 0 0 0 1px rgba(177, 155, 255, 0.2), 0 0 16px rgba(130, 105, 255, 0.12); border-top-color: rgba(177, 155, 255, 0.5); }
+.aw-gear.is-engraved { border-bottom-color: rgba(95, 224, 204, 0.45); }
+.aw-gear.is-broken { filter: saturate(0.6); }
+.aw-gear.is-broken .aw-gear-socket .pickaxe-sprite { opacity: 0.6; }
+
+/* 장비를 앉히는 원형 소켓 */
+.aw-gear-socket {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #30271e, #110e0b 72%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.78), inset 0 -1px rgba(255, 220, 160, 0.08), 0 0 0 1px #3b3128, 0 0 0 3px #120e0b, 0 0 0 4px rgba(176, 131, 71, 0.38);
+}
+.aw-gear.is-equipped .aw-gear-socket { box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.78), 0 0 0 1px #5d4729, 0 0 0 3px #120e0b, 0 0 0 4px rgba(239, 203, 133, 0.75), 0 0 14px rgba(233, 172, 82, 0.3); }
+.aw-gear-socket .pickaxe-sprite { width: 48px; height: 48px; }
+.aw-gear-socket--lg { width: 76px; height: 76px; }
+.aw-gear-socket--lg .pickaxe-sprite { width: 64px; height: 64px; }
+.aw-gear-socket--hero { width: 118px; height: 118px; }
+.aw-gear-socket--hero .pickaxe-sprite { width: 98px; height: 98px; }
+
+/* 마법 부여: 소켓을 도는 성좌 혜성 */
+.aw-orbit { position: absolute; inset: -6px; z-index: 1; pointer-events: none; border-radius: 50%; }
+.aw-orbit::before,
+.aw-orbit::after { position: absolute; inset: 0; content: ''; border-radius: 50%; }
+.aw-orbit::before { border: 1px dashed rgba(177, 155, 255, 0.4); }
+.aw-orbit::after {
+  background: conic-gradient(from 0deg, transparent 0 66%, rgba(177, 155, 255, 0.15) 70%, rgba(205, 190, 255, 0.95) 79%, #fff 80%, transparent 81%);
+  -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px), #000 100%, transparent 100%);
+  mask: radial-gradient(circle closest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px), #000 100%, transparent 100%);
+  animation: aw-spin 5.5s linear infinite;
+}
+
+/* 스톤 각인: 곡괭이 소켓 모서리에 박힌 보석 */
+.aw-inlay {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  color: var(--aw-vein);
+  font-size: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(var(--aw-stone-tint), 0.45), #071110 75%);
+  box-shadow: 0 0 0 1.5px #c39556, 0 0 0 3px #110d0a, 0 0 10px rgba(var(--aw-stone-tint), 0.6);
+}
+.aw-inlay .ability-stone-sprite { width: 21px; filter: drop-shadow(0 0 3px rgba(var(--aw-stone-tint), 0.8)); }
+.aw-gear-socket--lg .aw-inlay,
+.aw-gear-socket--hero .aw-inlay { width: 32px; height: 32px; font-size: 15px; }
+.aw-gear-socket--lg .aw-inlay .ability-stone-sprite,
+.aw-gear-socket--hero .aw-inlay .ability-stone-sprite { width: 28px; }
+.aw-gear-socket.is-empty .aw-inlay { color: #6f8c87; border: 1px dashed rgba(95, 224, 204, 0.45); background: #0d1312; box-shadow: 0 0 0 1.5px #5d4729, 0 0 0 3px #110d0a; }
+
+.aw-gear-body { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.aw-gear-title { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.aw-gear-title strong { min-width: 0; overflow: hidden; color: #f6ead3; font-size: 13px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+.aw-gear-marks { display: flex; flex-wrap: wrap; gap: 4px; }
+.aw-mark { display: inline-flex; align-items: center; gap: 4px; min-height: 20px; padding: 1px 7px 1px 5px; font-size: 10px; font-weight: 800; white-space: nowrap; border-radius: 999px; }
+.aw-mark > .aw-glyph { font-size: 12px; }
+.aw-mark--enchant { color: var(--aw-astral-hi); background: linear-gradient(90deg, rgba(110, 86, 220, 0.42), rgba(60, 46, 130, 0.22)); box-shadow: inset 0 0 0 1px rgba(177, 155, 255, 0.45); }
+.aw-mark--enchant > .aw-glyph { color: #d4c7ff; filter: drop-shadow(0 0 3px rgba(177, 155, 255, 0.9)); }
+.aw-mark--stone { padding-right: 3px; color: var(--aw-vein-hi); background: linear-gradient(90deg, rgba(40, 140, 128, 0.38), rgba(20, 70, 64, 0.22)); box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.42); }
+.aw-mark--stone > .aw-glyph { color: var(--aw-vein); filter: drop-shadow(0 0 3px rgba(95, 224, 204, 0.9)); }
+.aw-pips { display: inline-flex; gap: 2px; margin-left: 2px; }
+.aw-pips i { width: 5px; height: 5px; border-radius: 50%; }
+.aw-pips i.is-boon { background: var(--aw-boon); box-shadow: 0 0 4px rgba(134, 227, 155, 0.9); }
+.aw-pips i.is-bane { background: var(--aw-bane); box-shadow: 0 0 4px rgba(255, 132, 102, 0.9); }
+
+.aw-gear-durability { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.aw-gear-durability .durability { flex: 1 1 auto; width: auto; height: 5px; border: 0; background: #0b0908; box-shadow: inset 0 0 0 1px #2e261e; }
+.aw-gear-durability small { flex: 0 0 auto; color: var(--aw-text-3); font-family: var(--aw-serif); font-size: 11px; font-variant-numeric: tabular-nums; }
+.aw-gear-durability small b { color: var(--aw-text-2); font-weight: 700; }
+.aw-gear.is-broken .durability span { background: #7a3a2c; box-shadow: none; }
+
+/* ---------- 스톤 점수 · 세공 칸 ---------- */
+.aw-score { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 3px; vertical-align: middle; }
+.aw-score-gem { display: inline-grid; place-items: center; min-width: 21px; height: 21px; padding: 0 4px; font-family: var(--aw-serif); font-size: 13px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; border-radius: 5px; }
+.aw-score-gem.is-positive { color: #dcffe5; background: linear-gradient(#2e6c46, #163a24); box-shadow: inset 0 1px rgba(200, 255, 220, 0.25), 0 0 0 1px rgba(134, 227, 155, 0.42); }
+.aw-score-gem.is-negative { color: #ffe1d7; background: linear-gradient(#7a2c1f, #41160e); box-shadow: inset 0 1px rgba(255, 210, 195, 0.2), 0 0 0 1px rgba(255, 132, 102, 0.48); }
+.aw-score-gem.is-positive.is-active { box-shadow: inset 0 1px rgba(200, 255, 220, 0.35), 0 0 0 1px rgba(134, 227, 155, 0.7), 0 0 9px rgba(134, 227, 155, 0.45); }
+.aw-score-gem.is-negative.is-active { box-shadow: inset 0 1px rgba(255, 210, 195, 0.3), 0 0 0 1px rgba(255, 132, 102, 0.8), 0 0 9px rgba(255, 100, 70, 0.5); }
+.aw-score-gem.is-zero { opacity: 0.5; }
+.aw-score--sm { gap: 2px; }
+.aw-score--sm .aw-score-gem { min-width: 16px; height: 16px; padding: 0 3px; font-size: 11px; border-radius: 4px; }
+.aw-score--lg { gap: 5px; }
+.aw-score--lg .aw-score-gem { min-width: 32px; height: 32px; font-size: 19px; border-radius: 7px; }
+
+.aw-track { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; min-width: 0; }
+.aw-facet { --aw-facet-glow: 134, 227, 155; position: relative; display: grid; place-items: center; aspect-ratio: 1; min-width: 0; color: rgb(var(--aw-facet-glow)); }
+.aw-track.is-negative .aw-facet { --aw-facet-glow: 255, 116, 86; }
+.aw-facet::before { position: absolute; inset: 15%; content: ''; border: 1px solid #463d35; border-radius: 2px; background: #110e0c; box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.85); transform: rotate(45deg); }
+.aw-facet i { position: relative; color: #5c5148; font-family: var(--aw-serif); font-size: 9px; font-style: normal; line-height: 1; }
+.aw-facet.is-success::before { border-color: #c9ffd9; background: linear-gradient(135deg, #f0fff4 0%, #96f2b1 26%, #2f9d60 68%, #174f31 100%); box-shadow: 0 0 8px rgba(134, 227, 155, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.22); }
+.aw-track.is-negative .aw-facet.is-success::before { border-color: #ffd5c8; background: linear-gradient(135deg, #fff0ea 0%, #ff9f80 26%, #c3402a 68%, #5e170e 100%); box-shadow: 0 0 8px rgba(255, 100, 70, 0.62), inset 0 0 0 1px rgba(255, 255, 255, 0.2); }
+.aw-facet.is-failure::before { border-color: #352d27; background: #1a1613; box-shadow: inset 0 2px 4px #000; }
+.aw-facet.is-failure::after { position: absolute; inset: 28%; content: ''; background: linear-gradient(118deg, transparent 44%, #8b7d71 45% 55%, transparent 56%), linear-gradient(62deg, transparent 47%, rgba(139, 125, 113, 0.55) 48% 52%, transparent 53%) 0 40% / 100% 60% no-repeat; }
+.aw-facet.is-next::before { border-color: #e9b968; box-shadow: 0 0 0 2px rgba(233, 185, 104, 0.15), 0 0 10px rgba(233, 185, 104, 0.35); animation: aw-next-pulse 1.8s ease-in-out infinite; }
+.aw-facet.is-next i { color: #e9c78a; }
+.aw-facet.is-pending::before { background: #2a1e10; animation: aw-next-pulse 380ms ease-in-out infinite; }
+.aw-facet.is-impact.is-success::before { animation: aw-facet-set 640ms cubic-bezier(0.2, 1.5, 0.35, 1) both; }
+.aw-facet.is-impact.is-success::after { position: absolute; inset: -18%; content: ''; border: 2px solid currentColor; border-radius: 50%; opacity: 0; animation: aw-facet-ring 720ms ease-out both; }
+.aw-facet.is-impact.is-failure { animation: aw-facet-crack 480ms ease both; }
+.aw-facet.is-impact.is-failure::after { animation: aw-crack-draw 420ms ease-out both; }
+
+.aw-track--mini { gap: 2px; }
+.aw-track--mini .aw-facet::before { inset: 12%; border-radius: 1px; box-shadow: none; }
+.aw-track--mini .aw-facet.is-empty::before { border-color: #3b342d; background: transparent; }
+.aw-track--mini .aw-facet.is-next::before { border-color: #3b342d; box-shadow: none; animation: none; }
+.aw-track--mini .aw-facet.is-success::before { box-shadow: 0 0 4px rgba(var(--aw-facet-glow), 0.55); }
+.aw-track--mini .aw-facet.is-failure::after { inset: 22%; }
+.aw-facet-map { display: grid; gap: 3px; width: min(100%, 176px); }
+
+/* ---------- 스톤 소켓 · 스톤 카드 ---------- */
+.aw-stone-socket {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 42%, rgba(var(--aw-stone-tint), 0.3), #090d0c 72%);
+  box-shadow: inset 0 3px 9px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(var(--aw-stone-tint), 0.35), 0 0 0 3px #0e0b09, 0 0 0 4px rgba(176, 131, 71, 0.38);
+}
+.aw-stone-socket .ability-stone-sprite { width: 82%; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 7px rgba(var(--aw-stone-tint), 0.45)); }
+.aw-stone-socket--medium { width: 66px; height: 66px; }
+.aw-stone-socket--large { width: 100%; height: 100%; }
+/* 세공 전 원석은 흐리게, 세공을 마칠수록 본래의 빛을 되찾습니다. */
+.aw-stone-socket.is-raw { background: radial-gradient(circle at 50% 42%, #2a2520, #0b0a09 72%); box-shadow: inset 0 3px 9px rgba(0, 0, 0, 0.8), 0 0 0 1px #3a3229, 0 0 0 3px #0e0b09, 0 0 0 4px rgba(176, 131, 71, 0.3); }
+.aw-stone-socket.is-raw .ability-stone-sprite { filter: saturate(0.3) brightness(0.72) contrast(1.1) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7)); }
+.aw-stone-socket.is-cutting .ability-stone-sprite { filter: saturate(0.75) brightness(0.92) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.7)) drop-shadow(0 0 5px rgba(var(--aw-stone-tint), 0.3)); }
+.aw-stone-socket.is-cut::after { position: absolute; inset: 0; content: ''; pointer-events: none; border-radius: 50%; background: linear-gradient(115deg, transparent 38%, rgba(255, 255, 255, 0.34) 48%, transparent 58%) -150% 0 / 250% 100% no-repeat; animation: aw-glint 5.5s ease-in-out infinite; }
+
+.aw-stone-card {
+  --aw-corner: rgba(95, 224, 204, 0.35);
+  position: relative;
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-width: 0;
+  padding: 9px 10px 9px 9px;
+  color: var(--aw-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid #234440;
+  border-radius: 8px;
+  background:
+    radial-gradient(90% 140% at 0% 50%, rgba(var(--aw-stone-tint), 0.12), transparent 60%),
+    linear-gradient(110deg, #141c1b, #110f0d 72%);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.35);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.aw-stone-card.is-raw,
+.aw-stone-card.is-cutting { --aw-corner: rgba(176, 131, 71, 0.35); border-color: #352e27; background: linear-gradient(110deg, #1d1915, #13100d 72%); }
+.aw-stone-card.is-set { border-color: rgba(95, 224, 204, 0.55); box-shadow: 0 0 0 1px rgba(95, 224, 204, 0.12), 0 0 16px rgba(95, 224, 204, 0.12), 0 2px 7px rgba(0, 0, 0, 0.35); }
+.aw-stone-card:active { transform: translateY(1px); }
+.aw-stone-body { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.aw-stone-title { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 7px; min-width: 0; }
+.aw-stone-kicker { color: #8fbdb5; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; white-space: nowrap; }
+.aw-stone-card.is-raw .aw-stone-kicker,
+.aw-stone-card.is-cutting .aw-stone-kicker { color: var(--aw-text-3); }
+.aw-stone-name { color: #ddd2bd; font-size: 12px; font-weight: 800; }
+.aw-stone-progress { margin-left: auto; color: var(--aw-text-3); font-family: var(--aw-serif); font-size: 11px; font-variant-numeric: tabular-nums; }
+.aw-stone-progress b { color: var(--aw-text-2); }
+.aw-stone-foot { display: inline-flex; align-items: center; gap: 4px; min-width: 0; overflow: hidden; color: #75695c; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.aw-stone-foot.is-set { color: #9ff0e2; }
+.aw-stone-foot .aw-glyph { color: var(--aw-vein); }
+
+/* ---------- 광물 · 아이템 타일 ---------- */
+.aw-ore-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; }
+.aw-ore {
+  --aw-ore-tint: 200, 180, 150;
+  --aw-halo: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 9px 5px 8px;
+  overflow: hidden;
+  color: var(--aw-text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid #332b23;
+  border-radius: 8px;
+  background:
+    radial-gradient(80% 55% at 50% 28%, rgba(var(--aw-ore-tint), 0.1), transparent 72%),
+    linear-gradient(180deg, #1e1914, #13100d);
+  box-shadow: inset 0 1px rgba(255, 236, 200, 0.04), 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.aw-ore-art { position: relative; display: grid; place-items: center; width: 56px; height: 46px; }
+.aw-ore-art::before { position: absolute; inset: -4px 4px; content: ''; border-radius: 50%; background: radial-gradient(circle, rgba(var(--aw-ore-tint), var(--aw-halo)), transparent 68%); }
+.aw-ore-art > span[aria-hidden] { position: relative; display: grid; place-items: center; }
+.aw-ore-art .ore-sprite { width: 42px; filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.72)); }
+.aw-ore-art .monster-item-sprite { width: 40px; height: 40px; }
+.aw-stack { position: absolute; right: -6px; bottom: -3px; z-index: 1; padding: 1px 5px; color: #fff4dc; font-family: var(--aw-serif); font-size: 13px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; border-radius: 5px; background: rgba(10, 8, 6, 0.9); box-shadow: 0 0 0 1px rgba(176, 131, 71, 0.5); }
+.aw-stack small { margin-right: 1px; color: #c8b28a; font-size: 9px; }
+.aw-ore-name { width: 100%; overflow: hidden; color: #ebdec6; font-size: 11px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.aw-price { display: inline-flex; align-items: baseline; gap: 1px; max-width: 100%; padding: 2px 6px 2px 5px; overflow: hidden; color: var(--aw-gold); font-family: var(--aw-serif); font-size: 13px; font-weight: 700; line-height: 1.1; white-space: nowrap; border-radius: 4px; background: rgba(255, 207, 110, 0.08); box-shadow: inset 0 0 0 1px rgba(255, 207, 110, 0.24); }
+.aw-price small { margin-right: 3px; color: #a99064; font-family: "Pretendard Variable", Pretendard, "Noto Sans KR", "Malgun Gothic", sans-serif; font-size: 9px; font-weight: 700; }
+.aw-price i { font-size: 10px; font-style: normal; }
+.aw-price--mana { color: var(--aw-mana); background: rgba(143, 208, 255, 0.08); box-shadow: inset 0 0 0 1px rgba(143, 208, 255, 0.26); }
+.aw-price--mana small { color: #7f9fb6; }
+.aw-price.is-boosted { color: #ffe9a8; box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.6), 0 0 6px rgba(95, 224, 204, 0.25); }
+.aw-price.is-reduced { color: #e9b9a8; box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.5); }
+.aw-check { position: absolute; top: 5px; right: 5px; z-index: 2; display: grid; place-items: center; width: 18px; height: 18px; color: #2b1a07; font-size: 11px; border-radius: 50%; background: linear-gradient(#ffe3a4, #d69c47); box-shadow: 0 1px 0 #6b4519, 0 0 8px rgba(255, 200, 110, 0.5); opacity: 0; transform: scale(0.2); transition: transform 220ms cubic-bezier(0.2, 1.6, 0.4, 1), opacity 140ms ease; }
+.aw-check .aw-glyph { stroke-width: 2.6; }
+.aw-ore.is-selected { border-color: #e2ad5a; background: radial-gradient(80% 60% at 50% 30%, rgba(255, 196, 100, 0.2), transparent 72%), linear-gradient(180deg, #2a2016, #17120d); box-shadow: 0 0 0 1px rgba(255, 212, 140, 0.35), 0 0 14px rgba(226, 160, 70, 0.25); }
+.aw-ore.is-selected .aw-check { opacity: 1; transform: scale(1); }
+.aw-ore:active { transform: translateY(1px) scale(0.98); }
+.aw-ore--loot { border-color: #2c333a; }
+
+/* 희귀도: 광채의 세기 */
+.aw-rarity--uncommon { --aw-halo: 0.14; }
+.aw-rarity--rare { --aw-halo: 0.24; border-color: #3d3529; }
+.aw-rarity--epic { --aw-halo: 0.36; border-color: rgba(var(--aw-ore-tint), 0.38); }
+.aw-rarity--legendary { --aw-halo: 0.5; border-color: rgba(var(--aw-ore-tint), 0.6); box-shadow: inset 0 1px rgba(255, 255, 255, 0.08), 0 0 12px rgba(var(--aw-ore-tint), 0.2); }
+.aw-rarity--legendary::after { position: absolute; inset: 0; content: ''; pointer-events: none; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.16) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat; animation: aw-glint 4.2s ease-in-out infinite; }
+
+/* 광물·아이템 고유 빛깔 (R, G, B) */
+.aw-tint--stone { --aw-ore-tint: 168, 160, 150; }
+.aw-tint--coal { --aw-ore-tint: 126, 122, 146; }
+.aw-tint--copper { --aw-ore-tint: 214, 128, 80; }
+.aw-tint--iron { --aw-ore-tint: 186, 192, 198; }
+.aw-tint--silver { --aw-ore-tint: 220, 228, 236; }
+.aw-tint--gold { --aw-ore-tint: 240, 190, 80; }
+.aw-tint--jade { --aw-ore-tint: 90, 200, 140; }
+.aw-tint--obsidian { --aw-ore-tint: 146, 112, 206; }
+.aw-tint--topaz { --aw-ore-tint: 245, 190, 70; }
+.aw-tint--amethyst { --aw-ore-tint: 182, 122, 236; }
+.aw-tint--aquamarine { --aw-ore-tint: 100, 210, 226; }
+.aw-tint--ruby { --aw-ore-tint: 236, 80, 92; }
+.aw-tint--sapphire { --aw-ore-tint: 84, 132, 242; }
+.aw-tint--emerald { --aw-ore-tint: 70, 210, 112; }
+.aw-tint--diamond { --aw-ore-tint: 214, 242, 255; }
+.aw-tint--mithril { --aw-ore-tint: 186, 236, 255; }
+.aw-tint--fly_wing { --aw-ore-tint: 170, 204, 226; }
+.aw-tint--bug_shell { --aw-ore-tint: 178, 152, 112; }
+.aw-tint--bat_wing { --aw-ore-tint: 146, 122, 178; }
+.aw-tint--sulfur { --aw-ore-tint: 230, 210, 90; }
+
+/* ---------- 판매·분해 받침대 ---------- */
+.aw-dock { display: grid; flex: 0 0 auto; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(176, 131, 71, 0.22); }
+.aw-dock-button { display: flex; align-items: flex-start; justify-content: center; flex-direction: column; gap: 2px; min-width: 0; min-height: 50px; padding: 6px 12px; font: inherit; text-align: left; cursor: pointer; border-radius: 7px; transition: filter 140ms ease, transform 120ms ease; }
+.aw-dock-button span { max-width: 100%; overflow: hidden; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-overflow: ellipsis; white-space: nowrap; }
+.aw-dock-button strong { max-width: 100%; overflow: hidden; font-family: var(--aw-serif); font-size: 18px; line-height: 1.1; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.aw-dock-button strong small { margin-left: 2px; font-size: 12px; }
+.aw-dock-button--points { color: #2b1a07; border: 1px solid #f3c879; background: linear-gradient(#f2c672, #c08033); box-shadow: inset 0 1px rgba(255, 240, 200, 0.7), 0 3px 0 #6e4519, 0 6px 12px rgba(0, 0, 0, 0.3); }
+.aw-dock-button--mana { color: #e2f4ff; border: 1px solid #5584a4; background: linear-gradient(#36607a, #1d3546); box-shadow: inset 0 1px rgba(170, 220, 255, 0.35), 0 3px 0 #0c1820, 0 6px 12px rgba(0, 0, 0, 0.3); }
+.aw-dock-button--mana strong { color: var(--aw-mana); }
+.aw-dock-button:active:not(:disabled) { transform: translateY(2px); }
+.aw-dock-button:disabled { cursor: not-allowed; filter: grayscale(0.55) brightness(0.62); }
+
+@media (hover: hover) {
+  .aw-gear:hover { border-color: #75593a; transform: translateY(-1px); }
+  .aw-gear.is-equipped:hover { border-color: #b88a49; }
+  .aw-stone-card:hover { border-color: rgba(95, 224, 204, 0.6); transform: translateY(-1px); }
+  .aw-ore:hover:not(.is-selected) { border-color: #6a5236; transform: translateY(-1px); }
+  .aw-dock-button:hover:not(:disabled) { filter: brightness(1.1); }
+}
+
+/* ---------- 모달 공통 껍데기 ---------- */
+.stone-modal.aw-modal {
+  color: var(--aw-text);
+  border: 1px solid #5b4a34;
+  border-radius: 12px;
+  background:
+    radial-gradient(120% 50% at 50% 0%, rgba(176, 131, 71, 0.12), transparent 60%),
+    linear-gradient(170deg, #1d1813, #120f0c 60%, #0e0c0a);
+  box-shadow: 0 30px 90px #000, inset 0 0 0 4px #0c0a08, inset 0 0 0 5px rgba(176, 131, 71, 0.3);
+}
+.stone-modal.aw-modal h2 { padding: 0 34px 12px; color: #fbefd6; font-size: 22px; line-height: 1.3; border-bottom: 0; background: linear-gradient(90deg, transparent, rgba(176, 131, 71, 0.55), transparent) bottom / 100% 1px no-repeat; }
+.aw-modal .modal-rivet { background: radial-gradient(circle at 35% 30%, #f3d498, #6b4f2a 72%); box-shadow: 0 1px 2px #000, 0 0 6px rgba(239, 203, 133, 0.25); }
+.aw-modal .modal-close { color: #b9a78a; }
+.stone-modal.aw-pickaxe-modal { width: min(500px, 100%); }
+.stone-modal.aw-bench-modal { width: min(740px, 100%); padding: 26px 26px 22px; }
+.stone-modal.aw-engrave-modal { width: min(620px, 100%); }
+
+/* ---------- 곡괭이 상세 ---------- */
+.aw-detail { display: flex; flex-direction: column; gap: 16px; margin-top: 14px; text-align: left; }
+.aw-hero {
+  display: grid;
+  grid-template-columns: 118px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  border: 1px solid #3a3027;
+  border-radius: 12px;
+  background:
+    radial-gradient(60% 110% at 14% 50%, rgba(233, 172, 82, 0.14), transparent 70%),
+    linear-gradient(180deg, #1c1712, #12100d);
+}
+.aw-hero.is-enchanted { border-color: rgba(177, 155, 255, 0.35); background: radial-gradient(60% 110% at 14% 50%, rgba(140, 115, 255, 0.2), transparent 70%), radial-gradient(50% 80% at 100% 0%, rgba(233, 172, 82, 0.08), transparent 70%), linear-gradient(180deg, #1b1720, #12100f); }
+.aw-hero.is-equipped { box-shadow: inset 0 0 0 1px rgba(239, 203, 133, 0.18); }
+.aw-hero-meta { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
+.aw-hero-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.aw-hero-tags .aw-tag { height: 22px; padding: 0 9px 0 7px; font-size: 11px; }
+.aw-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.aw-stat { display: flex; min-width: 0; flex-direction: column; gap: 1px; padding: 6px 10px 7px; border-radius: 8px; background: rgba(0, 0, 0, 0.26); box-shadow: inset 0 0 0 1px #352c24; }
+.aw-stat > span { color: var(--aw-text-3); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+.aw-stat strong { color: #ffd98d; font-family: var(--aw-serif); font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.aw-stat strong small { color: var(--aw-text-3); font-size: 13px; }
+.aw-stat.is-warn strong { color: #ff9f80; }
+.aw-hero-meta .durability { width: 100%; height: 6px; border: 0; background: #0b0908; box-shadow: inset 0 0 0 1px #2e261e; }
+
+.aw-section { display: flex; flex-direction: column; gap: 9px; }
+.aw-section-head { display: flex; align-items: center; gap: 7px; color: var(--aw-text-2); font-size: 14px; }
+.aw-section-head h3 { margin: 0; font-size: 12px; font-weight: 900; letter-spacing: 0.14em; white-space: nowrap; }
+.aw-section--enchant .aw-section-head { color: #cfc2ff; }
+.aw-section--enchant .aw-section-head > .aw-glyph { filter: drop-shadow(0 0 4px rgba(177, 155, 255, 0.8)); }
+.aw-section--enchant .aw-rule { background: linear-gradient(90deg, rgba(177, 155, 255, 0.5), rgba(177, 155, 255, 0)); }
+.aw-section--stone .aw-section-head { color: #a9efe4; }
+.aw-section--stone .aw-section-head > .aw-glyph { filter: drop-shadow(0 0 4px rgba(95, 224, 204, 0.8)); }
+.aw-section--stone .aw-rule { background: linear-gradient(90deg, rgba(95, 224, 204, 0.5), rgba(95, 224, 204, 0)); }
+.aw-section-note { color: #8a80aa; font-size: 11px; line-height: 1.5; }
+.aw-seal-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+
+/* 마법 인장 */
+.aw-seal {
+  position: relative;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 13px 11px 10px;
+  overflow: hidden;
+  text-align: left;
+  border: 1px solid rgba(177, 155, 255, 0.32);
+  border-radius: 10px;
+  background:
+    radial-gradient(60% 120% at 0% 50%, rgba(140, 115, 255, 0.2), transparent 70%),
+    linear-gradient(120deg, rgba(40, 32, 84, 0.95), rgba(19, 16, 36, 0.96) 72%);
+  box-shadow: inset 0 1px rgba(226, 216, 255, 0.08), 0 6px 16px rgba(0, 0, 0, 0.35);
+}
+.aw-seal--negative {
+  border-color: rgba(255, 132, 102, 0.42);
+  background:
+    radial-gradient(60% 120% at 0% 50%, rgba(255, 90, 60, 0.18), transparent 70%),
+    linear-gradient(120deg, rgba(66, 22, 20, 0.95), rgba(23, 12, 13, 0.96) 72%);
+}
+.aw-seal-medal { position: relative; display: grid; place-items: center; width: 42px; height: 42px; color: #dcd0ff; font-size: 23px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #4d3d9a, #16112e 76%); box-shadow: 0 0 0 1px rgba(226, 216, 255, 0.4), 0 0 0 3px rgba(12, 10, 24, 0.9), 0 0 0 4px rgba(176, 131, 71, 0.6), 0 0 14px rgba(150, 120, 255, 0.45); }
+.aw-seal-medal .aw-glyph { stroke-width: 1.3; filter: drop-shadow(0 0 3px rgba(200, 185, 255, 0.9)); }
+.aw-seal--negative .aw-seal-medal { color: #ffc4b4; background: radial-gradient(circle at 40% 35%, #7c2a1e, #200e0b 76%); box-shadow: 0 0 0 1px rgba(255, 196, 180, 0.4), 0 0 0 3px rgba(22, 9, 8, 0.9), 0 0 0 4px rgba(176, 131, 71, 0.6), 0 0 14px rgba(255, 90, 60, 0.42); }
+.aw-seal--negative .aw-seal-medal .aw-glyph { filter: drop-shadow(0 0 3px rgba(255, 120, 90, 0.9)); }
+.aw-seal-body { display: flex; min-width: 0; flex-direction: column; gap: 5px; }
+.aw-seal-head { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; min-width: 0; }
+.aw-seal-sign { padding: 2px 6px; font-size: 10px; font-weight: 900; letter-spacing: 0.12em; border-radius: 4px; }
+.aw-seal--positive .aw-seal-sign { color: #c9f7d5; background: rgba(36, 96, 58, 0.6); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.35); }
+.aw-seal--negative .aw-seal-sign { color: #ffd0c4; background: rgba(120, 36, 22, 0.65); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
+.aw-seal-head strong { color: #f4efff; font-size: 15px; font-weight: 800; }
+.aw-seal--negative .aw-seal-head strong { color: #ffe7df; }
+.aw-seal-level { color: #ffd98d; font-family: var(--aw-serif); font-size: 16px; font-style: normal; font-weight: 700; text-shadow: 0 0 8px rgba(255, 200, 110, 0.35); }
+.aw-seal-pips { display: flex; gap: 3px; }
+.aw-seal-pips i { width: 15px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.1); }
+.aw-seal-pips i.is-on { background: linear-gradient(90deg, #a891ff, #e6dcff); box-shadow: 0 0 5px rgba(177, 155, 255, 0.75); }
+.aw-seal--negative .aw-seal-pips i.is-on { background: linear-gradient(90deg, #ff7a58, #ffc2ae); box-shadow: 0 0 5px rgba(255, 110, 80, 0.75); }
+.aw-seal small { display: block; color: #c6bede; font-size: 12px; line-height: 1.5; word-break: keep-all; }
+.aw-seal--negative small { color: #e9c6bc; }
+
+/* 스톤 소켓 판 */
+.aw-socket-plate {
+  --aw-corner: rgba(95, 224, 204, 0.4);
+  position: relative;
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px 11px 11px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid #2b4743;
+  border-radius: 10px;
+  background:
+    radial-gradient(60% 130% at 0% 50%, rgba(var(--aw-stone-tint), 0.16), transparent 70%),
+    linear-gradient(110deg, #13201e, #100f0d 72%);
+  transition: border-color 160ms ease, filter 160ms ease;
+}
+.aw-socket-plate.is-empty { --aw-corner: rgba(176, 131, 71, 0.35); border-style: dashed; border-color: #3d4a46; background: linear-gradient(110deg, #161a19, #110f0d 72%); }
+.aw-socket-plate:disabled { cursor: wait; opacity: 0.6; }
+.aw-socket-plate-body { display: flex; min-width: 0; flex-direction: column; gap: 6px; }
+.aw-socket-plate-body > strong { color: #dff6f1; font-size: 13px; }
+.aw-socket-plate-body > small { color: #82a19b; font-size: 11px; line-height: 1.45; }
+.aw-socket-plate-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 9px; }
+.aw-socket-plate-cta { align-self: center; padding: 6px 10px; color: #c3fff4; font-size: 11px; font-weight: 900; white-space: nowrap; border-radius: 6px; background: rgba(40, 140, 128, 0.25); box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.5); }
+.aw-empty-socket { display: grid; place-items: center; width: 60px; height: 60px; color: #5f8f88; font-size: 24px; border: 1px dashed rgba(95, 224, 204, 0.4); border-radius: 50%; background: radial-gradient(circle, rgba(95, 224, 204, 0.08), #0b0f0e 70%); }
+
+.aw-option-rows { display: grid; gap: 4px; min-width: 0; }
+.aw-option-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 7px; min-width: 0; font-size: 11px; }
+.aw-option-sign { display: inline-flex; align-items: center; gap: 3px; padding: 1px 5px; font-size: 9px; font-weight: 900; border-radius: 3px; }
+.aw-option-row.is-positive .aw-option-sign { color: #bdf3cb; background: rgba(36, 96, 58, 0.5); }
+.aw-option-row.is-negative .aw-option-sign { color: #ffcdbf; background: rgba(120, 36, 22, 0.55); }
+.aw-option-name { min-width: 0; overflow: hidden; color: #d8cfbf; text-overflow: ellipsis; white-space: nowrap; }
+.aw-option-value { font-family: var(--aw-serif); font-size: 13px; white-space: nowrap; }
+.aw-option-row.is-positive.is-active .aw-option-value { color: #a8f0bb; }
+.aw-option-row.is-negative.is-active .aw-option-value { color: #ff9f84; }
+.aw-option-row.is-dormant .aw-option-value { color: #6e6458; font-family: inherit; font-size: 10px; font-weight: 700; }
+
+/* 수리 · 행동 버튼 */
+.aw-repair { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 7px; padding: 9px 12px; border-radius: 10px; background: rgba(0, 0, 0, 0.22); box-shadow: inset 0 0 0 1px #2f2720; }
+.aw-repair-label { display: inline-flex; align-items: center; gap: 5px; color: var(--aw-text-3); font-size: 11px; font-weight: 800; }
+.aw-repair.is-idle .aw-repair-label { color: #9a8b75; }
+.aw-cost { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 3px; color: var(--aw-text-2); font-size: 11px; font-weight: 700; border-radius: 999px; background: rgba(255, 255, 255, 0.04); box-shadow: inset 0 0 0 1px #3b3128; }
+.aw-cost > span[aria-hidden] { display: grid; }
+.aw-cost .ore-sprite { width: 22px; }
+.aw-cost b { color: var(--aw-text); font-family: var(--aw-serif); }
+.aw-cost em { color: var(--aw-text-3); font-size: 10px; font-style: normal; }
+.aw-cost.is-short { box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
+.aw-cost.is-short em { color: var(--aw-bane); }
+
+.aw-actions { display: grid; grid-template-columns: 1fr 1fr 1.35fr; gap: 8px; }
+.aw-btn { display: inline-flex; align-items: center; justify-content: center; flex-direction: column; gap: 2px; min-width: 0; min-height: 48px; padding: 6px 10px; color: var(--aw-text); font: inherit; font-size: 12px; font-weight: 900; cursor: pointer; border: 1px solid #6b5232; border-radius: 8px; background: linear-gradient(#3d3022, #261d15); box-shadow: inset 0 1px rgba(255, 220, 160, 0.14), 0 3px 0 #110c08, 0 6px 12px rgba(0, 0, 0, 0.3); transition: filter 140ms ease, transform 120ms ease; }
+.aw-btn > span { display: inline-flex; align-items: center; gap: 5px; }
+.aw-btn small { max-width: 100%; overflow: hidden; font-size: 10px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; opacity: 0.9; }
+.aw-btn small i { font-style: normal; opacity: 0.75; }
+.aw-btn small.is-short { color: #ffb19c; opacity: 1; }
+.aw-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: inset 0 1px rgba(255, 220, 160, 0.14), 0 1px 0 #110c08; }
+.aw-btn:disabled { cursor: not-allowed; filter: grayscale(0.4); opacity: 0.45; }
+.aw-btn--gold { color: #2b1a07; border-color: #f3c879; background: linear-gradient(#f2c672, #c08033); box-shadow: inset 0 1px rgba(255, 240, 200, 0.7), 0 3px 0 #6e4519, 0 6px 12px rgba(0, 0, 0, 0.3); }
+.aw-btn--astral { color: #f3efff; border-color: #8f7be0; background: linear-gradient(#5e49bd, #33267a); box-shadow: inset 0 1px rgba(226, 216, 255, 0.45), 0 3px 0 #181040, 0 0 18px rgba(140, 110, 255, 0.25); }
+.aw-btn--astral .aw-glyph { color: #e2d8ff; }
+.aw-btn--vein { color: #062320; border-color: #b9fff1; background: linear-gradient(#93f0de, #3fae9e); box-shadow: inset 0 1px rgba(235, 255, 251, 0.8), 0 3px 0 #145a52; }
+.aw-btn--danger { color: #ffd0c4; border-color: #7a3b2e; background: linear-gradient(#4a231b, #2b1410); box-shadow: inset 0 1px rgba(255, 180, 160, 0.12), 0 3px 0 #160806; }
+
+@media (hover: hover) {
+  .aw-btn:hover:not(:disabled) { filter: brightness(1.12); }
+  .aw-socket-plate:hover:not(:disabled) { border-color: rgba(95, 224, 204, 0.75); filter: brightness(1.06); }
+}
+
+/* ---------- 세공대 ---------- */
+.aw-bench { position: relative; display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.aw-bench-head {
+  position: relative;
+  display: grid;
+  grid-template-columns: 172px minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 16px 20px 16px 16px;
+  border: 1px solid #2c3b37;
+  border-radius: 12px;
+  background:
+    radial-gradient(45% 100% at 16% 50%, rgba(var(--aw-stone-tint), 0.16), transparent 72%),
+    linear-gradient(180deg, #151a19, #0f0e0c);
+  box-shadow: inset 0 1px rgba(195, 255, 244, 0.05), inset 0 -24px 40px rgba(0, 0, 0, 0.32);
+}
+.aw-bench.is-complete .aw-bench-head { border-color: rgba(239, 203, 133, 0.5); box-shadow: inset 0 0 0 1px rgba(239, 203, 133, 0.15), inset 0 -24px 40px rgba(0, 0, 0, 0.32), 0 0 22px rgba(239, 203, 133, 0.1); }
+
+/* 확률판: 금빛 호가 현재 성공 확률, 옅은 띠가 25~75% 범위입니다. */
+.aw-dial { --aw-dial: 255, 207, 110; position: relative; display: grid; place-items: center; width: 172px; aspect-ratio: 1; }
+.aw-dial.is-high { --aw-dial: 255, 218, 130; }
+.aw-dial.is-low { --aw-dial: 255, 128, 92; }
+.aw-dial-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.aw-dial-track { fill: none; stroke: #1a1512; stroke-width: 8; }
+.aw-dial-range { fill: none; stroke: rgba(176, 131, 71, 0.3); stroke-width: 8; }
+.aw-dial-fill { fill: none; stroke: rgb(var(--aw-dial)); stroke-width: 4.5; stroke-linecap: round; filter: drop-shadow(0 0 3px rgba(var(--aw-dial), 0.8)); transition: stroke-dasharray 700ms cubic-bezier(0.3, 1.3, 0.4, 1), stroke 400ms ease; }
+.aw-dial-tick { stroke: #8d6b3d; stroke-width: 1.6; stroke-linecap: round; }
+.aw-dial-needle { transform-box: view-box; transform-origin: 60px 60px; transition: transform 700ms cubic-bezier(0.3, 1.3, 0.4, 1); }
+.aw-dial-needle circle { fill: #fff7e0; stroke: rgb(var(--aw-dial)); stroke-width: 2; filter: drop-shadow(0 0 4px rgba(var(--aw-dial), 0.95)); }
+.aw-dial-core { position: relative; display: grid; place-items: center; width: 68%; height: 68%; }
+.aw-dial-core .aw-stone-socket { box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(var(--aw-stone-tint), 0.45), 0 0 0 4px #0c0a08, 0 0 0 5px rgba(176, 131, 71, 0.55), 0 0 26px rgba(var(--aw-stone-tint), 0.22); }
+.aw-dial.is-pending .aw-dial-core { animation: aw-core-tremble 140ms linear infinite; }
+.aw-dial-core.is-boon,
+.aw-dial-core.is-relief { animation: aw-core-flare 760ms ease-out both; }
+.aw-dial-core.is-ash { animation: aw-core-crack 520ms ease-out both; }
+.aw-dial-core.is-bane { animation: aw-core-crack 520ms ease-out both, aw-core-taint 900ms ease-out both; }
+
+.aw-dial-burst { --aw-burst: 134, 227, 155; position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.aw-dial-burst.is-relief { --aw-burst: 95, 224, 204; }
+.aw-dial-burst.is-ash { --aw-burst: 176, 150, 128; }
+.aw-dial-burst.is-bane { --aw-burst: 255, 110, 80; }
+.aw-dial-burst.is-complete { --aw-burst: 255, 214, 130; }
+.aw-dial-burst::before { position: absolute; inset: 14%; content: ''; border: 2px solid rgba(var(--aw-burst), 0.85); border-radius: 50%; opacity: 0; animation: aw-burst-ring 760ms ease-out both; }
+.aw-dial-burst.is-complete::before { border-width: 3px; animation-duration: 1200ms; }
+.aw-dial-burst i { --aw-angle: 0deg; position: absolute; top: 50%; left: 50%; width: 4px; height: 13px; margin: -6.5px 0 0 -2px; border-radius: 999px; background: linear-gradient(#fff, rgb(var(--aw-burst))); box-shadow: 0 0 8px rgba(var(--aw-burst), 0.9); opacity: 0; animation: aw-spark 700ms ease-out both; }
+.aw-dial-burst.is-ash i,
+.aw-dial-burst.is-bane i { width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 1px; background: rgb(var(--aw-burst)); animation-name: aw-chip; }
+.aw-dial-burst i:nth-child(1) { --aw-angle: 0deg; }
+.aw-dial-burst i:nth-child(2) { --aw-angle: 36deg; }
+.aw-dial-burst i:nth-child(3) { --aw-angle: 72deg; }
+.aw-dial-burst i:nth-child(4) { --aw-angle: 108deg; }
+.aw-dial-burst i:nth-child(5) { --aw-angle: 144deg; }
+.aw-dial-burst i:nth-child(6) { --aw-angle: 180deg; }
+.aw-dial-burst i:nth-child(7) { --aw-angle: 216deg; }
+.aw-dial-burst i:nth-child(8) { --aw-angle: 252deg; }
+.aw-dial-burst i:nth-child(9) { --aw-angle: 288deg; }
+.aw-dial-burst i:nth-child(10) { --aw-angle: 324deg; }
+
+.aw-readout { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
+.aw-chance { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.aw-chance-label { color: var(--aw-text-3); font-size: 11px; font-weight: 800; letter-spacing: 0.14em; }
+.aw-chance-value { color: #ffe1a0; font-family: var(--aw-serif); font-size: 46px; font-weight: 700; line-height: 0.95; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(255, 190, 90, 0.35); transition: color 400ms ease; }
+.aw-chance-value small { margin-left: 2px; color: #cfae72; font-size: 20px; }
+.aw-chance-value.is-high { color: #ffe9b5; }
+.aw-chance-value.is-low { color: #ffa17f; text-shadow: 0 0 20px rgba(255, 110, 70, 0.35); }
+.aw-chance-delta { align-self: center; padding: 3px 9px; font-size: 12px; font-weight: 900; border-radius: 999px; animation: aw-delta-pop 1.6s ease both; }
+.aw-chance-delta.is-down { color: #ffc5b4; background: rgba(120, 40, 24, 0.6); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.45); }
+.aw-chance-delta.is-up { color: #cbf8d7; background: rgba(30, 90, 52, 0.6); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.45); }
+.aw-rules { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; list-style: none; }
+.aw-rules li { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; color: var(--aw-text-3); font-size: 11px; border-radius: 999px; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 0 0 1px #2c2620; }
+.aw-rules b { color: var(--aw-text-2); }
+.aw-rules i { width: 7px; height: 7px; transform: rotate(45deg); }
+.aw-rules i.is-boon { background: var(--aw-boon); box-shadow: 0 0 5px rgba(134, 227, 155, 0.7); }
+.aw-rules i.is-ash { background: #4a403a; box-shadow: inset 0 0 0 1px #8b7d71; }
+.aw-bench-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.aw-state-chip { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 11px; color: var(--aw-text-2); font-size: 12px; font-weight: 800; border-radius: 999px; background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 0 0 1px #3a3128; }
+.aw-state-chip b { color: var(--aw-text); font-family: var(--aw-serif); font-size: 15px; }
+.aw-state-chip.is-done { color: #2b1a07; background: linear-gradient(#ffdd96, #d39b45); box-shadow: inset 0 1px rgba(255, 255, 255, 0.5), 0 0 14px rgba(255, 196, 100, 0.3); }
+.aw-bench-progress { display: block; height: 4px; overflow: hidden; border-radius: 2px; background: #0d0b09; box-shadow: inset 0 0 0 1px #2a231d; }
+.aw-bench-progress i { display: block; height: 100%; background: linear-gradient(90deg, rgba(var(--aw-stone-tint), 0.8), #efcb85); transition: width 400ms ease; }
+.aw-bench-host { display: inline-flex; align-items: center; gap: 5px; color: #9ff0e2; font-size: 12px; font-weight: 700; }
+.aw-bench-host .aw-glyph { color: var(--aw-vein); }
+.aw-complete-banner { position: absolute; top: 50%; left: 50%; z-index: 4; display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; color: #2b1a07; font-family: var(--aw-serif); font-size: 22px; font-weight: 700; letter-spacing: 0.12em; white-space: nowrap; pointer-events: none; border-radius: 10px; background: linear-gradient(#ffe7ae, #d6a04a); box-shadow: 0 0 0 1px #fff2cf, 0 0 0 4px rgba(20, 14, 8, 0.85), 0 0 0 5px rgba(239, 203, 133, 0.8), 0 0 40px rgba(255, 200, 110, 0.55); opacity: 0; transform: translate(-50%, -50%); animation: aw-banner 2200ms cubic-bezier(0.2, 1.3, 0.35, 1) both; }
+
+/* 세공 줄 */
+.aw-lines { display: grid; gap: 11px; }
+.aw-line {
+  --aw-hit: 134, 227, 155;
+  position: relative;
+  display: grid;
+  grid-template-areas: 'head action' 'work action' 'tiers action';
+  grid-template-columns: minmax(0, 1fr) 108px;
+  gap: 10px 16px;
+  min-width: 0;
+  padding: 13px 14px 14px 17px;
+  border: 1px solid #263d38;
+  border-radius: 12px;
+  background:
+    radial-gradient(60% 130% at 0% 0%, rgba(134, 227, 155, 0.08), transparent 62%),
+    linear-gradient(180deg, #161a18, #111010);
+  box-shadow: inset 3px 0 0 rgba(134, 227, 155, 0.6), inset 0 1px rgba(200, 255, 220, 0.04);
+}
+.aw-line--negative {
+  border-color: #48291f;
+  background:
+    linear-gradient(90deg, #171110 0%, rgba(23, 17, 16, 0) 100%) right top / 170px 100% no-repeat,
+    repeating-linear-gradient(135deg, rgba(255, 132, 102, 0.06) 0 7px, transparent 7px 14px) right top / 170px 100% no-repeat,
+    radial-gradient(60% 130% at 0% 0%, rgba(255, 132, 102, 0.1), transparent 62%),
+    linear-gradient(180deg, #1b1412, #110f0f);
+  box-shadow: inset 3px 0 0 rgba(255, 132, 102, 0.65), inset 0 1px rgba(255, 210, 195, 0.04);
+}
+.aw-line.is-complete { border-color: #2c2a24; }
+.aw-line-head { display: flex; align-items: center; grid-area: head; gap: 8px; min-width: 0; }
+.aw-line-sign { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; height: 21px; padding: 0 8px 0 6px; color: #c9f7d5; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; border-radius: 5px; background: rgba(36, 96, 58, 0.5); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.36); }
+.aw-line--negative .aw-line-sign { color: #ffd0c4; background: rgba(120, 36, 22, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.48); }
+.aw-line-head strong { flex: 1 1 auto; min-width: 0; color: #eef6ef; font-size: 14px; font-weight: 800; line-height: 1.3; word-break: keep-all; }
+.aw-line--negative .aw-line-head strong { color: #f8e2db; }
+.aw-line-value { flex: 0 0 auto; padding: 3px 9px; color: #7d7064; font-size: 11px; font-weight: 800; white-space: nowrap; border-radius: 999px; background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 0 0 1px #2e2721; }
+.aw-line-value.is-active { color: #d7ffe2; font-family: var(--aw-serif); font-size: 16px; background: rgba(36, 96, 58, 0.48); box-shadow: inset 0 0 0 1px rgba(134, 227, 155, 0.55), 0 0 12px rgba(134, 227, 155, 0.18); }
+.aw-line--negative .aw-line-value.is-active { color: #ffd6ca; background: rgba(120, 36, 22, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 132, 102, 0.6), 0 0 12px rgba(255, 110, 80, 0.22); }
+.aw-line-work { display: flex; align-items: center; grid-area: work; gap: 14px; min-width: 0; }
+.aw-line-work .aw-track { flex: 1 1 auto; max-width: 430px; }
+.aw-line-count { display: flex; flex: 0 0 auto; align-items: flex-end; flex-direction: column; gap: 2px; color: var(--aw-text-3); font-size: 10px; font-weight: 700; white-space: nowrap; }
+.aw-line-count > span:first-child b { margin-right: 3px; color: var(--aw-text); font-family: var(--aw-serif); font-size: 20px; line-height: 1; }
+.aw-line-count > span:last-child b { margin-left: 2px; color: var(--aw-text-2); font-family: var(--aw-serif); font-size: 12px; }
+
+/* 6/7/9/10 활성 단계 */
+.aw-tiers { display: grid; grid-area: tiers; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; max-width: 430px; margin: 0; padding: 0; list-style: none; }
+.aw-tier { position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1px; min-width: 0; min-height: 40px; padding: 4px 3px; border: 1px solid #312923; border-radius: 6px; background: #14110e; }
+.aw-tier small { color: #7d7064; font-size: 10px; font-weight: 800; }
+.aw-tier strong { max-width: 100%; overflow: hidden; color: #a39380; font-family: var(--aw-serif); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.aw-tier.is-reached { border-color: rgba(134, 227, 155, 0.4); background: rgba(36, 96, 58, 0.28); }
+.aw-tier.is-reached small { color: #8fcf9f; }
+.aw-tier.is-reached strong { color: #bdf3cb; }
+.aw-tier.is-current { border-color: rgba(134, 227, 155, 0.85); background: linear-gradient(#2c6a45, #183b27); box-shadow: 0 0 0 1px rgba(134, 227, 155, 0.25), 0 0 14px rgba(134, 227, 155, 0.25); }
+.aw-tier.is-current strong { color: #f0fff4; }
+.aw-tier.is-current::before { position: absolute; top: -4px; left: 50%; width: 7px; height: 7px; content: ''; background: var(--aw-boon); box-shadow: 0 0 6px var(--aw-boon); transform: translateX(-50%) rotate(45deg); }
+.aw-line--negative .aw-tier.is-reached { border-color: rgba(255, 132, 102, 0.42); background: rgba(120, 36, 22, 0.3); }
+.aw-line--negative .aw-tier.is-reached small { color: #e3988a; }
+.aw-line--negative .aw-tier.is-reached strong { color: #ffc3b3; }
+.aw-line--negative .aw-tier.is-current { border-color: rgba(255, 132, 102, 0.9); background: linear-gradient(#7a2c1f, #42170f); box-shadow: 0 0 0 1px rgba(255, 132, 102, 0.25), 0 0 14px rgba(255, 100, 70, 0.3); }
+.aw-line--negative .aw-tier.is-current strong { color: #fff0ea; }
+.aw-line--negative .aw-tier.is-current::before { background: var(--aw-bane); box-shadow: 0 0 6px var(--aw-bane); }
+.aw-tier.is-lost { opacity: 0.42; }
+.aw-tier.is-lost strong { text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, 0.4); }
+.aw-tier.is-safe { border-style: dashed; border-color: rgba(134, 227, 155, 0.3); opacity: 0.6; }
+.aw-tier.is-safe strong { color: #7d7064; text-decoration: line-through; }
+.aw-tier-mark { position: absolute; top: 3px; right: 3px; font-size: 10px; }
+.aw-tier.is-lost .aw-tier-mark { color: #a39380; }
+.aw-tier.is-safe .aw-tier-mark { color: var(--aw-boon); }
+.aw-tier.is-fresh { animation: aw-tier-ignite 1100ms ease-out; }
+
+/* 세공 버튼(끌) */
+.aw-chisel { display: flex; align-items: center; align-self: stretch; justify-content: center; flex-direction: column; grid-area: action; gap: 3px; min-height: 48px; padding: 8px 6px; color: #2b1a07; font: inherit; font-size: 15px; font-weight: 900; letter-spacing: 0.06em; cursor: pointer; border: 1px solid #f3c879; border-radius: 10px; background: radial-gradient(90% 60% at 50% 0%, rgba(255, 250, 230, 0.55), transparent 70%), linear-gradient(#f2c672, #bf7f32); box-shadow: inset 0 1px rgba(255, 244, 210, 0.75), 0 4px 0 #6e4519, 0 8px 14px rgba(0, 0, 0, 0.4); transition: filter 140ms ease, transform 100ms ease; }
+.aw-chisel .aw-glyph { font-size: 20px; stroke-width: 1.8; }
+.aw-chisel small { font-size: 10px; font-weight: 800; letter-spacing: 0; opacity: 0.78; }
+.aw-line--negative .aw-chisel { color: #ffd6ca; border-color: #b65a43; background: radial-gradient(90% 60% at 50% 0%, rgba(255, 170, 140, 0.18), transparent 70%), linear-gradient(#4c2219, #2c130e); box-shadow: inset 0 1px rgba(255, 190, 170, 0.25), 0 4px 0 #1a0805, 0 8px 14px rgba(0, 0, 0, 0.4); }
+.aw-line--negative .aw-chisel small { color: #ff9f84; opacity: 1; }
+.aw-chisel:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 1px rgba(255, 244, 210, 0.75), 0 1px 0 #6e4519; }
+.aw-line--negative .aw-chisel:active:not(:disabled) { box-shadow: inset 0 1px rgba(255, 190, 170, 0.25), 0 1px 0 #1a0805; }
+.aw-chisel:disabled { color: #6f665c; cursor: default; border-color: #352d26; background: #1c1814; box-shadow: none; }
+.aw-line--negative .aw-chisel:disabled { color: #6f5f58; border-color: #3a2a25; background: #1c1513; }
+.aw-line.is-pending .aw-chisel { color: #2b1a07; background: linear-gradient(#ffe3a4, #d69c47); opacity: 1; }
+.aw-line.is-pending .aw-chisel .aw-glyph { animation: aw-chisel-strike 300ms ease-in-out infinite; }
+.aw-line.is-complete .aw-chisel .aw-glyph { color: var(--aw-boon); }
+
+/* 줄 반응과 판정 도장 */
+.aw-line.is-hit-relief { --aw-hit: 95, 224, 204; }
+.aw-line.is-hit-ash { --aw-hit: 176, 150, 128; }
+.aw-line.is-hit-bane { --aw-hit: 255, 110, 80; }
+/* 줄 테두리의 섬광은 의사 요소에 그려 줄 왼쪽의 효과 색 막대를 지우지 않습니다. */
+.aw-line::after { position: absolute; inset: -1px; content: ''; pointer-events: none; opacity: 0; border-radius: inherit; box-shadow: 0 0 0 1px rgba(var(--aw-hit), 0.9), 0 0 30px rgba(var(--aw-hit), 0.4); }
+.aw-line.is-beat-0::after { animation: aw-line-flash-0 900ms ease-out; }
+.aw-line.is-beat-1::after { animation: aw-line-flash-1 900ms ease-out; }
+.aw-line.is-hit-ash.is-beat-0,
+.aw-line.is-hit-bane.is-beat-0 { animation: aw-line-shake-0 560ms ease-out; }
+.aw-line.is-hit-ash.is-beat-1,
+.aw-line.is-hit-bane.is-beat-1 { animation: aw-line-shake-1 560ms ease-out; }
+
+.aw-stamp { --aw-stamp: 134, 227, 155; position: absolute; top: -9px; right: 126px; z-index: 5; display: flex; align-items: center; flex-direction: column; gap: 1px; min-width: 104px; padding: 5px 12px 6px; color: rgb(var(--aw-stamp)); pointer-events: none; border: 2px solid rgba(var(--aw-stamp), 0.85); border-radius: 8px; background: rgba(12, 10, 8, 0.92); box-shadow: 0 0 0 3px rgba(12, 10, 8, 0.6), 0 0 22px rgba(var(--aw-stamp), 0.35); transform: rotate(-5deg); animation: aw-stamp 1900ms cubic-bezier(0.2, 1.4, 0.3, 1) forwards; }
+.aw-stamp.is-relief { --aw-stamp: 95, 224, 204; }
+.aw-stamp.is-ash { --aw-stamp: 196, 172, 150; }
+.aw-stamp.is-bane { --aw-stamp: 255, 122, 92; }
+.aw-stamp strong { display: inline-flex; align-items: center; gap: 4px; font-family: var(--aw-serif); font-size: 21px; letter-spacing: 0.14em; line-height: 1.1; text-shadow: 0 0 10px rgba(var(--aw-stamp), 0.6); }
+.aw-stamp small { color: #f3e8d2; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.aw-stamp em { color: rgba(243, 232, 210, 0.7); font-size: 10px; font-style: normal; font-weight: 700; white-space: nowrap; }
+
+.aw-bench-foot { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 10px 14px; padding-top: 4px; }
+.aw-bench-note { display: inline-flex; align-items: center; gap: 6px; min-width: 0; color: #8a7e6d; font-size: 12px; font-weight: 700; }
+.aw-bench-note .aw-glyph { color: var(--aw-vein); }
+.aw-bench-actions { display: flex; gap: 8px; margin-left: auto; }
+.aw-bench-actions .aw-btn { min-width: 104px; }
+
+/* ---------- 각인 선택 ---------- */
+.aw-engrave { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+.aw-engrave-target { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 13px 14px; border: 1px solid #2b4743; border-radius: 12px; background: radial-gradient(50% 120% at 8% 50%, rgba(95, 224, 204, 0.12), transparent 70%), linear-gradient(180deg, #151c1b, #100f0d); }
+.aw-engrave-target-copy { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.aw-engrave-target-copy strong { overflow: hidden; color: #f3fbf9; font-family: var(--aw-serif); font-size: 19px; text-overflow: ellipsis; white-space: nowrap; }
+.aw-engrave-current { display: inline-flex; align-items: center; gap: 6px; color: #82a19b; font-size: 11px; font-weight: 700; }
+.aw-engrave-ready { align-self: start; padding: 4px 10px; color: #a9efe4; font-size: 11px; font-weight: 700; white-space: nowrap; border-radius: 999px; background: rgba(40, 140, 128, 0.18); box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.35); }
+.aw-engrave-ready b { margin-right: 2px; color: #e4fffa; font-family: var(--aw-serif); font-size: 14px; }
+.aw-engrave-note { display: flex; align-items: flex-start; gap: 7px; color: #8f9f9b; font-size: 12px; line-height: 1.5; word-break: keep-all; }
+.aw-engrave-note .aw-glyph { margin-top: 3px; color: var(--aw-vein); }
+.aw-pick-list { display: grid; gap: 8px; }
+.aw-pick-stone {
+  --aw-corner: rgba(95, 224, 204, 0.4);
+  position: relative;
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 13px 11px 11px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid #2b4743;
+  border-radius: 10px;
+  background:
+    radial-gradient(55% 130% at 0% 50%, rgba(var(--aw-stone-tint), 0.14), transparent 70%),
+    linear-gradient(110deg, #13201e, #100f0d 72%);
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+.aw-pick-stone .aw-stone-socket { grid-row: 1 / span 1; }
+.aw-pick-stone.is-current { --aw-corner: rgba(255, 214, 140, 0.7); border-color: #8a6634; background: radial-gradient(55% 130% at 0% 50%, rgba(233, 172, 82, 0.16), transparent 70%), linear-gradient(110deg, #221b13, #100f0d 72%); }
+.aw-pick-stone.is-locked { --aw-corner: rgba(176, 131, 71, 0.25); border-color: #2f2924; background: linear-gradient(110deg, #181512, #100f0d 72%); }
+.aw-pick-stone:disabled { cursor: default; }
+.aw-pick-stone.is-locked .aw-pick-body { opacity: 0.72; }
+.aw-pick-body { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.aw-pick-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.aw-pick-state { flex: 0 1 auto; min-width: 0; overflow: hidden; padding: 3px 9px; font-size: 11px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; border-radius: 999px; }
+.aw-pick-state.is-ready { color: #c3fff4; background: rgba(40, 140, 128, 0.25); box-shadow: inset 0 0 0 1px rgba(95, 224, 204, 0.45); }
+.aw-pick-state.is-current { color: #2b1a07; background: linear-gradient(#ffdd96, #d39b45); }
+.aw-pick-state.is-locked { color: var(--aw-text-3); background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 0 0 1px #3a3128; }
+.aw-pick-cta { display: inline-flex; align-items: center; align-self: flex-start; gap: 5px; padding: 5px 11px; color: #062320; font-size: 11px; font-weight: 900; border-radius: 6px; background: linear-gradient(#93f0de, #3fae9e); box-shadow: inset 0 1px rgba(235, 255, 251, 0.8), 0 2px 0 #145a52; }
+.aw-pick-lock { display: inline-flex; align-items: center; gap: 5px; color: #7d7064; font-size: 11px; font-weight: 700; }
+
+@media (hover: hover) {
+  .aw-pick-stone.is-ready:not(:disabled):hover { border-color: rgba(95, 224, 204, 0.8); box-shadow: 0 0 18px rgba(95, 224, 204, 0.16); transform: translateY(-1px); }
+}
+
+/* ---------- 마법 부여 연출 ---------- */
+.aw-enchant {
+  position: fixed;
+  top: var(--dialog-viewport-top, 0px);
+  right: 0;
+  left: 0;
+  z-index: 210;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: var(--dialog-viewport-height, 100dvh);
+  overflow: hidden;
+  color: #efeaff;
+  background:
+    radial-gradient(70% 45% at 50% 28%, rgba(96, 74, 214, 0.36), transparent 72%),
+    radial-gradient(90% 50% at 50% 108%, rgba(176, 131, 71, 0.2), transparent 70%),
+    #07060f;
+  animation: aw-fade-in 260ms ease both;
+}
+.aw-enchant-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+  background-image:
+    radial-gradient(1px 1px at 22px 34px, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1px 1px at 128px 86px, rgba(200, 210, 255, 0.75), transparent),
+    radial-gradient(1.6px 1.6px at 64px 152px, rgba(255, 238, 205, 0.85), transparent),
+    radial-gradient(1px 1px at 176px 196px, rgba(220, 200, 255, 0.65), transparent),
+    radial-gradient(1.4px 1.4px at 196px 24px, rgba(255, 255, 255, 0.6), transparent);
+  background-size: 220px 230px;
+  -webkit-mask: radial-gradient(80% 70% at 50% 35%, #000, transparent);
+  mask: radial-gradient(80% 70% at 50% 35%, #000, transparent);
+  animation: aw-sky-drift 80s linear infinite;
+}
+.aw-enchant-scroll { position: relative; z-index: 1; flex: 1 1 auto; min-height: 0; padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 14px max(16px, env(safe-area-inset-left)); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #5b4bb0 transparent; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.aw-enchant-stage { display: flex; align-items: center; justify-content: center; flex-direction: column; width: min(520px, 100%); min-height: 100%; margin: 0 auto; text-align: center; }
+.aw-enchant-stage > * { flex-shrink: 0; }
+.aw-enchant-kicker { display: inline-flex; align-items: center; gap: 8px; color: #b9a8ff; font-size: 12px; font-weight: 900; letter-spacing: 0.4em; text-indent: 0.4em; animation: aw-rise-in 600ms ease both; }
+.aw-enchant-kicker .aw-glyph { font-size: 14px; filter: drop-shadow(0 0 4px rgba(177, 155, 255, 0.9)); }
+
+.aw-altar { position: relative; display: grid; place-items: center; width: clamp(190px, 54vw, 260px); aspect-ratio: 1; margin: 8px 0 2px; }
+.aw-altar-circle { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.aw-circle-halo { fill: rgba(90, 70, 200, 0.12); }
+.aw-circle-outer { fill: none; stroke: rgba(205, 192, 255, 0.75); stroke-width: 0.7; stroke-dasharray: 1; stroke-dashoffset: 0; animation: aw-draw 900ms 100ms ease-out both; }
+.aw-circle-ticks { transform-box: view-box; transform-origin: 60px 60px; animation: aw-fade-in 600ms 300ms both, aw-spin 48s linear infinite; }
+.aw-circle-ticks line { stroke: rgba(205, 192, 255, 0.55); stroke-width: 0.6; stroke-linecap: round; }
+.aw-circle-mid { fill: none; stroke: rgba(177, 155, 255, 0.45); stroke-width: 0.5; stroke-dasharray: 0.012 0.018; transform-box: view-box; transform-origin: 60px 60px; animation: aw-fade-in 600ms 400ms both, aw-spin-reverse 30s linear infinite; }
+.aw-circle-star { transform-box: view-box; transform-origin: 60px 60px; animation: aw-spin-reverse 70s linear infinite; }
+.aw-circle-star polygon { fill: none; stroke: rgba(226, 216, 255, 0.6); stroke-width: 0.55; stroke-dasharray: 1; stroke-dashoffset: 0; animation: aw-draw 1100ms 280ms ease-out both; }
+.aw-circle-inner { fill: rgba(30, 22, 70, 0.35); stroke: rgba(239, 203, 133, 0.55); stroke-width: 0.6; stroke-dasharray: 1; stroke-dashoffset: 0; animation: aw-draw 800ms 520ms ease-out both; }
+.aw-circle-nodes rect { fill: #efcb85; filter: drop-shadow(0 0 2px rgba(255, 210, 130, 0.9)); animation: aw-fade-in 400ms 760ms both; }
+.aw-enchant.is-casting .aw-altar-circle { animation: aw-circle-charge 1300ms ease-in both; }
+
+.aw-altar-beam { position: absolute; bottom: 46%; left: 50%; width: 54px; height: 150%; margin-left: -27px; pointer-events: none; opacity: 0; background: linear-gradient(180deg, transparent, rgba(190, 175, 255, 0.45) 55%, rgba(255, 255, 255, 0.95)); filter: blur(7px); transform-origin: 50% 100%; animation: aw-beam 900ms 600ms ease-out both; }
+.aw-altar-flash { position: absolute; inset: -40%; z-index: 3; pointer-events: none; opacity: 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(196, 180, 255, 0.6) 26%, rgba(110, 86, 220, 0.2) 48%, transparent 66%); animation: aw-flash 900ms 1080ms ease-out both; }
+.aw-altar-motes { position: absolute; inset: 0; pointer-events: none; }
+.aw-altar-motes i { --aw-angle: 0deg; position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #efe9ff; box-shadow: 0 0 8px #b19bff, 0 0 2px #fff; opacity: 0; animation: aw-mote-in 1000ms ease-in both; }
+.aw-altar-motes i:nth-child(1) { --aw-angle: 0deg; animation-delay: 80ms; }
+.aw-altar-motes i:nth-child(2) { --aw-angle: 30deg; animation-delay: 240ms; }
+.aw-altar-motes i:nth-child(3) { --aw-angle: 60deg; animation-delay: 140ms; }
+.aw-altar-motes i:nth-child(4) { --aw-angle: 90deg; animation-delay: 320ms; }
+.aw-altar-motes i:nth-child(5) { --aw-angle: 120deg; animation-delay: 60ms; }
+.aw-altar-motes i:nth-child(6) { --aw-angle: 150deg; animation-delay: 280ms; }
+.aw-altar-motes i:nth-child(7) { --aw-angle: 180deg; animation-delay: 180ms; }
+.aw-altar-motes i:nth-child(8) { --aw-angle: 210deg; animation-delay: 360ms; }
+.aw-altar-motes i:nth-child(9) { --aw-angle: 240deg; animation-delay: 100ms; }
+.aw-altar-motes i:nth-child(10) { --aw-angle: 270deg; animation-delay: 300ms; }
+.aw-altar-motes i:nth-child(11) { --aw-angle: 300deg; animation-delay: 200ms; }
+.aw-altar-motes i:nth-child(12) { --aw-angle: 330deg; animation-delay: 380ms; }
+.aw-altar-pickaxe { position: relative; z-index: 2; display: grid; place-items: center; animation: aw-relic-rise 1250ms cubic-bezier(0.2, 0.9, 0.25, 1) both, aw-float 4s 1250ms ease-in-out infinite; }
+.aw-altar-pickaxe .pickaxe-sprite { width: clamp(112px, 32vw, 156px); height: clamp(112px, 32vw, 156px); }
+.aw-altar-pickaxe .pickaxe-sprite--enchanted { animation: aw-relic-glow 2.8s ease-in-out infinite; }
+
+.aw-enchant-title { margin-top: 2px; color: #f6f1ff; font-family: var(--aw-serif); font-size: clamp(22px, 5vw, 30px); line-height: 1.2; text-shadow: 0 0 18px rgba(160, 140, 255, 0.65); animation: aw-rise-in 700ms 200ms ease both; }
+.aw-enchant-status { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 24px; margin-top: 6px; color: #a99ed6; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+.aw-enchant.is-casting .aw-enchant-status { animation: aw-breathe 1.4s ease-in-out infinite; }
+
+.aw-enchant-cards { display: grid; gap: 10px; width: 100%; margin: 14px 0 4px; padding: 0; list-style: none; }
+.aw-sigil-card { position: relative; }
+.aw-sigil-card.is-sealed .aw-seal { visibility: hidden; }
+.aw-sigil-veil { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: rgba(205, 192, 255, 0.6); font-size: 22px; border: 1px dashed rgba(177, 155, 255, 0.32); border-radius: 10px; background: repeating-linear-gradient(135deg, rgba(60, 46, 130, 0.22) 0 8px, rgba(26, 20, 62, 0.22) 8px 16px), rgba(13, 10, 30, 0.78); }
+.aw-sigil-veil .aw-glyph { animation: aw-spin 7s linear infinite; }
+.aw-sigil-veil small { color: rgba(205, 192, 255, 0.6); font-family: var(--aw-serif); font-size: 13px; letter-spacing: 0.24em; }
+.aw-enchant.is-casting .aw-sigil-veil { animation: aw-breathe 1.6s ease-in-out infinite; }
+.aw-sigil-card.is-revealed .aw-seal { animation: aw-unseal 720ms cubic-bezier(0.2, 0.9, 0.25, 1.1) both; }
+.aw-sigil-card.is-revealed::after { position: absolute; inset: 0; z-index: 2; content: ''; pointer-events: none; opacity: 0; border-radius: 10px; background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.5) 48%, transparent 66%) -120% 0 / 240% 100% no-repeat; animation: aw-card-sheen 900ms 180ms ease-out both; }
+.aw-sigil-card.is-revealed.is-negative .aw-seal { animation: aw-unseal-curse 820ms ease both; }
+.aw-sigil-card.is-revealed.is-negative::after { background: radial-gradient(70% 160% at 50% 50%, rgba(255, 90, 60, 0.55), transparent 70%); animation: aw-curse-pulse 900ms ease-out both; }
+
+.aw-enchant-footer { position: relative; z-index: 2; display: flex; flex: 0 0 auto; justify-content: center; padding: 12px max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); background: rgba(7, 6, 15, 0.92); box-shadow: 0 -1px 0 rgba(177, 155, 255, 0.16), 0 -16px 28px rgba(7, 6, 15, 0.9); }
+.aw-enchant-confirm { width: min(320px, 100%); min-height: 50px; color: #e6e0ff; font: inherit; font-size: 14px; font-weight: 900; letter-spacing: 0.1em; cursor: pointer; border: 1px solid rgba(177, 155, 255, 0.5); border-radius: 10px; background: rgba(46, 36, 100, 0.6); box-shadow: inset 0 1px rgba(226, 216, 255, 0.2); transition: filter 140ms ease, transform 120ms ease; }
+.aw-enchant-confirm.is-ready { color: #2b1a07; border-color: #ffdc94; background: linear-gradient(#f7d690, #c99140); box-shadow: inset 0 1px rgba(255, 248, 225, 0.85), 0 4px 0 #6b4519, 0 0 26px rgba(255, 200, 110, 0.3); animation: aw-ready-pop 460ms cubic-bezier(0.2, 1.6, 0.4, 1); }
+.aw-enchant-confirm:active { transform: translateY(2px); }
+
+@media (hover: hover) {
+  .aw-enchant-confirm:hover { filter: brightness(1.1); }
+}
+
+/* ---------- 키프레임 ---------- */
+@keyframes aw-spin { to { transform: rotate(360deg); } }
+@keyframes aw-spin-reverse { to { transform: rotate(-360deg); } }
+@keyframes aw-fade-in { from { opacity: 0; } }
+@keyframes aw-rise-in { from { opacity: 0; transform: translateY(10px); } }
+@keyframes aw-breathe { 50% { opacity: 0.55; } }
+@keyframes aw-glint { 0%, 62% { background-position: -150% 0; } 82%, 100% { background-position: 250% 0; } }
+@keyframes aw-next-pulse { 50% { box-shadow: 0 0 0 3px rgba(233, 185, 104, 0.28), 0 0 14px rgba(233, 185, 104, 0.6); } }
+@keyframes aw-facet-set { 0% { opacity: 0; transform: rotate(45deg) scale(0.2); filter: brightness(3); } 55% { opacity: 1; transform: rotate(45deg) scale(1.35); filter: brightness(1.8); } 100% { transform: rotate(45deg) scale(1); filter: none; } }
+@keyframes aw-facet-ring { 0% { opacity: 0.95; transform: scale(0.3); } 100% { opacity: 0; transform: scale(1.5); } }
+@keyframes aw-facet-crack { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 45% { transform: translateX(3px); } 70% { transform: translateX(-1px); } }
+@keyframes aw-crack-draw { from { opacity: 0; transform: scale(0.2) rotate(-30deg); } }
+@keyframes aw-core-tremble { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-1px, 1px); } 50% { transform: translate(1px, -1px); } 75% { transform: translate(-1px, -1px); } }
+@keyframes aw-core-flare { 0% { filter: brightness(2.2); transform: scale(0.94); } 45% { filter: brightness(1.4); transform: scale(1.07); } 100% { filter: none; transform: scale(1); } }
+@keyframes aw-core-crack { 0%, 100% { transform: translate(0, 0) rotate(0); } 15% { transform: translate(-5px, 1px) rotate(-3deg); } 35% { transform: translate(5px, -1px) rotate(3deg); } 55% { transform: translate(-3px, 0) rotate(-1deg); } 75% { transform: translate(2px, 0); } }
+@keyframes aw-core-taint { 0% { filter: sepia(1) saturate(4) hue-rotate(-30deg) brightness(1.3); } 100% { filter: none; } }
+@keyframes aw-burst-ring { 0% { opacity: 1; transform: scale(0.5); } 100% { opacity: 0; transform: scale(1.35); } }
+@keyframes aw-spark { 0% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-30px) scaleY(0.4); } 20% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-96px) scaleY(1); } }
+@keyframes aw-chip { 0% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-26px); } 20% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-58px) rotate(180deg); } }
+@keyframes aw-delta-pop { 0% { opacity: 0; transform: translateY(8px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.08); } 32% { transform: scale(1); } }
+@keyframes aw-banner { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.6); } 16% { opacity: 1; transform: translate(-50%, -50%) scale(0.96); } 24% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -62%) scale(1); } }
+@keyframes aw-tier-ignite { 0% { transform: scale(1); filter: brightness(2.4); } 30% { transform: scale(1.1); } 100% { transform: scale(1); filter: none; } }
+@keyframes aw-chisel-strike { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-24deg) translateY(-2px); } }
+@keyframes aw-line-flash-0 { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes aw-line-flash-1 { 0% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes aw-line-shake-0 { 0%, 100% { transform: translateX(0); } 15% { transform: translateX(-5px); } 35% { transform: translateX(5px); } 55% { transform: translateX(-3px); } 75% { transform: translateX(2px); } }
+@keyframes aw-line-shake-1 { 0%, 100% { transform: translateX(0); } 15% { transform: translateX(-5px); } 35% { transform: translateX(5px); } 55% { transform: translateX(-3px); } 75% { transform: translateX(2px); } }
+@keyframes aw-stamp { 0% { opacity: 0; transform: rotate(-5deg) scale(1.9); } 12% { opacity: 1; transform: rotate(-5deg) scale(0.93); } 20% { transform: rotate(-5deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(-5deg) translateY(-6px); } }
+@keyframes aw-stamp-still { 0%, 85% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes aw-sky-drift { to { background-position: 220px 460px; } }
+@keyframes aw-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes aw-circle-charge { 0% { opacity: 0; transform: scale(1.25) rotate(-40deg); } 70% { opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+@keyframes aw-beam { 0% { opacity: 0; transform: scaleY(0); } 40% { opacity: 1; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1); } }
+@keyframes aw-flash { 0% { opacity: 0; transform: scale(0.2); } 30% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }
+@keyframes aw-mote-in { 0% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-150px) scale(1.4); } 30% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--aw-angle)) translateY(-6px) scale(0.3); } }
+@keyframes aw-relic-rise { 0% { opacity: 0; transform: translateY(26px) scale(0.72) rotate(-14deg); filter: brightness(0.4); } 70% { opacity: 1; transform: translateY(-6px) scale(1.06) rotate(3deg); filter: brightness(1.6); } 100% { transform: translateY(0) scale(1) rotate(0); filter: none; } }
+@keyframes aw-float { 50% { transform: translateY(-6px); } }
+@keyframes aw-relic-glow { 0%, 100% { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 10px rgba(170, 150, 255, 0.55)); } 50% { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 22px rgba(190, 170, 255, 0.95)); } }
+@keyframes aw-unseal { 0% { opacity: 0; transform: perspective(700px) rotateX(-75deg) translateY(-10px); filter: brightness(2.4); } 60% { opacity: 1; transform: perspective(700px) rotateX(8deg); filter: brightness(1.3); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes aw-unseal-curse { 0% { opacity: 0; transform: scale(1.14); filter: brightness(2.6) saturate(0); } 28% { opacity: 1; transform: scale(0.98) translateX(-6px); filter: brightness(1.4); } 42% { transform: translateX(6px); } 56% { transform: translateX(-4px); } 70% { transform: translateX(2px); } 100% { opacity: 1; transform: none; filter: none; } }
+@keyframes aw-card-sheen { 0% { opacity: 1; background-position: -120% 0; } 100% { opacity: 0; background-position: 220% 0; } }
+@keyframes aw-curse-pulse { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes aw-ready-pop { 0% { transform: scale(0.94); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+/* ---------- 반응형 ---------- */
+@media (max-width: 767px) {
+  .mobile-panel .aw-gear-list,
+  .mobile-panel .aw-stone-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+  .aw-ore-grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .stone-modal.aw-modal { padding: 22px 14px 16px; }
+  .stone-modal.aw-modal h2 { padding: 0 32px 10px; font-size: 19px; }
+  .aw-hero { grid-template-columns: 96px minmax(0, 1fr); gap: 14px; padding: 13px; }
+  .aw-gear-socket--hero { width: 96px; height: 96px; }
+  .aw-gear-socket--hero .pickaxe-sprite { width: 80px; height: 80px; }
+  .aw-stat strong { font-size: 19px; }
+  .aw-socket-plate { grid-template-columns: 58px minmax(0, 1fr); }
+  .aw-socket-plate .aw-stone-socket--medium { width: 56px; height: 56px; }
+  .aw-empty-socket { width: 54px; height: 54px; }
+  .aw-socket-plate-cta { grid-column: 1 / -1; justify-self: stretch; text-align: center; }
+  .aw-actions { grid-template-columns: 1fr 1fr; }
+  .aw-actions .aw-btn--astral { grid-column: 1 / -1; }
+
+  .aw-bench-head { grid-template-columns: 118px minmax(0, 1fr); gap: 14px; padding: 12px; }
+  .aw-dial { width: 118px; }
+  .aw-chance-value { font-size: 36px; }
+  .aw-chance-value small { font-size: 16px; }
+  .aw-rules li { padding: 2px 7px; font-size: 10px; }
+  .aw-score--lg .aw-score-gem { min-width: 26px; height: 26px; font-size: 16px; }
+  .aw-complete-banner { font-size: 18px; }
+  .aw-line { grid-template-areas: 'head head' 'work action' 'tiers tiers'; grid-template-columns: minmax(0, 1fr) 74px; gap: 9px 10px; padding: 11px 11px 12px 13px; }
+  .aw-line-head { flex-wrap: wrap; }
+  .aw-line-head strong { flex-basis: 100%; order: 3; font-size: 13px; }
+  .aw-line-value { margin-left: auto; }
+  .aw-line-work { flex-direction: column; align-items: stretch; gap: 6px; }
+  .aw-line-work .aw-track { gap: 3px; }
+  .aw-facet i { display: none; }
+  .aw-line-count { flex-direction: row; align-items: baseline; justify-content: space-between; }
+  .aw-line-count > span:first-child b { font-size: 16px; }
+  .aw-tiers { max-width: none; }
+  .aw-tier { min-height: 36px; }
+  .aw-chisel { min-height: 56px; padding: 6px 4px; font-size: 14px; }
+  .aw-chisel small { font-size: 9px; }
+  .aw-stamp { top: -10px; right: 82px; min-width: 92px; padding: 4px 9px 5px; }
+  .aw-stamp strong { font-size: 18px; }
+  .aw-bench-actions { width: 100%; }
+  .aw-bench-actions .aw-btn { flex: 1 1 0; }
+
+  .aw-engrave-target { grid-template-columns: 64px minmax(0, 1fr); gap: 11px; padding: 11px; }
+  .aw-engrave-target .aw-gear-socket--lg { width: 64px; height: 64px; }
+  .aw-engrave-target .aw-gear-socket--lg .pickaxe-sprite { width: 54px; height: 54px; }
+  .aw-engrave-ready { grid-column: 1 / -1; justify-self: start; }
+  .aw-engrave-target-copy strong { font-size: 17px; }
+  .aw-pick-stone { grid-template-columns: 54px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .aw-pick-stone .aw-stone-socket--medium { width: 54px; height: 54px; }
+  .aw-pick-head { flex-wrap: wrap; }
+}
+
+@media (max-width: 380px) {
+  .aw-bench-head { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .aw-dial { width: 132px; }
+  .aw-readout { align-items: center; width: 100%; }
+  .aw-chance,
+  .aw-rules,
+  .aw-bench-status { justify-content: center; }
+  .aw-hero { grid-template-columns: 80px minmax(0, 1fr); }
+  .aw-gear-socket--hero { width: 80px; height: 80px; }
+  .aw-gear-socket--hero .pickaxe-sprite { width: 66px; height: 66px; }
+}
+
+@media (max-height: 640px) {
+  .aw-altar { width: clamp(150px, 34vh, 210px); }
+  .aw-altar-pickaxe .pickaxe-sprite { width: clamp(96px, 22vh, 130px); height: clamp(96px, 22vh, 130px); }
+}
+
+/* 데스크톱 좁은 보관함 열에서는 장비 소켓을 조금 줄입니다. */
+.inventory-content--compact .aw-gear { grid-template-columns: 50px minmax(0, 1fr); gap: 10px; }
+.inventory-content--compact .aw-gear-socket { width: 50px; height: 50px; }
+.inventory-content--compact .aw-gear-socket .pickaxe-sprite { width: 42px; height: 42px; }
+.inventory-content--compact .aw-stone-card { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; }
+.inventory-content--compact .aw-stone-socket--small { width: 48px; height: 48px; }
+
+/* ---------- 움직임 줄이기 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .aw-orbit::after,
+  .aw-stone-socket.is-cut::after,
+  .aw-rarity--legendary::after,
+  .aw-facet.is-next::before,
+  .aw-facet.is-pending::before,
+  .aw-dial.is-pending .aw-dial-core,
+  .aw-dial-core,
+  .aw-dial-burst,
+  .aw-line,
+  .aw-line.is-pending .aw-chisel .aw-glyph,
+  .aw-tier.is-fresh,
+  .aw-complete-banner,
+  .aw-enchant-sky,
+  .aw-altar-circle,
+  .aw-circle-ticks,
+  .aw-circle-mid,
+  .aw-circle-star,
+  .aw-altar-pickaxe,
+  .aw-altar-pickaxe .pickaxe-sprite--enchanted,
+  .aw-sigil-veil,
+  .aw-sigil-veil .aw-glyph,
+  .aw-enchant-status,
+  .aw-enchant-confirm.is-ready { animation: none; }
+  .aw-dial-burst,
+  .aw-complete-banner,
+  .aw-altar-beam,
+  .aw-altar-flash,
+  .aw-altar-motes,
+  .aw-line::after,
+  .aw-sigil-card.is-revealed::after { display: none; }
+  .aw-dial-fill,
+  .aw-dial-needle,
+  .aw-bench-progress i { transition: none; }
+  /* 판정 도장은 움직이지 않고 잠시 머문 뒤 사라집니다. */
+  .aw-line .aw-stamp { transform: rotate(-5deg); animation: aw-stamp-still 2400ms linear forwards !important; }
+}
+.aw-enchant.is-still .aw-sigil-card.is-revealed .aw-seal,
+.aw-enchant.is-still .aw-sigil-card.is-revealed::after { animation: none; }

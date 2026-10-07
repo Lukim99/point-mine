@@ -256,6 +256,10 @@
 .modal-rivet--two { right: 13px; }
 .modal-close { position: absolute; top: 19px; right: 23px; width: 30px; height: 30px; color: #aaa193; font-size: 25px; cursor: pointer; border: 0; background: transparent; }
 .modal-close:hover { color: #fff; }
+.sound-toggle { display: grid; place-items: center; flex: 0 0 auto; width: 34px; height: 34px; padding: 7px; color: #dfc18c; cursor: pointer; border: 1px solid #645035; border-radius: 6px; background: rgba(29, 24, 19, 0.8); }
+.sound-toggle svg { width: 20px; height: 20px; }
+.sound-toggle:hover { color: #ffe2a9; border-color: #b38a48; }
+.sound-toggle[aria-pressed='false'] { color: #968b7b; }
 .modal-emblem { margin: 20px auto 10px; color: var(--gold); font-size: 40px; text-align: center; transform: rotate(-14deg); }
 
 .nickname-form > p { margin: 12px 0 19px; color: #bcb2a1; font-size: 13px; line-height: 1.55; text-align: center; }
@@ -381,11 +385,8 @@
 .hanging-chain { position: absolute; top: 0; width: 4px; height: 30%; opacity: 0.55; background: repeating-linear-gradient(#5a4d3d 0 5px, #211d18 5px 9px); }
 .hanging-chain--left { left: 12%; transform: rotate(-4deg); }
 .hanging-chain--right { right: 10%; height: 22%; transform: rotate(5deg); }
-.rock-face { position: absolute; top: 10%; left: 50%; width: min(52%, 310px); aspect-ratio: 1.6 / 1; border: 2px solid #4e4a43; border-radius: 43% 53% 38% 47%; background: radial-gradient(circle at 32% 28%, #46423b, transparent 18%), radial-gradient(circle at 68% 58%, #393632, transparent 24%), linear-gradient(145deg, #514c44, #211f1c 72%); box-shadow: inset 10px 8px 22px rgba(255, 255, 255, 0.035), inset -14px -14px 25px #11100e, 0 20px 28px #080706; transform: translateX(-50%); }
-.ore-vein { position: absolute; display: block; width: 12px; height: 12px; border-radius: 50%; background: #c67430; box-shadow: 0 0 9px #cf6c2b, 18px 13px 0 -2px #e0a350, -11px 25px 0 -3px #b35727; }
-.vein-one { top: 24%; left: 27%; }
-.vein-two { top: 55%; right: 28%; transform: scale(0.75); }
-.vein-three { bottom: 16%; left: 48%; transform: scale(0.55); }
+.rock-face { position: absolute; top: 10%; left: 50%; width: min(68%, 390px); aspect-ratio: 1.5 / 1; transform: translateX(-50%); }
+.mine-rock-image { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 18px 13px rgba(0, 0, 0, 0.6)); }
 .active-pickaxe { position: absolute; z-index: 3; top: 23%; left: 50%; transform: translate(-50%, -50%) rotate(-17deg); transform-origin: 62% 70%; }
 .mine-stage.is-mining .active-pickaxe { animation: mine-swing 430ms ease-in-out; }
 .mine-result { position: absolute; z-index: 5; top: 22%; left: 50%; display: flex; align-items: center; flex-direction: column; min-width: 126px; padding: 9px 14px; border: 1px solid #7d623d; border-radius: 4px; background: rgba(20, 16, 12, 0.94); box-shadow: 0 10px 25px #000; transform: translateX(-50%); animation: result-pop 900ms ease both; }

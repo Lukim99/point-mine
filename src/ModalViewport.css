@@ -1,0 +1,87 @@
+/* 주소창과 화면 키보드를 제외한 실제 표시 영역 안에서 모달을 스크롤합니다. */
+.modal-backdrop,
+.chest-opening-overlay,
+.vip-tear-overlay,
+.stone-engrave-overlay {
+  top: var(--dialog-viewport-top, 0px);
+  bottom: auto;
+  height: 100vh;
+  height: var(--dialog-viewport-height, 100dvh);
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+}
+
+.modal-backdrop .stone-modal {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-height: calc(100vh - 24px);
+  max-height: calc(var(--dialog-viewport-height, 100dvh) - max(12px, env(safe-area-inset-top)) - max(12px, env(safe-area-inset-bottom)));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #8c744f #171715;
+  touch-action: pan-y pinch-zoom;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 긴 보상 화면은 바깥 화면이 스크롤을 맡아 연출과 확인 버튼을 함께 보존합니다. */
+.chest-opening-overlay,
+.vip-tear-overlay,
+.stone-engrave-overlay {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.chest-opening-overlay > .opening-stage,
+.chest-opening-overlay > .bulk-opening-stage,
+.vip-tear-overlay > .vip-tear-stage,
+.stone-engrave-overlay > .stone-engrave-stage {
+  flex: 0 0 auto;
+  max-height: none;
+  margin-block: auto;
+  overflow: visible;
+}
+
+.chest-opening-overlay > .opening-stage {
+  height: 660px;
+}
+
+.bulk-opening-stage > *,
+.vip-tear-stage > *,
+.stone-engrave-stage > * {
+  flex-shrink: 0;
+}
+
+/* 화면 밖으로 퍼지는 장식이 내용의 스크롤 길이를 늘리지 않도록 고정합니다. */
+.chest-opening-overlay > .opening-rays,
+.chest-opening-overlay > .opening-flash,
+.vip-tear-overlay > .opening-rays,
+.vip-tear-overlay > .vip-tear-flash,
+.stone-engrave-overlay > .stone-engrave-aurora,
+.stone-engrave-overlay > .stone-engrave-grid,
+.stone-engrave-overlay > .stone-engrave-particles {
+  position: fixed;
+  pointer-events: none;
+}
+
+.stone-engrave-overlay > .stone-engrave-particles {
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .modal-backdrop .stone-modal {
+    padding: 26px 18px 22px;
+  }
+}

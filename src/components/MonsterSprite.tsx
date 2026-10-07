@@ -1,5 +1,6 @@
 import monstersUrl from '../assets/monsters.png'
 import { findMonster } from '../game'
+import { atlasSpriteStyle, spriteBounds } from '../lib/sprites'
 
 interface MonsterSpriteProps {
   monsterId: string
@@ -7,22 +8,19 @@ interface MonsterSpriteProps {
   className?: string
 }
 
-// monsters.png는 3x3 격자로, spriteIndex를 열/행으로 환산해 배경 위치를 잡습니다.
+// 격자 경계에 걸친 몬스터도 실제 그림 영역으로 정렬합니다.
 export function MonsterSprite({ monsterId, size = 'medium', className = '' }: MonsterSpriteProps) {
   const monster = findMonster(monsterId)
-  const spriteIndex = monster?.spriteIndex ?? 0
-  const column = spriteIndex % 3
-  const row = Math.floor(spriteIndex / 3)
+  // 시트 마지막 줄의 유령과 해골은 정의 순서와 반대로 그려져 있습니다.
+  const spriteIndex = monsterId === 'miner_skeleton' ? 7 : monsterId === 'ghost' ? 6 : monster?.spriteIndex ?? 0
 
   return (
     <span
-      className={`monster-sprite monster-sprite--${size} ${className}`}
-      style={{
-        backgroundImage: `url(${monstersUrl})`,
-        backgroundPosition: `${column * (100 / 2)}% ${row * (100 / 2)}%`,
-      }}
+      className={`atlas-sprite monster-sprite monster-sprite--${size} ${className}`}
       role="img"
       aria-label={monster?.name ?? '몬스터'}
-    />
+    >
+      <span className="sprite-art" style={atlasSpriteStyle(monstersUrl, 1254, 1254, spriteBounds.monsters[spriteIndex])} />
+    </span>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { findChest, findPickaxe, type OpenChestResult } from '../game'
 import { ChestSprite } from './ChestSprite'
 import { PickaxeSprite } from './PickaxeSprite'
+import { playSound } from '../lib/sound'
 
 interface ChestOpeningEffectProps {
   result: OpenChestResult
@@ -19,6 +20,7 @@ export function ChestOpeningEffect({ result, onClose }: ChestOpeningEffectProps)
     const previouslyFocused = document.activeElement as HTMLElement | null
     stageRef.current?.focus()
     const timer = window.setTimeout(() => {
+      playSound('reward')
       setRevealComplete(true)
       window.requestAnimationFrame(() => confirmRef.current?.focus())
     }, 2300)
